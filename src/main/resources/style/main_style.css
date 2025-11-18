@@ -1,0 +1,184 @@
+/* ===== ОСНОВНЫЕ СТИЛИ ===== */
+.products-scroll-pane {
+    -fx-background: transparent;
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+    -fx-padding: 0;
+}
+
+.products-scroll-pane .viewport {
+    -fx-background-color: transparent;
+}
+
+.products-flow-pane {
+    -fx-background-color: transparent;
+    -fx-padding: 15;
+}
+
+/* ===== КАРТОЧКА ТОВАРА ===== */
+.product-card {
+    -fx-background-color: rgba(255, 255, 255, 0.95);
+    -fx-background-radius: 15;
+    -fx-border-radius: 15;
+    -fx-padding: 15;
+    -fx-pref-width: 200;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.15), 12, 0, 0, 3);
+}
+
+.product-card:hover {
+    -fx-background-color: rgba(255, 255, 255, 1);
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.25), 15, 0, 0, 5);
+    -fx-cursor: hand;
+}
+
+/* ===== ИЗОБРАЖЕНИЕ ТОВАРА ===== */
+.product-image {
+    -fx-fit-width: 150;
+    -fx-fit-height: 150;
+    -fx-preserve-ratio: true;
+}
+
+/* ===== НАЗВАНИЕ ТОВАРА ===== */
+.product-title {
+    -fx-font-weight: bold;
+    -fx-font-size: 14px;
+    -fx-text-fill: #2c3e50;
+    -fx-wrap-text: true;
+    -fx-max-width: 180;
+}
+
+/* ===== ПРОДАВЕЦ ===== */
+.product-seller {
+    -fx-text-fill: #7f8c8d;
+    -fx-font-size: 11px;
+    -fx-font-style: italic;
+}
+
+/* ===== РЕЙТИНГ ===== */
+.rating-container {
+    -fx-spacing: 5;
+    -fx-alignment: center-left;
+}
+
+.rating-star-full {
+    -fx-text-fill: #f39c12;
+    -fx-font-size: 14px;
+}
+
+.rating-star-half {
+    -fx-text-fill: #f39c12;
+    -fx-font-size: 14px;
+    -fx-opacity: 0.7;
+}
+
+.rating-star-empty {
+    -fx-text-fill: #f39c12;
+    -fx-font-size: 14px;
+}
+
+.rating-count {
+    -fx-text-fill: #7f8c8d;
+    -fx-font-size: 12px;
+}
+
+/* ===== ОПИСАНИЕ ТОВАРА ===== */
+.product-description {
+    -fx-text-fill: #34495e;
+    -fx-font-size: 12px;
+    -fx-wrap-text: true;
+    -fx-max-width: 180;
+    -fx-max-height: 45;
+}
+
+/* ===== ЦЕНА И КНОПКА ===== */
+.product-bottom-container {
+    -fx-spacing: 10;
+    -fx-alignment: center;
+}
+
+.product-price {
+    -fx-text-fill: #e74c3c;
+    -fx-font-weight: bold;
+    -fx-font-size: 16px;
+}
+
+.cart-button {
+    -fx-background-color: #3498db;
+    -fx-text-fill: white;
+    -fx-background-radius: 20;
+    -fx-min-width: 40;
+    -fx-min-height: 30;
+    -fx-font-size: 14px;
+    -fx-cursor: hand;
+}
+
+.cart-button:hover {
+    -fx-background-color: #2980b9;
+}
+
+.cart-button:pressed {
+    -fx-background-color: #21618c;
+}
+
+/* ===== КОНТЕЙНЕР ДЛЯ РЕЙТИНГА И ОТЗЫВОВ ===== */
+.rating-reviews-container {
+    -fx-spacing: 5;
+    -fx-alignment: center-left;
+}
+
+/* ===== СТИЛИ ДЛЯ РАЗНЫХ КАТЕГОРИЙ ТОВАРОВ ===== */
+.product-card-premium {
+    -fx-background-color: rgba(255, 248, 225, 0.95);
+    -fx-border-color: #f1c40f;
+    -fx-border-width: 1;
+}
+
+.product-card-discount {
+    -fx-background-color: rgba(234, 246, 255, 0.95);
+    -fx-border-color: #3498db;
+    -fx-border-width: 1;
+}
+
+.discount-badge {
+    -fx-background-color: #e74c3c;
+    -fx-text-fill: white;
+    -fx-font-size: 10px;
+    -fx-font-weight: bold;
+    -fx-padding: 2 5;
+    -fx-background-radius: 10;
+}
+
+/* ===== АДАПТИВНЫЕ СТИЛИ ===== */
+@media (max-width: 600px) {
+    .product-card {
+        -fx-pref-width: 160;
+        -fx-padding: 10;
+    }
+
+    .product-image {
+        -fx-fit-width: 120;
+        -fx-fit-height: 120;
+    }
+
+    .product-title {
+        -fx-max-width: 140;
+        -fx-font-size: 12px;
+    }
+
+    .product-description {
+        -fx-max-width: 140;
+        -fx-font-size: 11px;
+    }
+}
+
+.root {
+    -fx-background-color: linear-gradient(to bottom, #ecf0f1, #bdc3c7);
+}
+
+.scroll-pane {
+    -fx-background-color: transparent;
+}
+
+.scroll-pane .viewport {
+    -fx-background-color: transparent;
+}

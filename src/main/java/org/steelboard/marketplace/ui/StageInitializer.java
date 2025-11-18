@@ -1,4 +1,4 @@
-package org.steelboard.marketplace;
+package org.steelboard.marketplace.ui;
 
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
@@ -9,13 +9,13 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationListener;
 import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Component;
-import org.steelboard.marketplace.MarketplaceApplication.StageReadyEvent;
+import org.steelboard.marketplace.ui.JavaFXApplication.StageReadyEvent;
 
 import java.io.IOException;
 
 @Component
 public class StageInitializer implements ApplicationListener<StageReadyEvent> {
-    @Value("classpath:/main.fxml")
+    @Value("classpath:/fxml/main.fxml")
     private Resource marketplaceResource;
     private final String applicationTitle;
     private ApplicationContext applicationContext;
@@ -33,7 +33,7 @@ public class StageInitializer implements ApplicationListener<StageReadyEvent> {
             Parent parent =  loader.load();
 
             Stage stage = event.getStage();
-            stage.setScene(new Scene(parent, 800, 600));
+            stage.setScene(new Scene(parent));
             stage.setTitle(applicationTitle);
             stage.show();
         } catch (IOException e) {
