@@ -12,6 +12,8 @@ public interface ProductService {
     Page<Product> getAllProducts(int page, int size);
     Page<Product> findAllProductsByName(String name, int page, int size);
     Page<Product> findAllProductsBySeller(User seller, int page, int size);
-
-
+    List<Product> saveAllProducts(List<Product> products);
+    Product saveProduct(Product product);
+    boolean deleteProduct(Product product);
+    Long countAllProducts();
 }

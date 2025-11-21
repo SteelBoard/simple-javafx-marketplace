@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.util.List;
 
@@ -31,8 +32,9 @@ public class Product {
     private Long sales = 0L;
     @Column(nullable = false)
     private Long quantity;
+    @Column(nullable = false)
+    private Boolean active = true;
     @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
     @OrderBy("type, sortOrder")
     private List<ProductImage> images;
-
 }
