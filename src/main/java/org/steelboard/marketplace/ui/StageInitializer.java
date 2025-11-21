@@ -15,7 +15,7 @@ import java.io.IOException;
 
 @Component
 public class StageInitializer implements ApplicationListener<StageReadyEvent> {
-    @Value("classpath:/fxml/main.fxml")
+    @Value("classpath:/fxml/home.fxml")
     private Resource marketplaceResource;
     private final String applicationTitle;
     private ApplicationContext applicationContext;
