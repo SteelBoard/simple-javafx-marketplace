@@ -11,8 +11,6 @@ import org.springframework.transaction.annotation.Transactional;
 import org.steelboard.marketplace.entity.Product;
 import org.steelboard.marketplace.entity.User;
 import org.steelboard.marketplace.repository.ProductRepository;
-import org.steelboard.marketplace.util.ProductCreatedEvent;
-import org.steelboard.marketplace.util.ProductDeletedEvent;
 
 import java.util.List;
 
@@ -44,19 +42,16 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     public List<Product> saveAllProducts(List<Product> products) {
-        products.forEach(product -> eventPublisher.publishEvent(new ProductCreatedEvent(product)));
         return productRepository.saveAll(products);
     }
 
     @Override
     public Product saveProduct(Product product) {
-        eventPublisher.publishEvent(new ProductCreatedEvent(product));
         return productRepository.save(product);
     }
 
     @Override
     public boolean deleteProduct(Product product) {
-        eventPublisher.publishEvent(new ProductDeletedEvent(product));
         return productRepository.deleteProductById(product.getId());
     }
 

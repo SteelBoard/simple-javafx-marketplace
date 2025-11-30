@@ -5,6 +5,10 @@ import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
+
+import java.util.Date;
 
 @Data
 @AllArgsConstructor
@@ -26,5 +30,8 @@ public class ProductImage {
     @Column(nullable = false)
     private ImageType type = ImageType.GALLERY;
     private Integer sortOrder = 0;
+    @CreationTimestamp
+    @Column(name = "created_at", updatable = false)
+    private Date createdAt;
 
 }

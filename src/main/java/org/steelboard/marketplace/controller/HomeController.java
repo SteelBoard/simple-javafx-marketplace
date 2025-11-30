@@ -11,7 +11,6 @@ import org.steelboard.marketplace.service.ProductService;
 import org.steelboard.marketplace.ui.ProductCard;
 
 import java.net.URL;
-import java.util.ArrayList;
 import java.util.ResourceBundle;
 
 @Component

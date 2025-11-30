@@ -4,8 +4,11 @@ import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
+import java.util.Date;
 import java.util.List;
 
 @Data
@@ -22,12 +25,12 @@ public class Product {
     private String name;
     private String description;
     @Column(nullable = false)
-    private double price;
+    private Double price;
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "seller_id")
     private User seller;
     @Column(nullable = false)
-    private double rating = 0.0;
+    private Double rating = 0.0;
     @Column(nullable = false)
     private Long sales = 0L;
     @Column(nullable = false)
@@ -37,4 +40,11 @@ public class Product {
     @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
     @OrderBy("type, sortOrder")
     private List<ProductImage> images;
+    @CreationTimestamp
+    @Column(name = "created_at", updatable = false)
+    private Date createdAt;
+    @UpdateTimestamp
+    @Column(name = "updated_at")
+    private Date updatedAt;
+
 }

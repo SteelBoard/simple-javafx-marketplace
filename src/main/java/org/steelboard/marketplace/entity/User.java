@@ -4,6 +4,10 @@ import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
+
+import java.util.Date;
 
 @Data
 @AllArgsConstructor
@@ -22,6 +26,12 @@ public class User {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false,  length = 15)
     private UserRole role = UserRole.USER;
+    @CreationTimestamp
+    @Column(name = "created_at", updatable = false)
+    private Date createdAt;
+    @UpdateTimestamp
+    @Column(name = "updated_at")
+    private Date updatedAt;
 }
 
 
