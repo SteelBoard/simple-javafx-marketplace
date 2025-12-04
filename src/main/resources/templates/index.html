@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+    <h1>Home</h1>
+    <table>
+        <thead>
+        <tr>
+            <th><a th:href="@{/(page=0, size=${size}, sortField='name', sortOrder=${sortOrder == 'asc' ? 'desc' : 'asc'})}">Name</a></th>
+            <th>Price</th>
+            <th>Image</th>
+            <th>Action</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="product : ${productPage.content}">
+            <td th:text="${product.name}"></td>
+            <td th:text="${product.price}"></td>
+            <td><img th:src="@{${product.imageUrl}}" alt="product image" width="100"/></td>
+            <td><a th:href="@{/cart/add/{id}(id=${product.id})}">Add to Cart</a></td>
+        </tr>
+        </tbody>
+    </table>
+    <div>
+        <span>Page <span th:text="${currentPage + 1}"></span> of <span th:text="${productPage.totalPages}"></span></span>
+        <a th:if="${productPage.hasPrevious}" th:href="@{/(page=${currentPage - 1}, size=${size}, sortField=${sortField}, sortOrder=${sortOrder})}">Previous</a>
+        <a th:if="${productPage.hasNext}" th:href="@{/(page=${currentPage + 1}, size=${size}, sortField=${sortField}, sortOrder=${sortOrder})}">Next</a>
+    </div>
+
+</body>
+</html>

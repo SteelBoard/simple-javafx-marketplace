@@ -5,12 +5,35 @@
     <title>Title</title>
 </head>
 <body>
-    <h2>Register</h2>
-    <form th:action="@{/register}" th:object="${user}" method="post">
-        <input type="text" th:field="*{username}" placeholder="Username" required>
-        <input type="password" th:field="*{password}" placeholder="Password" required>
-        <button type="submit">Register</button>
-    </form>
+<form th:action="@{/register}" th:object="${user}" method="post" th:if="${user}">
+    <div>
+        <label>Username:</label>
+        <input type="text" th:field="*{username}" class="form-control">
+        <span th:errors="*{username}" class="error"></span>
+    </div>
+    <div>
+        <label>Email:</label>
+        <input type="email" th:field="*{email}" class="form-control">
+        <span th:errors="*{email}" class="error"></span>
+    </div>
+    <div>
+        <label>Phone:</label>
+        <input type="text" th:field="*{phoneNumber}" class="form-control">
+        <span th:errors="*{phoneNumber}" class="error"></span>
+    </div>
+    <div>
+        <label>Password:</label>
+        <input type="password" th:field="*{password}" class="form-control">
+        <span th:errors="*{password}" class="error"></span>
+    </div>
+    <div>
+        <label>Confirm Password:</label>
+        <input type="password" th:field="*{confirmPassword}" class="form-control">
+        <span th:errors="*{confirmPassword}" class="error"></span>
+    </div>
+    <button type="submit">Register</button>
+</form>
+
 
 </body>
 </html>

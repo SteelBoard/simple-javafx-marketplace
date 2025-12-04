@@ -8,10 +8,7 @@ import org.hibernate.annotations.UpdateTimestamp;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Date;
-import java.util.Set;
+import java.util.*;
 
 @Data
 @ToString
@@ -22,12 +19,12 @@ public class User implements UserDetails {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
     @Column(unique = true)
     private String username;
     @Column(unique = true)
     private String email;
-
+    @Column(unique = true)
+    private String phoneNumber;
     private String password;
 
     @CreationTimestamp
@@ -42,10 +39,12 @@ public class User implements UserDetails {
         joinColumns = @JoinColumn(name = "user_id", referencedColumnName = "id"),
         inverseJoinColumns = @JoinColumn(name = "role_id", referencedColumnName = "id"))
     private Set<Role> roles;
+    @OneToMany(mappedBy = "seller")
+    private List<Product> products;
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return Collections.emptyList();
+        return getRoles();
     }
 
     @Override
