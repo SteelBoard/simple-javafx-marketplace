@@ -34,4 +34,8 @@ public class ProductImage {
     @Column(name = "created_at", updatable = false)
     private Date createdAt;
 
+    public String getUrl() {
+        return this.filepath + this.fileName;
+    }
+
 }

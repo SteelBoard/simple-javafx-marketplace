@@ -1,8 +1,6 @@
 package org.steelboard.marketplace.exception;
 
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
@@ -13,7 +11,6 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 @ControllerAdvice
 public class GlobalExceptionHandler {
 
-    // Обработка твоих бизнес-ошибокS
     @ExceptionHandler(UsernameAlreadyExistsException.class)
     public String handleUsernameExists(UsernameAlreadyExistsException e,
                                        RedirectAttributes redirectAttributes) {
@@ -28,6 +25,14 @@ public class GlobalExceptionHandler {
         log.warn("Registration failed: {}", e.getMessage());
         redirectAttributes.addFlashAttribute("error", e.getMessage());
         return "redirect:/register";
+    }
+
+    @ExceptionHandler(ProductNotFoundException.class)
+    public String handleProductNotFound(ProductNotFoundException e,
+                                        RedirectAttributes redirectAttributes) {
+        log.warn("Finding product failed: {}", e.getMessage());
+        redirectAttributes.addFlashAttribute("error", e.getMessage());
+        return "index";
     }
 
     // Валидация форм (Bean Validation)

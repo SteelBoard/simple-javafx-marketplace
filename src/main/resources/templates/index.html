@@ -19,7 +19,7 @@
         <tr th:each="product : ${productPage.content}">
             <td th:text="${product.name}"></td>
             <td th:text="${product.price}"></td>
-            <td><img th:src="@{${product.imageUrl}}" alt="product image" width="100"/></td>
+            <td><img th:src="@{${product.mainImageUrl}}" alt="product image" width="100"/></td>
             <td><a th:href="@{/cart/add/{id}(id=${product.id})}">Add to Cart</a></td>
         </tr>
         </tbody>

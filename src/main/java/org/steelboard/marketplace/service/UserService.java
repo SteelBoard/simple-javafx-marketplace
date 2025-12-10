@@ -9,6 +9,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.steelboard.marketplace.dto.user.UserRegisterDto;
+import org.steelboard.marketplace.entity.Cart;
 import org.steelboard.marketplace.entity.Role;
 import org.steelboard.marketplace.entity.User;
 import org.steelboard.marketplace.exception.EmailAlreadyExistsException;
@@ -17,6 +18,7 @@ import org.steelboard.marketplace.mapper.UserMapper;
 import org.steelboard.marketplace.repository.RoleRepository;
 import org.steelboard.marketplace.repository.UserRepository;
 
+import java.util.Optional;
 import java.util.Set;
 
 @AllArgsConstructor
@@ -34,8 +36,11 @@ public class UserService implements UserDetailsService {
         return userRepository.findByUsername(username).orElseThrow(() -> new UsernameNotFoundException(username));
     }
 
-    // пересмотреть возвращаемый тип
-    public void register(UserRegisterDto dto) {
+    public Optional<User> findByUsername(String username) {
+        return userRepository.findByUsername(username);
+    }
+
+    public User register(UserRegisterDto dto) {
         if (userRepository.findByUsername(dto.getUsername()).isPresent()) {
             throw new UsernameAlreadyExistsException(dto.getUsername());
         }
@@ -47,6 +52,10 @@ public class UserService implements UserDetailsService {
         user.setPassword(passwordEncoder.encode(dto.getPassword()));
         user.setRoles(Set.of(roleRepository.findByName("ROLE_USER").orElse(new Role())));
 
-        User saved = userRepository.save(user);
+        Cart userCart = new Cart();
+        userCart.setUser(user);
+        user.setCart(userCart);
+
+        return userRepository.save(user);
     }
 }

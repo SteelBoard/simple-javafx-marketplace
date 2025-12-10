@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
+import java.math.BigDecimal;
 import java.util.Date;
 
 @Data
@@ -25,7 +26,7 @@ public class Order {
     @Column(nullable = false)
     private OrderStatus status = OrderStatus.PENDING;
     @Column(name = "total_amount")
-    private Double totalAmount;
+    private BigDecimal totalAmount;
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)
     private Date createdAt;

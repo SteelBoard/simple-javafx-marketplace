@@ -4,9 +4,11 @@ import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
+import java.math.BigDecimal;
 import java.util.Date;
 
 @Data
@@ -25,10 +27,15 @@ public class CartItem {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "product_id")
     private Product product;
-    private Integer quantity;
+    private Integer quantity = 1;
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)
     private Date createdAt;
     @Column(name = "unit_price")
-    private Double unitPrice;
+    private BigDecimal unitPrice;
+
+    public CartItem(Cart cart, Product product) {
+        this.cart = cart;
+        this.product = product;
+    }
 }

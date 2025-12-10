@@ -26,4 +26,6 @@ public class UserRegisterDto {
 
     @NotBlank(message = "Confirm password is required")
     private String confirmPassword;
+
+
 }

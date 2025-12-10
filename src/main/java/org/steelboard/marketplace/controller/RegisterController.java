@@ -16,7 +16,7 @@ import org.steelboard.marketplace.service.UserService;
 
 @Controller
 @AllArgsConstructor
-public class AuthController {
+public class RegisterController {
 
     private final UserService userService; // ← Сервис вместо репозитория!
 

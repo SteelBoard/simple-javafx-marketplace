@@ -9,8 +9,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.steelboard.marketplace.dto.product.ProductDto;
-import org.steelboard.marketplace.dto.product.ProductPageDto;
+import org.steelboard.marketplace.entity.Product;
 import org.steelboard.marketplace.service.ProductService;
 
 @Controller
@@ -31,13 +30,14 @@ public class HomeController {
                 sortOrder.equalsIgnoreCase("desc") ? Sort.Direction.DESC : Sort.Direction.ASC,
                 sortField);
 
-        Page<ProductDto> productPage = productService.getProducts(pageable);
+        Page<Product> productPage = productService.getProducts(pageable);
 
-        model.addAttribute("productPage", ProductPageDto.fromPage(productPage, page, sortField, sortOrder));
+        model.addAttribute("productPage", productPage);
         model.addAttribute("currentPage", page);
         model.addAttribute("size", size);
         model.addAttribute("sortField", sortField);
         model.addAttribute("sortOrder", sortOrder);
+
 
         return "index";
     }

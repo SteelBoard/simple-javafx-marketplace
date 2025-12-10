@@ -7,8 +7,8 @@ import lombok.NoArgsConstructor;
 import lombok.ToString;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
-import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
+import java.math.BigDecimal;
 import java.util.Date;
 import java.util.List;
 
@@ -25,7 +25,7 @@ public class Product {
     private Long id;
     private String name;
     private String description;
-    private Double price = 0.0;
+    private BigDecimal price = BigDecimal.valueOf(0.0);
 
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "seller_id")
@@ -43,4 +43,13 @@ public class Product {
     @UpdateTimestamp
     @Column(name = "updated_at")
     private Date updatedAt;
+
+    public String getMainImageUrl() {
+        return images.stream()
+                .filter(img -> img.getType() == ImageType.MAIN)
+                .map(ProductImage::getUrl)
+                .findFirst()
+                .orElse("/images/default.png");
+    }
+
 }

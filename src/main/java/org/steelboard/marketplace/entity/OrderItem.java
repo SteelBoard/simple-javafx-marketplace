@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
+import java.math.BigDecimal;
 import java.util.Date;
 
 @Data
@@ -27,7 +28,7 @@ public class OrderItem {
     private Product product;
     private int quantity;
     @Column(name = "unit_price")
-    private Double unitPrice;
+    private BigDecimal unitPrice;
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)
     private Date createdAt;
