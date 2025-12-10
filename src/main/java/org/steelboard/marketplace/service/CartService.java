@@ -8,10 +8,10 @@ import org.steelboard.marketplace.entity.Cart;
 import org.steelboard.marketplace.entity.CartItem;
 import org.steelboard.marketplace.entity.Product;
 import org.steelboard.marketplace.entity.User;
-import org.steelboard.marketplace.exception.ProductNotFoundException;
+import org.steelboard.marketplace.exception.CartItemNotFoundException;
 import org.steelboard.marketplace.repository.CartItemRepository;
 
-import java.util.Objects;
+import java.util.Optional;
 
 @AllArgsConstructor
 @Service
@@ -23,34 +23,27 @@ public class CartService {
 
     @Transactional
     public void addProductToCart(Long productId, String username) {
-        User user = userService.findByUsername(username)
-                .orElseThrow(() -> new UsernameNotFoundException(username));
-        Cart cart = user.getCart();
-
-        Product currentProduct = productService.getProduct(productId)
-                .orElseThrow(() -> new ProductNotFoundException(productId));
-
+        Cart cart = getCartByUsername(username);
+        Optional<CartItem> cartItemOptional = cartItemRepository.findByProduct_IdAndCart(productId, cart);
         CartItem item;
 
-        if (cart.getCartItems().stream()
-                .map(CartItem::getProduct)
-                .anyMatch(product -> Objects.equals(product.getId(), currentProduct.getId()))) {
+        if (cartItemOptional.isPresent()) {
 
-            item = cartItemRepository.findByProductAndCart(currentProduct, cart);
+            item = cartItemOptional.get();
             item.setQuantity(item.getQuantity() + 1);
             cartItemRepository.save(item);
         }
         else {
-            item = new CartItem(cart,  currentProduct);
+            Product itemProduct = productService.getProduct(productId);
+            item = new CartItem(cart, itemProduct);
             cartItemRepository.save(item);
         }
     }
 
     @Transactional
     public void updateQuantity(String username, Long productId, Integer quantity) {
-        CartItem cartItem = getCartByUsername(username).getCartItems().stream()
-                .filter(item -> item.getProduct().getId().equals(productId))
-                .findFirst().get();
+        CartItem cartItem = cartItemRepository.findByProduct_IdAndCart(productId, getCartByUsername(username))
+                .orElseThrow(() -> new CartItemNotFoundException(productId,  username));
         cartItem.setQuantity(quantity);
     }
 
@@ -61,7 +54,11 @@ public class CartService {
 
     @Transactional(readOnly = true)
     public Cart getCartByUsername(String username) {
-        User user = userService.findByUsername(username).orElseThrow(() -> new UsernameNotFoundException(username));
-        return user.getCart();
+        return userService.findByUsername(username).getCart();
+    }
+
+    @Transactional
+    public void clearCartByUsername(String username) {
+        cartItemRepository.removeByCart(getCartByUsername(username));
     }
 }

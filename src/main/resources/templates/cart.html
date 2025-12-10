@@ -44,7 +44,9 @@
     <h3>Total: <span id="total-price" th:text="${totalPrice}"></span></h3>
 
     <a th:href="@{/}">Continue shopping</a> |
-    <a th:href="@{/order/checkout}">Checkout</a>
+    <a th:href="@{/order/checkout}">Checkout</a> |
+    <button id="clear" style="margin-left:10px;">Clear cart</button>
+
 </div>
 
 <script>
@@ -120,6 +122,17 @@
                 .catch(console.error);
         }
 
+        function clearCart() {
+            fetch('/api/cart/clear', {
+                method: 'POST',
+                credentials: 'same-origin',
+                headers: {'Content-Type': 'application/json'}
+            })
+                .then(r => r.json())
+                .then(data => refreshCartUI(data))
+                .catch(console.error);
+        }
+
         // Делегирование событий на tbody
         if (tbody) {
             tbody.addEventListener('click', (e) => {
@@ -137,6 +150,12 @@
                 }
             });
         }
+
+        const clearBtn = document.getElementById('clear');
+        if (clearBtn) {
+            clearBtn.addEventListener('click', clearCart);
+        }
+
 
     });
 </script>

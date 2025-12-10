@@ -5,6 +5,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.steelboard.marketplace.entity.Product;
+import org.steelboard.marketplace.exception.ProductNotFoundException;
 import org.steelboard.marketplace.repository.ProductRepository;
 
 import java.util.Optional;
@@ -19,7 +20,8 @@ public class ProductService {
         return productRepository.findAll(pageable);
     }
 
-    public Optional<Product> getProduct(Long id) {
-        return productRepository.findProductById(id);
+    public Product getProduct(Long id) {
+        return productRepository.findProductById(id)
+                .orElseThrow(() -> new ProductNotFoundException(id));
     }
 }
