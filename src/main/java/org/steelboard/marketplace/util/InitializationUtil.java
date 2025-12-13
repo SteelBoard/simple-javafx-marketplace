@@ -7,14 +7,12 @@ import org.springframework.transaction.annotation.Transactional;
 import org.steelboard.marketplace.entity.Cart;
 import org.steelboard.marketplace.entity.Product;
 import org.steelboard.marketplace.entity.User;
-import org.steelboard.marketplace.repository.CartItemRepository;
 import org.steelboard.marketplace.repository.CartRepository;
 import org.steelboard.marketplace.repository.ProductRepository;
 import org.steelboard.marketplace.repository.UserRepository;
 
 import java.math.BigDecimal;
 import java.util.Optional;
-import java.util.Random;
 
 @Service
 public class InitializationUtil implements CommandLineRunner {
@@ -53,7 +51,6 @@ public class InitializationUtil implements CommandLineRunner {
             cartRepository.save(cart);
         }
 
-        Random random = new Random();
         for (int i = 0; i < 50; i++) {
             Product product = new Product();
             product.setName("product_" + i);

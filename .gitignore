@@ -6,6 +6,7 @@ target/
 src/main/resources/uploads
 src/main/java/org/steelboard/marketplace/util/TestDataLoader.java
 db/
+src/main/resources/application.properties
 
 ### STS ###
 .apt_generated

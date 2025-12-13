@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Order Details</title>
+    <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+<h1>Order Summary</h1>
+
+<div>
+    <p><strong>Status:</strong> <span th:text="${order.orderStatus}"></span></p>
+    <p><strong>Total Amount:</strong> $<span th:text="${order.price}"></span></p>
+</div>
+
+<h2>Order Items</h2>
+<table border="1">
+    <thead>
+    <tr>
+        <th>Product</th>
+        <th>Quantity</th>
+        <th>Unit Price</th>
+        <th>Subtotal</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr th:each="item : ${order.orderItems}">
+        <td th:text="${item.productName}"></td>
+        <td th:text="${item.quantity}"></td>
+        <td th:text="${item.productPrice}"></td>
+        <td th:text="${item.unitPrice}"></td>
+    </tr>
+    </tbody>
+</table>
+
+<a href="/cart">Back to Cart</a>
+</body>
+</html>

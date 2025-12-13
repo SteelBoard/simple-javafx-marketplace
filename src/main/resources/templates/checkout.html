@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Create Order</title>
+</head>
+<body>
+
+<h1>Create Order</h1>
+
+<!-- Если корзина пустая -->
+<div th:if="${#lists.isEmpty(cartItems)}">
+    <p>Your cart is empty.</p>
+    <a th:href="@{/cart}">Go to cart</a>
+</div>
+
+<!-- Если корзина не пустая -->
+<div th:if="${!#lists.isEmpty(cartItems)}">
+
+    <form id="order-form" method="post" th:action="@{/order/create}">
+        <table border="1" cellpadding="10" id="checkout-table">
+            <thead>
+            <tr>
+                <th>Select</th>
+                <th>Product</th>
+                <th>Image</th>
+                <th>Price</th>
+                <th>Quantity in Cart</th>
+                <th>Subtotal</th>
+            </tr>
+            </thead>
+
+            <tbody>
+            <tr th:each="item : ${cartItems}">
+                <td>
+                    <input type="checkbox"
+                           class="select-product"
+                           th:data-id="${item.product.id}"
+                           th:data-price="${item.product.price}"
+                           th:data-qty="${item.quantity}">
+                </td>
+                <td th:text="${item.product.name}"></td>
+                <td><img th:src="@{${item.product.mainImageUrl}}" width="100"></td>
+                <td th:text="${item.product.price}"></td>
+                <td th:text="${item.quantity}"></td>
+                <td th:text="${item.quantity * item.product.price}"></td>
+            </tr>
+            </tbody>
+        </table>
+
+        <h3>Selected total: <span id="selected-total">0.00</span></h3>
+
+        <!-- Сюда JS запишет массив выбранных productId -->
+        <input type="hidden" name="selectedProductIds" id="selected-product-ids">
+
+        <button type="submit">Create Order</button>
+    </form>
+
+</div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", () => {
+
+        const checkboxes = document.querySelectorAll(".select-product");
+        const totalEl = document.getElementById("selected-total");
+        const hiddenSelected = document.getElementById("selected-product-ids");
+
+        function recalcTotal() {
+            let sum = 0;
+            let ids = [];
+
+            checkboxes.forEach(cb => {
+                if (cb.checked) {
+                    const price = parseFloat(cb.dataset.price);
+                    const qty = parseInt(cb.dataset.qty);
+
+                    sum += price * qty;
+                    ids.push(cb.dataset.id);
+                }
+            });
+
+            totalEl.textContent = sum.toFixed(2);
+            hiddenSelected.value = JSON.stringify(ids);
+        }
+
+        checkboxes.forEach(cb => cb.addEventListener("change", recalcTotal));
+    });
+</script>
+
+</body>
+</html>

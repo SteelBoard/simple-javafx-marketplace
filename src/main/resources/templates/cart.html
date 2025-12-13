@@ -44,7 +44,7 @@
     <h3>Total: <span id="total-price" th:text="${totalPrice}"></span></h3>
 
     <a th:href="@{/}">Continue shopping</a> |
-    <a th:href="@{/order/checkout}">Checkout</a> |
+    <a th:href="@{/checkout}">Checkout</a> |
     <button id="clear" style="margin-left:10px;">Clear cart</button>
 
 </div>
@@ -155,8 +155,6 @@
         if (clearBtn) {
             clearBtn.addEventListener('click', clearCart);
         }
-
-
     });
 </script>
 

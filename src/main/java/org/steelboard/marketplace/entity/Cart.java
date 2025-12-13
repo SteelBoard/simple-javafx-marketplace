@@ -4,12 +4,12 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import lombok.ToString;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import java.math.BigDecimal;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.Set;
 
 @Getter
@@ -30,11 +30,13 @@ public class Cart {
     )
     private User user;
     @OneToMany(
+            fetch = FetchType.EAGER,
             mappedBy = "cart",
             cascade = CascadeType.ALL,
             orphanRemoval = true
+
     )
-    Set<CartItem> cartItems;
+    Set<CartItem> cartItems = new HashSet<>();
     private BigDecimal totalPrice;
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)
