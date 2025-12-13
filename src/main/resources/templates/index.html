@@ -17,10 +17,31 @@
         </thead>
         <tbody>
         <tr th:each="product : ${productPage.content}">
-            <td th:text="${product.name}"></td>
+            <td>
+                <a th:href="@{/product/{id}(id=${product.id})}"
+                   th:text="${product.name}">
+                </a>
+            </td>
+
+            <!-- Цена -->
             <td th:text="${product.price}"></td>
-            <td><img th:src="@{${product.mainImageUrl}}" alt="product image" width="100"/></td>
-            <td><a th:href="@{/cart/add/{id}(id=${product.id})}">Add to Cart</a></td>
+
+            <!-- Картинка → страница продукта -->
+            <td>
+                <a th:href="@{/product/{id}(id=${product.id})}">
+                    <img th:src="${product.mainImageUrl}"
+                         alt="product image"
+                         width="100"/>
+                </a>
+            </td>
+
+            <!-- Добавление в корзину (GET) -->
+            <td>
+                <a th:href="@{/cart/add/{id}(id=${product.id})}">
+                    Add to Cart
+                </a>
+            </td>
+
         </tr>
         </tbody>
     </table>

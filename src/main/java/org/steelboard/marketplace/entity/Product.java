@@ -1,10 +1,7 @@
 package org.steelboard.marketplace.entity;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-import lombok.ToString;
+import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
@@ -12,10 +9,10 @@ import java.math.BigDecimal;
 import java.util.Date;
 import java.util.List;
 
-@Data
+@Getter
+@Setter
 @AllArgsConstructor
 @NoArgsConstructor
-@ToString
 @Entity
 @Table(name = "products")
 public class Product {
@@ -32,7 +29,6 @@ public class Product {
     private User seller;
     private Double rating = 0.0;
     private Long sales = 0L;
-    private Long quantity;
     private Boolean active = true;
     @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
     @OrderBy("type, sortOrder")

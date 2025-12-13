@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title th:text="${product.name}">Product</title>
+    <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+
+<h1 th:text="${product.name}">Product Name</h1>
+
+<div>
+    <!-- Основная картинка -->
+    <img th:src="${product.mainImageUrl}" alt="product image" width="300"/>
+</div>
+
+<p><strong>Description:</strong> <span th:text="${product.description}"></span></p>
+<p><strong>Price:</strong> $<span th:text="${product.price}"></span></p>
+<p><strong>Rating:</strong> <span th:text="${product.rating}"></span> / 5</p>
+
+<!-- Добавление в корзину -->
+<a th:href="@{/cart/add/{id}(id=${product.id})}">Add to Cart</a>
+
+<!-- Ссылка назад к списку товаров -->
+<p><a href="/">Back to Products</a></p>
+
+</body>
+</html>
