@@ -8,7 +8,9 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.steelboard.marketplace.dto.user.UserRegisterDto;
+import org.steelboard.marketplace.dto.user.UserUpdateDto;
 import org.steelboard.marketplace.entity.Cart;
 import org.steelboard.marketplace.entity.Role;
 import org.steelboard.marketplace.entity.User;
@@ -18,11 +20,11 @@ import org.steelboard.marketplace.mapper.UserMapper;
 import org.steelboard.marketplace.repository.RoleRepository;
 import org.steelboard.marketplace.repository.UserRepository;
 
-import java.util.Optional;
 import java.util.Set;
 
 @AllArgsConstructor
 @Service
+@Transactional(readOnly = true)
 public class UserService implements UserDetailsService {
     @PersistenceContext
     private EntityManager em;
@@ -40,6 +42,11 @@ public class UserService implements UserDetailsService {
         return userRepository.findByUsername(username).orElseThrow(() -> new UsernameNotFoundException(username));
     }
 
+    public boolean usernameExists(String username) {
+        return userRepository.existsByUsername(username);
+    }
+
+    @Transactional(readOnly = false)
     public User register(UserRegisterDto dto) {
         if (userRepository.findByUsername(dto.getUsername()).isPresent()) {
             throw new UsernameAlreadyExistsException(dto.getUsername());
@@ -58,4 +65,19 @@ public class UserService implements UserDetailsService {
 
         return userRepository.save(user);
     }
+
+    @Transactional(readOnly = false)
+    public void updateUser(User user, UserUpdateDto dto) {
+        if (dto.getUsername() != null) user.setUsername(dto.getUsername());
+        if (dto.getEmail() != null) user.setEmail(dto.getEmail());
+        if (dto.getPhoneNumber() != null) user.setPhoneNumber(dto.getPhoneNumber());
+
+        if (dto.isPasswordBeingUpdated()) {
+            // Хэширование пароля через PasswordEncoder
+            user.setPassword(passwordEncoder.encode(dto.getPassword()));
+        }
+
+        userRepository.save(user);
+    }
+
 }

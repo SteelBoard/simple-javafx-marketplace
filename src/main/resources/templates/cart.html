@@ -6,6 +6,9 @@
 </head>
 <body>
 <h1>Your Shopping Cart</h1>
+<div style="text-align: right;">
+    <a href="/profile">My Profile</a>
+</div>
 
 <!-- Можно оставить этот блок, он не обязательный, JS создаст div, если пусто -->
 <div id="empty-cart" th:if="${#lists.isEmpty(cartItems)}" style="display:none;">
