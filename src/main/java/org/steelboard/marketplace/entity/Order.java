@@ -36,6 +36,9 @@ public class Order {
             orphanRemoval = true
     )
     private Set<OrderItem> orderItems;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "pickup_point_id")
+    private PickupPoint pickupPoint;
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)
     private Date createdAt;

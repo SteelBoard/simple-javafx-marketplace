@@ -33,6 +33,10 @@ public class Product {
     @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
     @OrderBy("type, sortOrder")
     private List<ProductImage> images;
+
+    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Review> reviews;
+
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)
     private Date createdAt;

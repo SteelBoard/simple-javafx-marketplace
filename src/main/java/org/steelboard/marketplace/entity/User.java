@@ -2,6 +2,8 @@ package org.steelboard.marketplace.entity;
 
 import jakarta.persistence.*;
 import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 import lombok.ToString;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
@@ -10,7 +12,8 @@ import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.*;
 
-@Data
+@Getter
+@Setter
 @ToString
 @Entity
 @Table(name = "users")
@@ -47,6 +50,10 @@ public class User implements UserDetails {
 
     @OneToMany(mappedBy = "seller")
     private List<Product> products;
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Review> reviews;
+
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {

@@ -2,9 +2,12 @@ package org.steelboard.marketplace.entity;
 
 import jakarta.persistence.*;
 import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 import org.springframework.security.core.GrantedAuthority;
 
-@Data
+@Getter
+@Setter
 @Entity
 public class Role implements GrantedAuthority {
 

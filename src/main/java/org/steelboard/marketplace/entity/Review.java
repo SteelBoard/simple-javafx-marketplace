@@ -1,40 +1,42 @@
 package org.steelboard.marketplace.entity;
 
-import com.sun.javafx.iio.ImageStorage;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
+import java.math.BigDecimal;
 import java.util.Date;
 
-@Getter
-@Setter
 @AllArgsConstructor
 @NoArgsConstructor
+@Getter
+@Setter
 @Entity
-@Table(name = "product_images")
-public class ProductImage {
+@Table(name = "reviews")
+public class Review {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @EqualsAndHashCode.Include
     private Long id;
-    @Column(nullable = false)
-    private String fileName;
-    @Column(nullable = false)
-    private String filepath;
+
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "product_id")
-    private Product product;
-    @Enumerated(EnumType.STRING)
+    @JoinColumn(name = "user_id", nullable = false)
+    private User user;  // кто оставил отзыв
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "product_id", nullable = false)
+    private Product product;  // на какой товар
+
     @Column(nullable = false)
-    private ImageType type = ImageType.GALLERY;
-    private Integer sortOrder = 0;
+    private Integer rating;  // 1-5 звезд
+
+    @Column(columnDefinition = "TEXT")
+    private String comment;
+
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)
     private Date createdAt;
-
-    public String getUrl() {
-        return this.filepath + this.fileName;
-    }
 
 }
