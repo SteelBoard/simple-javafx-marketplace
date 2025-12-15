@@ -1,14 +1,12 @@
 package org.steelboard.marketplace.controller.admin;
 
 import lombok.AllArgsConstructor;
-import org.springframework.boot.Banner;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import org.steelboard.marketplace.entity.User;
+import org.steelboard.marketplace.service.CartService;
 import org.steelboard.marketplace.service.UserService;
 
 @Controller
@@ -17,6 +15,7 @@ import org.steelboard.marketplace.service.UserService;
 public class AdminUserController {
 
     private UserService userService;
+    private CartService cartService;
 
     @GetMapping
     public String users(
@@ -53,5 +52,14 @@ public class AdminUserController {
         userService.updateActive(id, isActive);
         model.addAttribute("user", userService.findById(id));
         return "redirect:/admin/users/" + id;
+    }
+
+    @GetMapping("/{id}/cart")
+    public String cart(Model model,
+                       @PathVariable Long id) {
+        User user = userService.findById(id);
+        model.addAttribute("user", user);
+        model.addAttribute("cartItems", user.getCart().getCartItems());
+        return "admin/user_cart";
     }
 }
