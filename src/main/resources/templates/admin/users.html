@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Админка — Пользователи</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            border: 1px solid #ccc;
+            padding: 8px;
+            text-align: left;
+        }
+
+        th {
+            background: #f5f5f5;
+        }
+
+        tr:hover {
+            background: #eef;
+            cursor: pointer;
+        }
+
+        .toolbar {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+
+        .pagination {
+            list-style: none;
+            display: flex;
+            gap: 5px;
+            padding: 0;
+        }
+
+        .pagination li a {
+            padding: 6px 10px;
+            border: 1px solid #aaa;
+            text-decoration: none;
+            color: black;
+        }
+
+        .pagination .active a {
+            background: #333;
+            color: white;
+        }
+
+        .pagination .disabled a {
+            color: #aaa;
+            pointer-events: none;
+        }
+    </style>
+</head>
+
+<body>
+
+<h2>Пользователи</h2>
+
+<div class="toolbar">
+
+    <!-- Поиск -->
+    <form method="get" th:action="@{/admin/users}">
+        <input type="text"
+               name="q"
+               placeholder="Поиск по username / email / телефону"
+               th:value="${q}"/>
+
+        <input type="hidden" name="size" th:value="${size}"/>
+
+        <button type="submit">Поиск</button>
+    </form>
+
+    <!-- Размер страницы -->
+    <form method="get" th:action="@{/admin/users}">
+        <input type="hidden" name="q" th:value="${q}"/>
+
+        <label>
+            Показывать:
+            <select name="size" onchange="this.form.submit()">
+                <option th:value="10" th:selected="${size == 10}">10</option>
+                <option th:value="20" th:selected="${size == 20}">20</option>
+                <option th:value="50" th:selected="${size == 50}">50</option>
+                <option th:value="100" th:selected="${size == 100}">100</option>
+            </select>
+        </label>
+    </form>
+
+</div>
+
+<!-- Таблица пользователей -->
+<table>
+    <thead>
+    <tr>
+        <th>ID</th>
+        <th>Username</th>
+        <th>Email</th>
+        <th>Телефон</th>
+        <th>Активен</th>
+        <th>Создан</th>
+        <th>Обновлён</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    <tr th:each="user : ${usersPage.content}"
+        th:onclick="|window.location='@{/admin/users/{id}(id=${user.id})}'|">
+
+        <td th:text="${user.id}"></td>
+        <td th:text="${user.username}"></td>
+        <td th:text="${user.email}"></td>
+        <td th:text="${user.phoneNumber}"></td>
+        <td th:text="${user.active ? 'Да' : 'Нет'}"></td>
+        <td th:text="${#dates.format(user.createdAt, 'yyyy-MM-dd HH:mm')}"></td>
+        <td th:text="${#dates.format(user.updatedAt, 'yyyy-MM-dd HH:mm')}"></td>
+    </tr>
+    </tbody>
+</table>
+
+<!-- Пагинация -->
+<nav style="margin-top: 15px;">
+    <ul class="pagination">
+
+        <li th:classappend="${usersPage.first} ? 'disabled'">
+            <a th:href="@{/admin/users(
+                page=${usersPage.number - 1},
+                size=${size},
+                q=${q}
+            )}">←</a>
+        </li>
+
+        <li th:each="i : ${#numbers.sequence(0, usersPage.totalPages - 1)}"
+            th:classappend="${i == usersPage.number} ? 'active'">
+            <a th:href="@{/admin/users(
+                page=${i},
+                size=${size},
+                q=${q}
+            )}"
+               th:text="${i + 1}">
+            </a>
+        </li>
+
+        <li th:classappend="${usersPage.last} ? 'disabled'">
+            <a th:href="@{/admin/users(
+                page=${usersPage.number + 1},
+                size=${size},
+                q=${q}
+            )}">→</a>
+        </li>
+
+    </ul>
+</nav>
+
+</body>
+</html>

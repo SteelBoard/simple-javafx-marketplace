@@ -3,6 +3,9 @@ package org.steelboard.marketplace.service;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import lombok.AllArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -48,19 +51,12 @@ public class UserService implements UserDetailsService {
         return userRepository.existsByUsername(username);
     }
 
-    public List<User> findAll() {
-        return userRepository.findAll();
+    public Page<User> findAll(int page, int size) {
+        return userRepository.findAll(PageRequest.of(page, size));
     }
 
-    public User findById(Long id) {
-        return userRepository.findById(id).orElseThrow();
-    }
-
-    @Transactional(readOnly = false)
-    public void updateActiveStatus(Long id, boolean active) {
-        User user = findById(id);
-        user.setActive(active);
-        userRepository.save(user);
+    public Page<User> search(String q, int page, int size) {
+        return userRepository.search(q, PageRequest.of(page, size));
     }
 
     @Transactional(readOnly = false)

@@ -1,6 +1,8 @@
 package org.steelboard.marketplace.service;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.steelboard.marketplace.dto.order.OrderDto;
@@ -66,5 +68,16 @@ public class OrderService {
         cartService.removeItemsFromCart(cart, selectedItems.stream().map(CartItem::getProduct).collect(Collectors.toList()));
 
         return order;
+    }
+
+    public Page<Order> findAll(Pageable pageable) {
+        return orderRepository.findAll(pageable);
+    }
+
+    public void updateStatus(Long id, OrderStatus status) {
+        Order order = orderRepository.findById(id)
+                .orElseThrow(() -> new OrderNotFoundException(id));
+        order.setStatus(status);
+        orderRepository.save(order);
     }
 }

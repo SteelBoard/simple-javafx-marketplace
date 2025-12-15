@@ -1,6 +1,0 @@
-<h2>Admin DB</h2>
-<ul>
-    <li th:each="t : ${tables}">
-        <a th:href="@{/admin/{t}(t=${t})}" th:text="${t}"></a>
-    </li>
-</ul>

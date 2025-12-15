@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Admin panel</title>
+    <link rel="stylesheet" th:href="@{/css/admin.css}">
+</head>
+<body>
+
+<h1>Административная панель</h1>
+
+<nav>
+    <ul>
+        <li><a th:href="@{/admin/users}">Пользователи</a></li>
+        <li><a th:href="@{/admin/products}">Товары</a></li>
+        <li><a th:href="@{/admin/orders}">Заказы</a></li>
+        <li><a th:href="@{/admin/pickup-points}">ПВЗ</a></li>
+        <li><a th:href="@{/admin/reviews}">Отзывы</a></li>
+    </ul>
+</nav>
+
+<hr/>
+
+<p>Выберите таблицу для просмотра и редактирования.</p>
+
+</body>
+</html>
