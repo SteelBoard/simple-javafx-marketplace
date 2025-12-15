@@ -1,13 +1,13 @@
 package org.steelboard.marketplace.controller.admin;
 
 import lombok.AllArgsConstructor;
+import org.springframework.boot.Banner;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import org.steelboard.marketplace.entity.User;
 import org.steelboard.marketplace.service.UserService;
 
@@ -35,5 +35,23 @@ public class AdminUserController {
         model.addAttribute("q", q);
 
         return "admin/users";
+    }
+
+    @GetMapping("/{id}")
+    public String user(Model model,
+                       @PathVariable Long id) {
+
+        model.addAttribute("user", userService.findById(id));
+        return "admin/user_details";
+    }
+
+    @PostMapping("/{id}/active")
+    public String updateActive(@RequestParam(required = false) Boolean active,
+                               @PathVariable Long id,
+                               Model model) {
+        boolean isActive = active != null && active;
+        userService.updateActive(id, isActive);
+        model.addAttribute("user", userService.findById(id));
+        return "redirect:/admin/users/" + id;
     }
 }

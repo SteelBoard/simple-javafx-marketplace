@@ -5,7 +5,6 @@ import jakarta.persistence.PersistenceContext;
 import lombok.AllArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -14,7 +13,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.steelboard.marketplace.dto.user.UserRegisterDto;
 import org.steelboard.marketplace.dto.user.UserUpdateDto;
-import org.steelboard.marketplace.entity.Cart;
 import org.steelboard.marketplace.entity.Role;
 import org.steelboard.marketplace.entity.User;
 import org.steelboard.marketplace.exception.EmailAlreadyExistsException;
@@ -23,16 +21,14 @@ import org.steelboard.marketplace.mapper.UserMapper;
 import org.steelboard.marketplace.repository.RoleRepository;
 import org.steelboard.marketplace.repository.UserRepository;
 
-import java.util.List;
 import java.util.Set;
 
 @AllArgsConstructor
 @Service
 @Transactional(readOnly = true)
 public class UserService implements UserDetailsService {
-    private final CartService cartService;
-    @PersistenceContext
-    private EntityManager em;
+
+    private CartService cartService;
     private PasswordEncoder passwordEncoder;
     private UserRepository userRepository;
     private RoleRepository roleRepository;
@@ -53,6 +49,16 @@ public class UserService implements UserDetailsService {
 
     public Page<User> findAll(int page, int size) {
         return userRepository.findAll(PageRequest.of(page, size));
+    }
+
+    public User findById(Long id) {
+        return userRepository.findById(id).orElseThrow(() -> new UsernameNotFoundException("Username with id: " + id + " not found!"));
+    }
+
+    @Transactional(readOnly = false)
+    public void updateActive(Long id, Boolean active) {
+        User user = this.findById(id);
+        user.setActive(active);
     }
 
     public Page<User> search(String q, int page, int size) {
@@ -86,8 +92,6 @@ public class UserService implements UserDetailsService {
             // Хэширование пароля через PasswordEncoder
             user.setPassword(passwordEncoder.encode(dto.getPassword()));
         }
-
-        userRepository.save(user);
     }
 
     @Transactional(readOnly = false)

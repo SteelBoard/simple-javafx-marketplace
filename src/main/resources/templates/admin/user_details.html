@@ -1,89 +1,154 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html lang="ru" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title>User details</title>
+    <title>Админка — Пользователь</title>
+
     <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+
         table {
+            width: 100%;
             border-collapse: collapse;
-            width: 60%;
         }
+
         th, td {
-            padding: 8px 12px;
             border: 1px solid #ccc;
-            text-align: left;
+            padding: 8px;
         }
+
         th {
-            width: 30%;
+            background: #f5f5f5;
+            text-align: left;
+            width: 250px;
+        }
+
+        .actions {
+            margin-top: 20px;
+        }
+
+        .links a {
+            display: inline-block;
+            margin-right: 15px;
+            text-decoration: none;
+            color: #0066cc;
+        }
+
+        .links a:hover {
+            text-decoration: underline;
+        }
+
+        .btn {
+            padding: 6px 14px;
+            border: 1px solid #333;
+            background: #333;
+            color: white;
+            cursor: pointer;
+        }
+
+        .btn:hover {
+            background: #555;
+        }
+
+        .readonly {
+            color: #555;
         }
     </style>
 </head>
-<body>
 
-<a th:href="@{/admin/users}">← Назад к пользователям</a>
+<body>
 
 <h2>Пользователь</h2>
 
-<form th:action="@{/admin/users/{id}/update(id=${user.id})}" method="post">
-    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+<!-- Таблица пользователя -->
+<table>
+    <tbody>
 
-    <table>
-        <tr>
-            <th>ID</th>
-            <td th:text="${user.id}"></td>
-        </tr>
+    <tr>
+        <th>ID</th>
+        <td th:text="${user.id}" class="readonly"></td>
+    </tr>
 
-        <tr>
-            <th>Username</th>
-            <td th:text="${user.username}"></td>
-        </tr>
+    <tr>
+        <th>Username</th>
+        <td th:text="${user.username}" class="readonly"></td>
+    </tr>
 
-        <tr>
-            <th>Email</th>
-            <td th:text="${user.email}"></td>
-        </tr>
+    <tr>
+        <th>Email</th>
+        <td th:text="${user.email}" class="readonly"></td>
+    </tr>
 
-        <tr>
-            <th>Phone</th>
-            <td th:text="${user.phoneNumber}"></td>
-        </tr>
+    <tr>
+        <th>Телефон</th>
+        <td th:text="${user.phoneNumber}" class="readonly"></td>
+    </tr>
 
-        <tr>
-            <th>Password</th>
-            <td>
-                <input type="password"
-                       th:value="${user.password}"
-                       readonly />
-            </td>
-        </tr>
+    <tr>
+        <th>Пароль</th>
+        <td class="readonly">
+            ●●●●●●●●●●
+        </td>
+    </tr>
 
-        <tr>
-            <th>Active</th>
-            <td>
+    <tr>
+        <th>Активен</th>
+        <td>
+            <form th:action="@{/admin/users/{id}/active(id=${user.id})}"
+                  method="post">
+
                 <input type="checkbox"
                        name="active"
-                       th:checked="${user.active}" />
-            </td>
-        </tr>
+                       value="true"
+                       th:checked="${user.active}"/>
 
-        <tr>
-            <th>Created at</th>
-            <td th:text="${#dates.format(user.createdAt, 'yyyy-MM-dd HH:mm')}"></td>
-        </tr>
+                <button type="submit" class="btn">
+                    Сохранить
+                </button>
+            </form>
+        </td>
+    </tr>
 
-        <tr>
-            <th>Updated at</th>
-            <td th:text="${#dates.format(user.updatedAt, 'yyyy-MM-dd HH:mm')}"></td>
-        </tr>
-    </table>
+    <tr>
+        <th>Создан</th>
+        <td th:text="${#dates.format(user.createdAt, 'yyyy-MM-dd HH:mm')}"
+            class="readonly"></td>
+    </tr>
 
-    <br/>
-    <button type="submit">Сохранить</button>
-</form>
+    <tr>
+        <th>Обновлён</th>
+        <td th:text="${#dates.format(user.updatedAt, 'yyyy-MM-dd HH:mm')}"
+            class="readonly"></td>
+    </tr>
 
-<hr/>
+    </tbody>
+</table>
 
-<h3>Связанные данные</h3>
-<ul>
-    <li>
-        <a th:href="@{/admin/users/{id}/cart(id=${u
+<!-- Связанные данные -->
+<div class="actions links">
+    <h3>Связанные данные</h3>
+
+    <a th:href="@{/admin/users/{id}/cart(id=${user.id})}">
+        Корзина
+    </a>
+
+    <a th:href="@{/admin/users/{id}/products(id=${user.id})}">
+        Продаваемые товары
+    </a>
+
+    <a th:href="@{/admin/users/{id}/reviews(id=${user.id})}">
+        Отзывы
+    </a>
+</div>
+
+<div class="actions">
+    <a th:href="@{/admin/users}" class="btn">
+        ← Назад к списку
+    </a>
+</div>
+
+</body>
+</html>
