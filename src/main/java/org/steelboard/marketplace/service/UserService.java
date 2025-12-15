@@ -20,6 +20,7 @@ import org.steelboard.marketplace.mapper.UserMapper;
 import org.steelboard.marketplace.repository.RoleRepository;
 import org.steelboard.marketplace.repository.UserRepository;
 
+import java.util.List;
 import java.util.Set;
 
 @AllArgsConstructor
@@ -45,6 +46,21 @@ public class UserService implements UserDetailsService {
 
     public boolean usernameExists(String username) {
         return userRepository.existsByUsername(username);
+    }
+
+    public List<User> findAll() {
+        return userRepository.findAll();
+    }
+
+    public User findById(Long id) {
+        return userRepository.findById(id).orElseThrow();
+    }
+
+    @Transactional(readOnly = false)
+    public void updateActiveStatus(Long id, boolean active) {
+        User user = findById(id);
+        user.setActive(active);
+        userRepository.save(user);
     }
 
     @Transactional(readOnly = false)
@@ -90,7 +106,6 @@ public class UserService implements UserDetailsService {
 
     public void addAdmin(User user) {
         user.setPassword(passwordEncoder.encode(user.getPassword()));
-        user.setRoles(Set.of(roleRepository.findByName("ROLE_ADMIN").orElse(new Role())));
 
         userRepository.save(user);
         cartService.addCartByUser(user);

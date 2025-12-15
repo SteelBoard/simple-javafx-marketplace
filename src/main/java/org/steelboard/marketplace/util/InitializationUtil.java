@@ -18,6 +18,7 @@ import org.steelboard.marketplace.service.UserService;
 
 import java.math.BigDecimal;
 import java.util.Optional;
+import java.util.Set;
 
 @Service
 @AllArgsConstructor
@@ -31,17 +32,14 @@ public class InitializationUtil implements CommandLineRunner {
     @Override
     @Transactional
     public void run(String... args) {
-        Role userRole = new Role("ROLE_USER");
-        Role adminRole = new Role("ROLE_ADMIN");
-        Role sellerRole = new Role("ROLE_SELLER");
-
-        roleRepository.save(userRole);
-        roleRepository.save(adminRole);
-        roleRepository.save(sellerRole);
+        Role userRole = roleRepository.save(new Role("ROLE_USER"));
+        Role adminRole = roleRepository.save(new Role("ROLE_ADMIN"));
+        Role sellerRole = roleRepository.save(new Role("ROLE_SELLER"));
 
         User admin = new User();
         admin.setUsername("admin");
         admin.setPassword("admin");
+        admin.setRoles(Set.of(userRole, adminRole));
         userService.addAdmin(admin);
 
         for (int i = 0; i < 50; i++) {

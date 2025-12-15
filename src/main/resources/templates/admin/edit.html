@@ -1,0 +1,17 @@
+<h2>Edit <span th:text="${table + ' #' + id}"></span></h2>
+
+<form method="post">
+    <table border="1">
+        <tr th:each="e : ${fields}">
+            <td th:text="${e.key}"></td>
+            <td>
+                <input th:name="${e.key}"
+                       th:value="${e.value}"
+                       th:disabled="${!meta.editableFields.contains(e.key)}"/>
+            </td>
+        </tr>
+    </table>
+
+    <br>
+    <button type="submit">Save</button>
+</form>
