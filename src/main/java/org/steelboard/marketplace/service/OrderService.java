@@ -29,7 +29,7 @@ public class OrderService {
     @Transactional(readOnly = false)
     public Order createOrder(User user, List<Long> productIds) {
 
-        Cart cart = cartService.getCartByUsername(user.getUsername());
+        Cart cart = user.getCart();
 
         // Выбираем CartItems по productIds
         List<CartItem> selectedItems = cart.getCartItems().stream()

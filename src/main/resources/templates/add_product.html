@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Добавить продукт</title>
+</head>
+<body>
+<h1>Добавить новый продукт</h1>
+
+<form th:action="@{/products/new}" th:object="${productDto}" method="post" enctype="multipart/form-data">
+
+    <div>
+        <label for="name">Название:</label>
+        <input type="text" id="name" th:field="*{name}" />
+        <p th:if="${#fields.hasErrors('name')}" th:errors="*{name}"></p>
+    </div>
+
+    <div>
+        <label for="description">Описание:</label>
+        <textarea id="description" th:field="*{description}"></textarea>
+        <p th:if="${#fields.hasErrors('description')}" th:errors="*{description}"></p>
+    </div>
+
+    <div>
+        <label for="price">Цена:</label>
+        <input type="number" id="price" th:field="*{price}" step="0.01" />
+        <p th:if="${#fields.hasErrors('price')}" th:errors="*{price}"></p>
+    </div>
+
+    <div>
+        <label for="mainImage">Главная картинка:</label>
+        <input type="file" id="mainImage" th:field="*{mainImage}" />
+        <p th:if="${#fields.hasErrors('mainImage')}" th:errors="*{mainImage}"></p>
+    </div>
+
+    <div>
+        <label for="additionalImages">Дополнительные картинки:</label>
+        <input type="file" id="additionalImages" th:field="*{additionalImages}" multiple />
+    </div>
+
+    <div>
+        <button type="submit">Добавить продукт</button>
+    </div>
+
+</form>
+
+
+<div th:if="${param.success}">
+    <p style="color:green;">Продукт успешно добавлен!</p>
+</div>
+
+</body>
+</html>

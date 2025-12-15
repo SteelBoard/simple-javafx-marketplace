@@ -47,7 +47,7 @@ public class Product {
     public String getMainImageUrl() {
         return images.stream()
                 .filter(img -> img.getType() == ImageType.MAIN)
-                .map(ProductImage::getUrl)
+                .map(ProductImage::getFilepath)
                 .findFirst()
                 .orElse("/images/default.png");
     }

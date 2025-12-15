@@ -19,8 +19,6 @@ public class ProductImage {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     @Column(nullable = false)
-    private String fileName;
-    @Column(nullable = false)
     private String filepath;
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "product_id")
@@ -32,9 +30,4 @@ public class ProductImage {
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)
     private Date createdAt;
-
-    public String getUrl() {
-        return this.filepath + this.fileName;
-    }
-
 }

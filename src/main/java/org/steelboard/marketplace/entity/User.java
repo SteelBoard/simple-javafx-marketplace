@@ -30,6 +30,8 @@ public class User implements UserDetails {
     private String phoneNumber;
     private String password;
 
+    private Boolean active;
+
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)
     private Date createdAt;

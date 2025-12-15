@@ -26,6 +26,7 @@ import java.util.Set;
 @Service
 @Transactional(readOnly = true)
 public class UserService implements UserDetailsService {
+    private final CartService cartService;
     @PersistenceContext
     private EntityManager em;
     private PasswordEncoder passwordEncoder;
@@ -47,7 +48,7 @@ public class UserService implements UserDetailsService {
     }
 
     @Transactional(readOnly = false)
-    public User register(UserRegisterDto dto) {
+    public void register(UserRegisterDto dto) {
         if (userRepository.findByUsername(dto.getUsername()).isPresent()) {
             throw new UsernameAlreadyExistsException(dto.getUsername());
         }
@@ -59,11 +60,8 @@ public class UserService implements UserDetailsService {
         user.setPassword(passwordEncoder.encode(dto.getPassword()));
         user.setRoles(Set.of(roleRepository.findByName("ROLE_USER").orElse(new Role())));
 
-        Cart userCart = new Cart();
-        userCart.setUser(user);
-        user.setCart(userCart);
-
-        return userRepository.save(user);
+        userRepository.save(user);
+        cartService.addCartByUser(user);
     }
 
     @Transactional(readOnly = false)
@@ -80,4 +78,21 @@ public class UserService implements UserDetailsService {
         userRepository.save(user);
     }
 
+    @Transactional(readOnly = false)
+    public void addUser(User user) {
+
+        user.setPassword(passwordEncoder.encode(user.getPassword()));
+        user.setRoles(Set.of(roleRepository.findByName("ROLE_USER").orElse(new Role())));
+
+        userRepository.save(user);
+        cartService.addCartByUser(user);
+    }
+
+    public void addAdmin(User user) {
+        user.setPassword(passwordEncoder.encode(user.getPassword()));
+        user.setRoles(Set.of(roleRepository.findByName("ROLE_ADMIN").orElse(new Role())));
+
+        userRepository.save(user);
+        cartService.addCartByUser(user);
+    }
 }

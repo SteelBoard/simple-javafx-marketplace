@@ -20,7 +20,7 @@ public class CheckoutController {
             @AuthenticationPrincipal User user,
             Model model
     ) {
-        Cart cart = cartService.getCartByUsername(user.getUsername());
+        Cart cart = user.getCart();
         model.addAttribute("cartItems", cart.getCartItems());
         return "checkout";
     }
