@@ -23,7 +23,8 @@ public class ProfileController {
     private final UserService userService;
 
     @GetMapping
-    public String getProfile(@AuthenticationPrincipal User user, Model model) {
+    public String getProfile(@AuthenticationPrincipal User userDetails, Model model) {
+        User user  = userService.findById(userDetails.getId());
         UserUpdateDto dto = new UserUpdateDto();
         dto.setUsername(user.getUsername());
         dto.setEmail(user.getEmail());
@@ -34,12 +35,13 @@ public class ProfileController {
 
     @PostMapping
     public String updateProfile(
-            @AuthenticationPrincipal User user,
+            @AuthenticationPrincipal User userDetails,
             @Valid @ModelAttribute("userUpdateDto") UserUpdateDto dto,
             BindingResult bindingResult,
             Model model
     ) {
         // Проверяем совпадение пароля только если введён
+        User user = userService.findById(userDetails.getId());
         if (dto.isPasswordBeingUpdated() && !dto.getPassword().equals(dto.getConfirmPassword())) {
             bindingResult.rejectValue("confirmPassword", "error.userUpdateDto", "Passwords do not match");
         }

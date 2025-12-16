@@ -32,3 +32,7 @@
     <button type="submit">Save Changes</button>
     <p th:if="${successMessage}" th:text="${successMessage}"></p>
 </form>
+<form th:action="@{/logout}" method="post">
+    <button type="submit">Выйти</button>
+    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+</form>

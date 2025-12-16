@@ -5,16 +5,92 @@
     <title>Your Cart</title>
 </head>
 <body>
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        margin: 20px;
+        background: #f9f9f9;
+    }
+
+    h1 {
+        color: #333;
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        background: white;
+        margin-bottom: 15px;
+    }
+
+    th, td {
+        border: 1px solid #ccc;
+        padding: 8px;
+        text-align: left;
+    }
+
+    th {
+        background: #f0f0f0;
+    }
+
+    tr:hover {
+        background: #eef;
+    }
+
+    button {
+        padding: 4px 8px;
+        border: 1px solid #888;
+        background: #fff;
+        cursor: pointer;
+    }
+
+    button:hover {
+        background: #ddd;
+    }
+
+    #clear {
+        background: #f44336;
+        color: white;
+        border: none;
+        padding: 6px 12px;
+    }
+
+    #clear:hover {
+        background: #d32f2f;
+    }
+
+    a {
+        text-decoration: none;
+        color: #333;
+    }
+
+    a:hover {
+        color: #007bff;
+    }
+
+    #empty-cart {
+        margin-top: 20px;
+        font-size: 18px;
+        color: #666;
+    }
+
+    .toolbar {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 10px;
+    }
+</style>
+
 <h1>Your Shopping Cart</h1>
 <div style="text-align: right;">
     <a href="/profile">My Profile</a>
 </div>
 
 <!-- Можно оставить этот блок, он не обязательный, JS создаст div, если пусто -->
-<div id="empty-cart" th:if="${#lists.isEmpty(cartItems)}" style="display:none;">
+<div id="empty-cart" th:style="${#lists.isEmpty(cartItems)} ? 'display:block;' : 'display:none;'">
     <p>Your cart is empty.</p>
-    <a th:href="@{/}">Go shopping</a>
 </div>
+
 
 <div th:if="${!#lists.isEmpty(cartItems)}">
     <table border="1" cellpadding="10" id="cart-table">
@@ -46,11 +122,12 @@
 
     <h3>Total: <span id="total-price" th:text="${totalPrice}"></span></h3>
 
-    <a th:href="@{/}">Continue shopping</a> |
     <a th:href="@{/checkout}">Checkout</a> |
     <button id="clear" style="margin-left:10px;">Clear cart</button>
 
 </div>
+
+<a th:href="@{/}">Continue shopping</a>
 
 <script>
     document.addEventListener('DOMContentLoaded', () => {
@@ -59,29 +136,39 @@
         const tbody = table ? table.querySelector('tbody') : null;
 
         function refreshCartUI(data) {
+            const table = document.getElementById('cart-table');
+            const tbody = table.querySelector('tbody');
+            const emptyDiv = document.getElementById('empty-cart');
+
             if (!data.cartItems || data.cartItems.length === 0) {
-                if (table) table.style.display = 'none';
-                let emptyDiv = document.getElementById('empty-cart');
-                if (!emptyDiv) {
-                    emptyDiv = document.createElement('div');
-                    emptyDiv.id = 'empty-cart';
-                    emptyDiv.innerHTML = `<p>Your cart is empty.</p><a href="/">Go shopping</a>`;
-                    document.body.insertBefore(emptyDiv, table || null);
-                }
+                table.style.display = 'none';
                 emptyDiv.style.display = 'block';
                 return;
             }
+            emptyDiv.style.display = 'none';
+            table.style.display = 'table';
 
-            if (table) table.style.display = 'table';
-            const emptyDiv = document.getElementById('empty-cart');
-            if (emptyDiv) emptyDiv.style.display = 'none';
 
-            // Перерисовываем tbody
-            tbody.innerHTML = '';
+            // Обновляем существующие строки и добавляем новые
+            const existingRows = Array.from(tbody.querySelectorAll('tr')).reduce((map, row) => {
+                map[row.id] = row;
+                return map;
+            }, {});
+
             data.cartItems.forEach(item => {
-                const row = document.createElement('tr');
-                row.id = 'row-' + item.productId;
-                row.innerHTML = `
+                const rowId = 'row-' + item.productId;
+                let row = existingRows[rowId];
+
+                if (row) {
+                    // Обновляем только количество и subtotal
+                    row.querySelector('input').value = item.quantity;
+                    row.querySelector('td:nth-child(5)').textContent = (item.quantity * item.price).toFixed(2);
+                    delete existingRows[rowId];
+                } else {
+                    // Добавляем новую строку
+                    row = document.createElement('tr');
+                    row.id = rowId;
+                    row.innerHTML = `
                 <td>${item.productName}</td>
                 <td><img src="${item.mainImageUrl}" width="100" alt="product image"></td>
                 <td>${item.price.toFixed(2)}</td>
@@ -93,13 +180,19 @@
                 <td>${(item.price * item.quantity).toFixed(2)}</td>
                 <td><button class="remove" data-id="${item.productId}">Remove</button></td>
             `;
-                tbody.appendChild(row);
+                    tbody.appendChild(row);
+                }
             });
 
+            // Удаляем строки, которых больше нет
+            Object.values(existingRows).forEach(row => row.remove());
+
             // Обновляем total
-            const totalPriceEl = document.getElementById('total-price');
-            if (totalPriceEl) totalPriceEl.textContent = (data.totalPrice ?? 0).toFixed(2);
+            document.getElementById('total-price').textContent = (data.totalPrice ?? 0).toFixed(2);
+
         }
+
+
 
         function updateCart(productId, quantity) {
             fetch('/api/cart/update', {

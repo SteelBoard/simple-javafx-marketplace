@@ -60,11 +60,13 @@ public class CartService {
     }
 
     public void removeItem(User user, Long productId) {
-        cartItemRepository.removeByCartAndProduct_Id(user.getCart(), productId);
+        CartItem item = cartItemRepository.findByProduct_IdAndCart(productId, user.getCart())
+                .orElseThrow(() -> new CartItemNotFoundException(productId,  user.getUsername()));
+        user.getCart().getCartItems().remove(item);
     }
 
     public void clearCartByUser(User user) {
-        cartItemRepository.removeByCart(user.getCart());
+        user.getCart().getCartItems().clear();
     }
 
     public void removeItemsFromCart(Cart cart, List<Product> products) {

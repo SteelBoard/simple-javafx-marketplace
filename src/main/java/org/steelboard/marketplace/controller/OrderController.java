@@ -1,5 +1,6 @@
 package org.steelboard.marketplace.controller;
 
+import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -11,15 +12,11 @@ import org.steelboard.marketplace.service.OrderService;
 
 @Controller
 @RequestMapping("/order")
+@AllArgsConstructor
 public class OrderController {
 
     private final OrderService orderService;
     private final OrderMapper orderMapper;
-
-    public OrderController(OrderService orderService, OrderMapper orderMapper) {
-        this.orderService = orderService;
-        this.orderMapper = orderMapper;
-    }
 
     // Страница просмотра заказа по ID
     @GetMapping("/{orderId}")

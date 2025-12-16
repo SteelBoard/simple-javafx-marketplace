@@ -2,22 +2,17 @@ package org.steelboard.marketplace.util;
 
 import lombok.AllArgsConstructor;
 import org.springframework.boot.CommandLineRunner;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.steelboard.marketplace.entity.Cart;
 import org.steelboard.marketplace.entity.Product;
 import org.steelboard.marketplace.entity.Role;
 import org.steelboard.marketplace.entity.User;
-import org.steelboard.marketplace.repository.CartRepository;
 import org.steelboard.marketplace.repository.ProductRepository;
 import org.steelboard.marketplace.repository.RoleRepository;
-import org.steelboard.marketplace.repository.UserRepository;
 import org.steelboard.marketplace.service.ProductService;
 import org.steelboard.marketplace.service.UserService;
 
 import java.math.BigDecimal;
-import java.util.Optional;
 import java.util.Set;
 
 @Service
