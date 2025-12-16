@@ -44,8 +44,8 @@ public class ProductController {
         return "add_product";
     }
 
-    @PostMapping("/products/new")
-    public String addProduct(@Valid @ModelAttribute AddProductDto productDto,
+    @PostMapping("/new")
+    public String addProduct(@Valid @ModelAttribute("productDto") AddProductDto productDto,
                              BindingResult bindingResult,
                              Model model) {
 
@@ -54,23 +54,26 @@ public class ProductController {
         }
 
         // Логика сохранения картинок и продукта, как раньше
-        String mainImagePath = fileStorageService.saveFile(productDto.getMainImage(), "uploads/products");
+        String mainImagePath =
+                fileStorageService.saveFile(productDto.getMainImage(), "products");
 
         List<String> additionalImagePaths = new ArrayList<>();
         if (productDto.getAdditionalImages() != null) {
             for (MultipartFile file : productDto.getAdditionalImages()) {
                 if (!file.isEmpty()) {
-                    additionalImagePaths.add(fileStorageService.saveFile(file, "uploads/products"));
+                    additionalImagePaths.add(
+                            fileStorageService.saveFile(file, "products")
+                    );
                 }
             }
         }
 
-        productService.createProduct(productDto.getName(),
+        Product product = productService.createProduct(productDto.getName(),
                 productDto.getDescription(),
                 productDto.getPrice(),
                 mainImagePath,
                 additionalImagePaths);
 
-        return "redirect:/products/new?success";
+        return "redirect:/product/" + product.getId();
     }
 }

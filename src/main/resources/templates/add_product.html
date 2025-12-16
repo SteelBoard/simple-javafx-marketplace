@@ -3,38 +3,102 @@
 <head>
     <meta charset="UTF-8">
     <title>Добавить продукт</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+
+        h1 {
+            margin-bottom: 20px;
+        }
+
+        form {
+            max-width: 600px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        label {
+            font-weight: bold;
+            margin-bottom: 5px;
+            display: block;
+        }
+
+        input[type="text"],
+        input[type="number"],
+        textarea,
+        input[type="file"] {
+            width: 100%;
+            padding: 8px;
+            box-sizing: border-box;
+        }
+
+        textarea {
+            resize: none; /* запрет растягивания */
+            height: 100px;
+            overflow-y: auto; /* появляется скролл */
+        }
+
+        input[type="file"] {
+            padding: 3px;
+        }
+
+        .error {
+            color: red;
+            font-size: 0.9em;
+        }
+
+        button {
+            padding: 10px 20px;
+            background: #333;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: #555;
+        }
+
+        .success {
+            color: green;
+        }
+    </style>
 </head>
 <body>
+
 <h1>Добавить новый продукт</h1>
 
-<form th:action="@{/products/new}" th:object="${productDto}" method="post" enctype="multipart/form-data">
+<form th:action="@{/product/new}" th:object="${productDto}" method="post" enctype="multipart/form-data">
 
     <div>
         <label for="name">Название:</label>
         <input type="text" id="name" th:field="*{name}" />
-        <p th:if="${#fields.hasErrors('name')}" th:errors="*{name}"></p>
+        <p th:if="${#fields.hasErrors('name')}" th:errors="*{name}" class="error"></p>
     </div>
 
     <div>
         <label for="description">Описание:</label>
         <textarea id="description" th:field="*{description}"></textarea>
-        <p th:if="${#fields.hasErrors('description')}" th:errors="*{description}"></p>
+        <p th:if="${#fields.hasErrors('description')}" th:errors="*{description}" class="error"></p>
     </div>
 
     <div>
         <label for="price">Цена:</label>
         <input type="number" id="price" th:field="*{price}" step="0.01" />
-        <p th:if="${#fields.hasErrors('price')}" th:errors="*{price}"></p>
+        <p th:if="${#fields.hasErrors('price')}" th:errors="*{price}" class="error"></p>
     </div>
 
     <div>
-        <label for="mainImage">Главная картинка:</label>
+        <label for="mainImage">Главная картинка (обязательная):</label>
         <input type="file" id="mainImage" th:field="*{mainImage}" />
-        <p th:if="${#fields.hasErrors('mainImage')}" th:errors="*{mainImage}"></p>
+        <p th:if="${#fields.hasErrors('mainImage')}" th:errors="*{mainImage}" class="error"></p>
     </div>
 
     <div>
-        <label for="additionalImages">Дополнительные картинки:</label>
+        <label for="additionalImages">Дополнительные картинки (необязательные):</label>
         <input type="file" id="additionalImages" th:field="*{additionalImages}" multiple />
     </div>
 
@@ -44,9 +108,8 @@
 
 </form>
 
-
-<div th:if="${param.success}">
-    <p style="color:green;">Продукт успешно добавлен!</p>
+<div th:if="${param.success}" class="success">
+    Продукт успешно добавлен!
 </div>
 
 </body>

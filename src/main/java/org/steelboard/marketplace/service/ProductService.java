@@ -33,7 +33,7 @@ public class ProductService {
     }
 
     @Transactional
-    public void createProduct(String name,
+    public Product createProduct(String name,
                               String description,
                               BigDecimal price,
                               String mainImagePath,
@@ -70,5 +70,7 @@ public class ProductService {
                 productImageRepository.save(image);
             }
         }
+
+        return product;
     }
 }

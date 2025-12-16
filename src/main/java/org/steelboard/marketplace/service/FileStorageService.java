@@ -7,29 +7,39 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Objects;
 import java.util.UUID;
 
 @Service
 public class FileStorageService {
 
-    public String saveFile(MultipartFile file, String directory) {
+    private static final Path UPLOAD_ROOT =
+            Paths.get(System.getProperty("user.dir"), "uploads");
+
+    public String saveFile(MultipartFile file, String subDir) {
+
+        if (file == null || file.isEmpty()) {
+            throw new IllegalArgumentException("Файл пустой");
+        }
+
         try {
-            String fileExtension = getFileExtension(Objects.requireNonNull(file.getOriginalFilename()));
-            String fileName = UUID.randomUUID() + "." + fileExtension;
-            Path dirPath = Paths.get(directory);
-            if (!Files.exists(dirPath)) {
-                Files.createDirectories(dirPath);
-            }
-            Path filePath = dirPath.resolve(fileName);
-            file.transferTo(filePath.toFile());
-            return filePath.toString(); // путь можно сохранить в БД
+            String extension = getExtension(file.getOriginalFilename());
+            String fileName = UUID.randomUUID() + extension;
+
+            Path targetDir = UPLOAD_ROOT.resolve(subDir);
+            Files.createDirectories(targetDir); // 💥 обязательно
+
+            Path targetFile = targetDir.resolve(fileName);
+            file.transferTo(targetFile.toFile());
+
+            // путь для браузера / БД
+            return "/uploads/" + subDir + "/" + fileName;
+
         } catch (IOException e) {
             throw new RuntimeException("Ошибка при сохранении файла", e);
         }
     }
 
-    private String getFileExtension(String filename) {
-        return filename.substring(filename.lastIndexOf(".") + 1);
+    private String getExtension(String filename) {
+        return filename.substring(filename.lastIndexOf("."));
     }
 }
