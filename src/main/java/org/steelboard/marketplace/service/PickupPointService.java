@@ -8,6 +8,8 @@ import org.steelboard.marketplace.entity.PickupPoint;
 import org.steelboard.marketplace.exception.OrderNotFoundException;
 import org.steelboard.marketplace.repository.PickupPointRepository;
 
+import java.util.List;
+
 @AllArgsConstructor
 @Service
 public class PickupPointService {
@@ -22,5 +24,9 @@ public class PickupPointService {
         PickupPoint point = pickupPointRepository.findById(id).orElseThrow(() -> new OrderNotFoundException(id));
         point.setPhone(phone);
         pickupPointRepository.save(point);
+    }
+
+    public List<PickupPoint> findAll() {
+        return pickupPointRepository.findAll();
     }
 }

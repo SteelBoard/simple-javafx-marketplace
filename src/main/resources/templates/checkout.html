@@ -1,49 +1,143 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<html lang="ru" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title>Create Order</title>
+    <title>Checkout</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background: #f9f9f9;
+            color: #333;
+        }
+
+        h1 {
+            margin-bottom: 20px;
+        }
+
+        a {
+            color: #0066cc;
+            text-decoration: none;
+        }
+
+        a:hover {
+            text-decoration: underline;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+            background: white;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        th, td {
+            border: 1px solid #ddd;
+            padding: 10px;
+            text-align: center;
+        }
+
+        th {
+            background: #f5f5f5;
+            font-weight: bold;
+        }
+
+        tr:hover {
+            background: #f0f8ff;
+        }
+
+        img {
+            max-width: 80px;
+            height: auto;
+        }
+
+        .btn {
+            padding: 8px 16px;
+            background: #333;
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-size: 14px;
+            border-radius: 4px;
+        }
+
+        .btn:hover {
+            background: #555;
+        }
+
+        #selected-total {
+            font-weight: bold;
+            color: #0066cc;
+        }
+
+        label {
+            display: block;
+            margin: 10px 0 5px;
+        }
+
+        #city-filter {
+            padding: 6px;
+            width: 200px;
+            margin-bottom: 10px;
+        }
+
+        select {
+            padding: 6px;
+            width: 100%;
+            max-width: 400px;
+            margin-bottom: 20px;
+        }
+
+        .top-links {
+            text-align: right;
+            margin-bottom: 20px;
+        }
+
+        .top-links a {
+            margin-left: 15px;
+        }
+    </style>
 </head>
 <body>
 
-<h1>Create Order</h1>
-<div style="text-align: right;">
+<h1>Checkout</h1>
+
+<div class="top-links">
     <a href="/profile">My Profile</a>
+    <a href="/cart">Back to Cart</a>
 </div>
 
 <!-- Если корзина пустая -->
 <div th:if="${#lists.isEmpty(cartItems)}">
     <p>Your cart is empty.</p>
-    <a th:href="@{/cart}">Go to cart</a>
 </div>
 
 <!-- Если корзина не пустая -->
 <div th:if="${!#lists.isEmpty(cartItems)}">
+    <form id="checkout-form" method="post" th:action="@{/checkout}">
 
-    <form id="order-form" method="post" th:action="@{/order/create}">
-        <table border="1" cellpadding="10" id="checkout-table">
+        <table>
             <thead>
             <tr>
                 <th>Select</th>
                 <th>Product</th>
                 <th>Image</th>
                 <th>Price</th>
-                <th>Quantity in Cart</th>
+                <th>Quantity</th>
                 <th>Subtotal</th>
             </tr>
             </thead>
-
             <tbody>
             <tr th:each="item : ${cartItems}">
                 <td>
-                    <input type="checkbox"
-                           class="select-product"
+                    <input type="checkbox" class="select-product"
                            th:data-id="${item.product.id}"
                            th:data-price="${item.product.price}"
                            th:data-qty="${item.quantity}">
                 </td>
                 <td th:text="${item.product.name}"></td>
-                <td><img th:src="@{${item.product.mainImageUrl}}" width="100"></td>
+                <td><img th:src="@{${item.product.mainImageUrl}}" alt="Product Image"></td>
                 <td th:text="${item.product.price}"></td>
                 <td th:text="${item.quantity}"></td>
                 <td th:text="${item.quantity * item.product.price}"></td>
@@ -53,20 +147,35 @@
 
         <h3>Selected total: <span id="selected-total">0.00</span></h3>
 
-        <!-- Сюда JS запишет массив выбранных productId -->
+        <!-- Фильтр ПВЗ по городу -->
+        <label for="city-filter">Filter Pickup Points by city:</label>
+        <input type="text" id="city-filter" placeholder="Enter city name">
+
+        <!-- Выбор ПВЗ на отдельной строке -->
+        <label for="pickup-point">Select Pickup Point:</label>
+        <select name="pickupPointId" id="pickup-point" required>
+            <option value="" disabled selected>Select pickup point</option>
+            <option th:each="pp : ${pickupPoints}"
+                    th:value="${pp.id}"
+                    th:text="${pp.address.city + ', ' + pp.address.street + ' ' + pp.address.houseNumber + (pp.address.apartmentNumber != null ? ', ' + pp.address.apartmentNumber : '') + ' - ' + pp.phone}">
+            </option>
+        </select>
+
+        <!-- Скрытое поле для выбранных продуктов -->
         <input type="hidden" name="selectedProductIds" id="selected-product-ids">
 
-        <button type="submit">Create Order</button>
+        <button type="submit" class="btn">Create Order</button>
     </form>
-
 </div>
 
 <script>
     document.addEventListener("DOMContentLoaded", () => {
-
         const checkboxes = document.querySelectorAll(".select-product");
         const totalEl = document.getElementById("selected-total");
         const hiddenSelected = document.getElementById("selected-product-ids");
+        const form = document.getElementById("checkout-form");
+        const cityFilter = document.getElementById("city-filter");
+        const pickupSelect = document.getElementById("pickup-point");
 
         function recalcTotal() {
             let sum = 0;
@@ -76,17 +185,32 @@
                 if (cb.checked) {
                     const price = parseFloat(cb.dataset.price);
                     const qty = parseInt(cb.dataset.qty);
-
                     sum += price * qty;
                     ids.push(cb.dataset.id);
                 }
             });
 
             totalEl.textContent = sum.toFixed(2);
-            hiddenSelected.value = JSON.stringify(ids);
+            hiddenSelected.value = ids.join(",");
         }
 
         checkboxes.forEach(cb => cb.addEventListener("change", recalcTotal));
+
+        form.addEventListener("submit", (e) => {
+            const selected = document.querySelectorAll(".select-product:checked");
+            if (selected.length === 0) {
+                e.preventDefault();
+                alert("Please select at least one product.");
+            }
+        });
+
+        cityFilter.addEventListener("input", () => {
+            const filter = cityFilter.value.toLowerCase();
+            Array.from(pickupSelect.options).forEach(option => {
+                if (option.value === "") return;
+                option.hidden = !option.text.toLowerCase().includes(filter);
+            });
+        });
     });
 </script>
 

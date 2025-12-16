@@ -16,13 +16,12 @@ import org.steelboard.marketplace.service.OrderService;
 public class OrderController {
 
     private final OrderService orderService;
-    private final OrderMapper orderMapper;
 
     // Страница просмотра заказа по ID
     @GetMapping("/{orderId}")
     public String getOrderPage(@PathVariable Long orderId, Model model) {
         Order order = orderService.getOrderById(orderId); // метод в сервисе, который ищет заказ по ID
-        model.addAttribute("order", orderMapper.toOrderDto(order));
+        model.addAttribute("order", order);
         return "order"; // имя Thymeleaf шаблона order.html
     }
 }

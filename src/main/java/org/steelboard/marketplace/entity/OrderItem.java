@@ -32,4 +32,11 @@ public class OrderItem {
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)
     private Date createdAt;
+
+    public OrderItem(Order order, Product product, int quantity, BigDecimal unitPrice) {
+        this.order = order;
+        this.product = product;
+        this.quantity = quantity;
+        this.unitPrice = unitPrice;
+    }
 }

@@ -1,41 +1,103 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html lang="ru" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title>Order Details</title>
-    <link rel="stylesheet" href="/css/styles.css">
+    <title>Заказ</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+
+        h1, h2 {
+            margin-bottom: 15px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+
+        th, td {
+            border: 1px solid #ccc;
+            padding: 8px;
+            text-align: center;
+        }
+
+        th {
+            background: #f5f5f5;
+        }
+
+        .summary p {
+            margin: 5px 0;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 6px 14px;
+            border: 1px solid #333;
+            background: #333;
+            color: white;
+            cursor: pointer;
+            text-decoration: none;
+        }
+
+        .btn:hover {
+            background: #555;
+        }
+
+        .links {
+            margin-bottom: 20px;
+        }
+
+        .links a {
+            margin-right: 15px;
+            text-decoration: none;
+            color: #0066cc;
+        }
+
+        .links a:hover {
+            text-decoration: underline;
+        }
+    </style>
 </head>
 <body>
-<h1>Order Summary</h1>
-<div style="text-align: right;">
-    <a href="/profile">My Profile</a>
+
+<h1>Заказ №<span th:text="${order.id}"></span></h1>
+
+<div class="links" style="text-align: right;">
+    <a href="/profile">Мой профиль</a>
 </div>
 
-<div>
-    <p><strong>Status:</strong> <span th:text="${order.orderStatus}"></span></p>
-    <p><strong>Total Amount:</strong> $<span th:text="${order.price}"></span></p>
+<div class="summary">
+    <p><strong>Статус:</strong> <span th:text="${order.status}"></span></p>
+    <p><strong>Общая сумма:</strong> <span th:text="${order.totalAmount}"></span> ₽</p>
+    <p><strong>Пункт выдачи:</strong> <span th:text="${order.pickupPoint.address.city + ', ' + order.pickupPoint.address.street + ' ' + order.pickupPoint.address.houseNumber + (order.pickupPoint.address.apartmentNumber != null ? ', ' + order.pickupPoint.address.apartmentNumber : '')}"></span></p>
+    <p><strong>Телефон пункта выдачи:</strong> <span th:text="${order.pickupPoint.phone}"></span></p>
 </div>
 
-<h2>Order Items</h2>
-<table border="1">
+<h2>Товары в заказе</h2>
+<table>
     <thead>
     <tr>
-        <th>Product</th>
-        <th>Quantity</th>
-        <th>Unit Price</th>
-        <th>Subtotal</th>
+        <th>Название</th>
+        <th>Количество</th>
+        <th>Цена за единицу</th>
+        <th>Итого</th>
     </tr>
     </thead>
     <tbody>
     <tr th:each="item : ${order.orderItems}">
-        <td th:text="${item.productName}"></td>
+        <td th:text="${item.product.name}"></td>
         <td th:text="${item.quantity}"></td>
-        <td th:text="${item.productPrice}"></td>
-        <td th:text="${item.unitPrice}"></td>
+        <td th:text="${item.product.price}"></td>
+        <td th:text="${item.quantity * item.product.price}"></td>
     </tr>
     </tbody>
 </table>
 
-<a href="/cart">Back to Cart</a>
+<a href="/profile" class="btn">← Назад к профилю</a>
+<a href="/" >На главную</a>
 </body>
 </html>
