@@ -227,6 +227,8 @@
                 .then(r => r.json())
                 .then(data => refreshCartUI(data))
                 .catch(console.error);
+
+            document.getElementById('total-price').textContent = '0.00'
         }
 
         // Делегирование событий на tbody

@@ -35,19 +35,28 @@ public class CartService {
             item = cartItemOptional.get();
             item.setQuantity(item.getQuantity() + 1);
             item.setUnitPrice(item.getProduct().getPrice().multiply(BigDecimal.valueOf(item.getQuantity())));
-            cartItemRepository.save(item);
         }
         else {
             Product itemProduct = productService.getProduct(productId);
             item = new CartItem(cart, itemProduct);
-            cartItemRepository.save(item);
+            item.setUnitPrice(item.getProduct().getPrice());
         }
+        cartItemRepository.save(item);
+        cart.getCartItems().add(item);
+        updateTotalPrice(user);
+    }
+
+    public void updateTotalPrice(User user) {
+        Cart cart = user.getCart();
+        cart.setTotalPrice(cart.getCartItems().stream().map(CartItem::getUnitPrice).reduce(BigDecimal.ZERO, BigDecimal::add));
+        cartRepository.save(cart);
     }
 
     public void addCartByUser(User user) {
         Cart cart = new Cart();
         cart.setUser(user);
         user.setCart(cart);
+        cart.setTotalPrice(BigDecimal.ZERO);
         cartRepository.save(cart);
     }
 
@@ -56,6 +65,7 @@ public class CartService {
                 .orElseThrow(() -> new CartItemNotFoundException(productId,  user.getUsername()));
         cartItem.setQuantity(quantity);
         cartItem.setUnitPrice(cartItem.getProduct().getPrice().multiply(BigDecimal.valueOf(quantity)));
+        updateTotalPrice(user);
         cartItemRepository.save(cartItem);
     }
 
@@ -63,13 +73,16 @@ public class CartService {
         CartItem item = cartItemRepository.findByProduct_IdAndCart(productId, user.getCart())
                 .orElseThrow(() -> new CartItemNotFoundException(productId,  user.getUsername()));
         user.getCart().getCartItems().remove(item);
+        updateTotalPrice(user);
     }
 
     public void clearCartByUser(User user) {
         user.getCart().getCartItems().clear();
+        updateTotalPrice(user);
     }
 
     public void removeItemsFromCart(Cart cart, List<Product> products) {
         cartItemRepository.deleteByCartAndProductIdsIn(cart.getId(), products.stream().map(Product::getId).toList());
+        updateTotalPrice(cart.getUser());
     }
 }
