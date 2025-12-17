@@ -29,4 +29,11 @@ public class PickupPointService {
     public List<PickupPoint> findAll() {
         return pickupPointRepository.findAll();
     }
+
+    public Page<PickupPoint> findAll(String search, Pageable pageable) {
+        if (search != null && !search.isBlank()) {
+            return pickupPointRepository.searchByCityOrStreetOrPhone(search.trim(), pageable);
+        }
+        return pickupPointRepository.findAll(pageable);
+    }
 }
