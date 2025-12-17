@@ -1,6 +1,8 @@
 package org.steelboard.marketplace.service;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.steelboard.marketplace.entity.*;
@@ -32,6 +34,14 @@ public class OrderService {
         return orderItemRepository.existsByOrder_User_IdAndProduct_IdAndOrder_Status(
                 userId, productId, OrderStatus.DELIVERED // или CONFIRMED, если сразу после покупки можно
         );
+    }
+
+    public Page<Order> findAll(Pageable pageable) {
+        return orderRepository.findAll(pageable);
+    }
+
+    public Page<Order> findByUsernameOrStatus(String search, Pageable pageable) {
+        return orderRepository.findBySearch(search, pageable);
     }
 
 

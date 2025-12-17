@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Админка — Заказы</title>
+
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
+        th { background: #f5f5f5; cursor: pointer; }
+        tr:hover { background: #eef; }
+        tr.clickable { cursor: pointer; }
+        .pagination { list-style: none; display: flex; gap: 5px; padding: 0; margin-top: 15px; }
+        .pagination li a { padding: 6px 10px; border: 1px solid #aaa; text-decoration: none; color: black; }
+        .pagination .active a { background: #333; color: white; }
+        .pagination .disabled a { color: #aaa; pointer-events: none; }
+        .search-box { margin-bottom: 15px; }
+        .search-box input[type="text"] { padding: 6px; width: 250px; margin-right: 10px; }
+        .btn { padding: 6px 14px; border: 1px solid #333; background: #333; color: white; cursor: pointer; }
+        .btn:hover { background: #555; }
+        .btn.reset { background: #999; border-color: #999; margin-left: 10px; }
+    </style>
+</head>
+
+<body>
+
+<h2>Заказы</h2>
+
+<div class="search-box">
+    <form th:action="@{/admin/orders}" method="get">
+        <input type="text" name="search" placeholder="Поиск по имени пользователя или статусу" th:value="${search}" />
+        <button type="submit" class="btn">Поиск</button>
+        <a th:href="@{/admin/orders}" class="btn reset">Сброс</a>
+    </form>
+</div>
+
+<table>
+    <thead>
+    <tr>
+        <!-- Исправлено построение URL: Thymeleaf сам проигнорирует search, если он null -->
+        <th th:onclick="|window.location='@{/admin/orders(sort='id', dir=${sort=='id' and dir=='asc' ? 'desc' : 'asc'}, size=${size}, search=${search})}'|">ID</th>
+
+        <th th:onclick="|window.location='@{/admin/orders(sort='user', dir=${sort=='user' and dir=='asc' ? 'desc' : 'asc'}, size=${size}, search=${search})}'|">Пользователь</th>
+
+        <th th:onclick="|window.location='@{/admin/orders(sort='status', dir=${sort=='status' and dir=='asc' ? 'desc' : 'asc'}, size=${size}, search=${search})}'|">Статус</th>
+
+        <th th:onclick="|window.location='@{/admin/orders(sort='totalAmount', dir=${sort=='totalAmount' and dir=='asc' ? 'desc' : 'asc'}, size=${size}, search=${search})}'|">Сумма</th>
+
+        <th th:onclick="|window.location='@{/admin/orders(sort='createdAt', dir=${sort=='createdAt' and dir=='asc' ? 'desc' : 'asc'}, size=${size}, search=${search})}'|">Дата создания</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    <!-- Добавлена проверка на пустоту, чтобы таблица не ломалась -->
+    <tr th:if="${ordersPage.empty}">
+        <td colspan="5" style="text-align:center;">Заказы не найдены</td>
+    </tr>
+
+    <tr th:each="order : ${ordersPage.content}" class="clickable"
+        th:onclick="|window.location='@{/admin/orders/}${order.id}'|">
+        <td th:text="${order.id}"></td>
+        <!-- Используем безопасную навигацию ?., чтобы избежать ошибки, если user удален -->
+        <td th:text="${order.user?.username}"></td>
+        <td th:text="${order.status}"></td>
+        <!-- Исправлен формат децимал: (число, мин. целых, мин. дробных) -->
+        <td th:text="${#numbers.formatDecimal(order.totalAmount, 1, 2)}"></td>
+        <td th:text="${#dates.format(order.createdAt, 'yyyy-MM-dd HH:mm')}"></td>
+    </tr>
+    </tbody>
+</table>
+
+<!-- Пагинация показывается только если есть страницы -->
+<ul class="pagination" th:if="${ordersPage.totalPages > 0}">
+    <!-- Предыдущая страница -->
+    <li th:classappend="${ordersPage.first} ? 'disabled'">
+        <a th:href="${ordersPage.first} ? '#' : @{/admin/orders(page=${ordersPage.number - 1}, size=${size}, sort=${sort}, dir=${dir}, search=${search})}">←</a>
+    </li>
+
+    <!-- Номера страниц -->
+    <li th:each="i : ${#numbers.sequence(0, ordersPage.totalPages - 1)}"
+        th:classappend="${i == ordersPage.number} ? 'active'">
+        <a th:href="@{/admin/orders(page=${i}, size=${size}, sort=${sort}, dir=${dir}, search=${search})}"
+           th:text="${i + 1}"></a>
+    </li>
+
+    <!-- Следующая страница -->
+    <li th:classappend="${ordersPage.last} ? 'disabled'">
+        <a th:href="${ordersPage.last} ? '#' : @{/admin/orders(page=${ordersPage.number + 1}, size=${size}, sort=${sort}, dir=${dir}, search=${search})}">→</a>
+    </li>
+</ul>
+
+</body>
+</html>
