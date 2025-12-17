@@ -21,4 +21,6 @@ public interface OrderRepository extends JpaRepository<Order, Integer> {
             "OR " +
             "UPPER(o.status) LIKE UPPER(CONCAT('%', :search, '%'))")
     Page<Order> findBySearch(@Param("search") String search, Pageable pageable);
+
+    List<Order> findByUser_IdOrderByCreatedAtDesc(Long userId);
 }

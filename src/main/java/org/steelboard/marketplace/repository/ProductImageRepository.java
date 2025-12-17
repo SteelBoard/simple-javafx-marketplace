@@ -7,6 +7,5 @@ import org.steelboard.marketplace.entity.ProductImage;
 import java.util.Optional;
 
 @Repository
-public interface ProductImageRepository extends JpaRepository<ProductImage, Integer> {
-    Optional<ProductImage> findById(Long id);
+public interface ProductImageRepository extends JpaRepository<ProductImage, Long> {
 }

@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+
+<!-- Параметр activeTab передается при вызове фрагмента -->
+<div th:fragment="profile-sidebar(activeTab)">
+    <div class="card sidebar-card" style="border: none; box-shadow: 0 4px 12px rgba(0,0,0,0.05); border-radius: 12px; overflow: hidden;">
+        <div class="sidebar-header" style="background: #fff; padding: 25px 20px; text-align: center; border-bottom: 1px solid #eee;">
+            <div class="avatar-placeholder" style="width: 80px; height: 80px; background: #e9ecef; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 15px; font-size: 32px; color: #6c757d;">
+                <span th:text="${#strings.substring(user.username, 0, 1).toUpperCase()}">U</span>
+            </div>
+            <h5 class="mb-1" th:text="${user.username}">Username</h5>
+            <small class="text-muted" th:text="${user.email}">user@example.com</small>
+        </div>
+
+        <div class="list-group list-group-flush py-2">
+            <a href="/profile" class="list-group-item list-group-item-action"
+               th:classappend="${activeTab == 'profile'} ? 'active'">
+                ⚙️ Настройки профиля
+            </a>
+
+            <a href="/cart" class="list-group-item list-group-item-action"
+               th:classappend="${activeTab == 'cart'} ? 'active'">
+                🛒 Корзина <span class="badge bg-secondary rounded-pill float-end" th:if="${user.cart != null and !user.cart.cartItems.isEmpty()}" th:text="${user.cart.cartItems.size()}">0</span>
+            </a>
+
+            <a href="/orders/my" class="list-group-item list-group-item-action"
+               th:classappend="${activeTab == 'orders'} ? 'active'">
+                📦 Мои заказы
+            </a>
+
+            <a href="/reviews/my" class="list-group-item list-group-item-action"
+               th:classappend="${activeTab == 'reviews'} ? 'active'">
+                ⭐ Мои отзывы
+            </a>
+
+            <!-- Показываем, если есть товары -->
+            <a href="/seller/products"
+               class="list-group-item list-group-item-action"
+               th:classappend="${activeTab == 'products'} ? 'active'">
+                💼 Мои товары
+            </a>
+
+            <form th:action="@{/logout}" method="post" class="mt-2 border-top">
+                <button type="submit" class="list-group-item list-group-item-action text-danger w-100 text-start">
+                    🚪 Выйти
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+</body>
+</html>

@@ -30,9 +30,8 @@ public class OrderService {
     // 🔥 1. Внедряем ProductService
     private final ProductService productService;
 
-    public Order getOrderById(Long id) {
-        return orderRepository.findById(id)
-                .orElseThrow(() -> new OrderNotFoundException(id));
+    public List<Order> findByUserId(Long userId) {
+        return orderRepository.findByUser_IdOrderByCreatedAtDesc(userId);
     }
 
     public boolean hasUserBoughtProduct(Long userId, Long productId) {

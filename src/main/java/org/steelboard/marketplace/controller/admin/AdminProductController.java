@@ -9,7 +9,6 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
-import org.steelboard.marketplace.dto.product.ProductEditDto;
 import org.steelboard.marketplace.entity.Product;
 import org.steelboard.marketplace.service.ProductService;
 
