@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Отзывы продукта</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 0; padding: 20px; background: #f6f6f6; }
+        h1 { margin-bottom: 20px; color: #333; }
+        .sort-container { margin-bottom: 20px; }
+        select { padding: 6px 10px; border-radius: 4px; border: 1px solid #ccc; font-size: 14px; }
+        ul.reviews-list { list-style: none; padding: 0; margin: 0; }
+        ul.reviews-list li { background: #fff; border-radius: 8px; padding: 15px 20px; margin-bottom: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        ul.reviews-list li strong { color: #333; }
+        ul.reviews-list li span { color: #ff9800; margin-left: 10px; font-weight: bold; }
+        ul.reviews-list li p { margin-top: 8px; color: #555; }
+        .pagination { margin-top: 20px; }
+        .pagination a { display: inline-block; margin-right: 8px; padding: 6px 12px; text-decoration: none; color: #333; border-radius: 4px; border: 1px solid transparent; transition: all 0.2s; }
+        .pagination a.current { background: #333; color: #fff; border-color: #333; }
+        .pagination a:hover { background: #555; color: #fff; }
+    </style>
+</head>
+<body>
+
+<h1>Отзывы продукта</h1>
+
+<!-- Сортировка -->
+<div class="sort-container">
+    <form method="get" th:action="@{'/product/' + ${productId} + '/reviews/all'}">
+        <label for="sort">Сортировать:</label>
+        <select name="sort" id="sort" onchange="this.form.submit()">
+            <option value="best" th:selected="${currentSort=='best'}">Лучшие</option>
+            <option value="worst" th:selected="${currentSort=='worst'}">Худшие</option>
+        </select>
+        <input type="hidden" name="page" value="0"/>
+    </form>
+</div>
+
+<!-- Список отзывов -->
+<ul class="reviews-list">
+    <li th:each="review : ${reviews.content}">
+        <div>
+            <strong th:text="${review.user.username}">Имя пользователя</strong>
+            <span th:text="${review.rating} + '⭐'">5⭐</span>
+        </div>
+        <p th:text="${review.comment}">Комментарий пользователя</p>
+    </li>
+</ul>
+
+<!-- Пагинация -->
+<div class="pagination">
+    <span th:each="p : ${#numbers.sequence(0, reviews.totalPages - 1)}">
+        <a th:href="@{'/product/' + ${productId} + '/reviews/all?(page=' + ${p} + ',sort=' + ${currentSort} + ')'}"
+           th:text="${p + 1}"
+           th:classappend="${p == reviews.number} ? 'current'"></a>
+    </span>
+</div>
+
+</body>
+</html>

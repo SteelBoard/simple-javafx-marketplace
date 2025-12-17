@@ -1,32 +1,206 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<html lang="ru" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
     <title th:text="${product.name}">Product</title>
-    <link rel="stylesheet" href="/css/styles.css">
+    <link rel="stylesheet">
 </head>
 <body>
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 20px;
+        background: #f6f6f6;
+    }
 
-<h1 th:text="${product.name}">Product Name</h1>
+    .header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 30px;
+    }
 
-<div style="text-align: right;">
-    <a href="/profile">My Profile</a>
-</div>
+    .profile-link {
+        text-decoration: none;
+        color: #333;
+    }
 
-<div>
-    <!-- Основная картинка -->
-    <img th:src="${product.mainImageUrl}" alt="product image" width="300"/>
-</div>
+    .product-container {
+        display: flex;
+        gap: 40px;
+        background: #fff;
+        padding: 20px;
+        border-radius: 8px;
+    }
 
-<p><strong>Description:</strong> <span th:text="${product.description}"></span></p>
-<p><strong>Price:</strong> $<span th:text="${product.price}"></span></p>
-<p><strong>Rating:</strong> <span th:text="${product.rating}"></span></p>
+    .gallery {
+        width: 420px;
+    }
 
-<!-- Добавление в корзину -->
-<a th:href="@{/cart/add/{id}(id=${product.id})}">Add to Cart</a>
+    #mainImage {
+        width: 420px;
+        height: 420px;
+        object-fit: cover;
+        border-radius: 8px;
+    }
 
-<!-- Ссылка назад к списку товаров -->
-<p><a href="/">Back to Products</a></p>
+
+    .gallery img {
+        width: 100%;
+        border-radius: 6px;
+    }
+
+    .thumbnails {
+        display: flex;
+        gap: 10px;
+        margin-top: 10px;
+    }
+
+    .thumbnails img {
+        width: 70px;
+        height: 70px;
+        object-fit: cover;
+        border: 1px solid #ddd;
+    }
+
+    .product-info {
+        width: 60%;
+    }
+
+    .price {
+        font-size: 24px;
+        font-weight: bold;
+        margin-bottom: 10px;
+    }
+
+    .rating {
+        margin-bottom: 20px;
+    }
+
+    .add-to-cart {
+        display: inline-block;
+        padding: 12px 20px;
+        background: #333;
+        color: #fff;
+        text-decoration: none;
+        border-radius: 4px;
+    }
+
+    .add-to-cart:hover {
+        background: #555;
+    }
+
+    .description, .reviews {
+        background: #fff;
+        margin-top: 30px;
+        padding: 20px;
+        border-radius: 8px;
+    }
+
+    .reviews-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .review {
+        border-top: 1px solid #eee;
+        padding: 10px 0;
+    }
+
+    .all-reviews {
+        display: inline-block;
+        margin-top: 10px;
+    }
+</style>
+
+<header class="header">
+    <h1 th:text="${product.name}">Product Name</h1>
+    <a href="/profile" class="profile-link">Мой профиль</a>
+</header>
+
+<main class="product-container">
+
+    <!-- ===== ГАЛЕРЕЯ ===== -->
+    <section class="gallery">
+        <img id="mainImage"
+             th:src="${product.mainImageUrl}"
+             alt="Product image"/>
+
+        <div class="thumbnails">
+            <img th:each="img : ${product.images}"
+                 th:src="${img.filepath}"
+                 alt="thumbnail"
+                 onclick="changeImage(this.src)">
+        </div>
+    </section>
+
+    <!-- ===== ИНФОРМАЦИЯ ===== -->
+    <section class="product-info">
+        <p class="price">$<span th:text="${product.price}"></span></p>
+
+        <p class="rating">
+            ⭐ <span th:text="${product.rating}"></span>
+        </p>
+
+        <a class="add-to-cart"
+           th:href="@{/cart/add/{id}(id=${product.id})}">
+            Добавить в корзину
+        </a>
+    </section>
+
+</main>
+
+<!-- ===== ОПИСАНИЕ ===== -->
+<section class="description">
+    <h2>Описание</h2>
+    <p th:text="${product.description}"></p>
+</section>
+
+<!-- ===== ОТЗЫВЫ ===== -->
+<section class="reviews">
+    <select id="reviewSort" th:data-product-id="${product.id}">
+        <option value="best" selected>Сначала лучшие</option>
+        <option value="worst">Сначала худшие</option>
+    </select>
+
+    <div id="reviewsContainer">
+        <!-- Тут начальные отзывы уже через Thymeleaf -->
+        <div th:each="review : ${reviews}" class="review">
+            <div>
+                <strong th:text="${review.user.username}">Имя пользователя</strong>
+                ⭐ <span th:text="${review.rating}"></span>
+            </div>
+            <p th:text="${review.comment}"></p>
+        </div>
+    </div>
+
+    <a class="all-reviews"
+       th:href="@{/product/{id}/reviews/all(id=${product.id})}">
+        Смотреть все отзывы →
+    </a>
+</section>
+
+<!-- ===== JS ===== -->
+<script>
+    function changeImage(src) {
+        document.getElementById("mainImage").src = src;
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+        const reviewSort = document.getElementById("reviewSort");
+        const reviewsContainer = document.getElementById("reviewsContainer");
+        const productId = reviewSort.dataset.productId;  // правильный ID
+
+        reviewSort.addEventListener("change", () => {
+            fetch(`/product/${productId}/reviews?sort=${reviewSort.value}`)
+                .then(res => res.text())
+                .then(html => reviewsContainer.innerHTML = html);
+        });
+    });
+
+</script>
 
 </body>
 </html>

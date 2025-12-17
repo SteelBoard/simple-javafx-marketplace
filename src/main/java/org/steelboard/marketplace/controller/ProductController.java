@@ -2,6 +2,10 @@ package org.steelboard.marketplace.controller;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -9,9 +13,11 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.steelboard.marketplace.dto.product.AddProductDto;
 import org.steelboard.marketplace.entity.Product;
+import org.steelboard.marketplace.entity.Review;
 import org.steelboard.marketplace.exception.ProductNotFoundException;
 import org.steelboard.marketplace.service.FileStorageService;
 import org.steelboard.marketplace.service.ProductService;
+import org.steelboard.marketplace.service.ReviewService;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -23,19 +29,63 @@ public class ProductController {
 
     private final ProductService productService;
     private final FileStorageService fileStorageService;
+    private final ReviewService reviewService;
 
     @GetMapping("/{id}")
-    public String getProductPage(@PathVariable Long id, Model model) {
-
+    public String productPage(
+            @PathVariable Long id,
+            @RequestParam(defaultValue = "best") String sort,
+            Model model
+    ) {
         Product product = productService.getProduct(id);
 
-        // Покупателю показываем только активный товар
-        if (!product.getActive()) {
-            throw new ProductNotFoundException(id);
-        }
+        Pageable pageable = PageRequest.of(0, 5, sort.equals("worst") ? Sort.by("rating").ascending() : Sort.by("rating").descending());
+
+        Page<Review> reviews = reviewService.findByProductId(id, pageable);
 
         model.addAttribute("product", product);
-        return "product"; // templates/product.html
+        model.addAttribute("reviews", reviews.getContent());
+
+        return "product";
+    }
+
+    @GetMapping("/{id}/reviews")
+    @ResponseBody  // Важный момент — возвращаем HTML прямо как строку
+    public String getProductReviews(
+            @PathVariable Long id,
+            @RequestParam(defaultValue = "best") String sort) {
+
+        List<Review> reviews = reviewService.findByProductId(
+                id,
+                PageRequest.of(0, 5, Sort.by(sort.equals("worst") ? Sort.Direction.ASC : Sort.Direction.DESC, "rating")
+                )).toList();
+
+        StringBuilder sb = new StringBuilder();
+        for (Review r : reviews) {
+            sb.append("<div class=\"review\">")
+                    .append("<div>")
+                    .append("<strong>").append(r.getUser().getUsername()).append("</strong>")
+                    .append(" ⭐ <span>").append(r.getRating()).append("</span>")
+                    .append("</div>")
+                    .append("<p>").append(r.getComment()).append("</p>")
+                    .append("</div>");
+        }
+
+        return sb.toString();
+    }
+
+    @GetMapping("/{id}/reviews/all")
+    public String allReviewsPage(
+            @PathVariable Long id,
+            @RequestParam(defaultValue = "0 ") int page,
+            @RequestParam(defaultValue = "best") String sort,
+            Model model) {
+
+        Page<Review> reviews = reviewService.getReviews(id, page, sort);
+        model.addAttribute("reviews", reviews);
+        model.addAttribute("productId", id);
+        model.addAttribute("currentSort", sort);
+        return "reviews";
     }
 
     @GetMapping("/new")
