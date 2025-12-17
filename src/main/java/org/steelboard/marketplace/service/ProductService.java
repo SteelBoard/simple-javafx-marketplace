@@ -8,6 +8,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.steelboard.marketplace.entity.ImageType;
 import org.steelboard.marketplace.entity.Product;
 import org.steelboard.marketplace.entity.ProductImage;
+import org.steelboard.marketplace.entity.Review;
 import org.steelboard.marketplace.exception.ProductNotFoundException;
 import org.steelboard.marketplace.repository.ProductImageRepository;
 import org.steelboard.marketplace.repository.ProductRepository;
@@ -30,6 +31,19 @@ public class ProductService {
     public Product getProduct(Long id) {
         return productRepository.findProductById(id)
                 .orElseThrow(() -> new ProductNotFoundException(id));
+    }
+
+    @Transactional
+    public void updateRating(Long productId, List<Review> reviews) {
+        Product product = getProduct(productId);
+
+        double average = reviews.stream()
+                .mapToInt(Review::getRating)
+                .average()
+                .orElse(0.0);
+
+        product.setRating(Math.round(average * 100.0) / 100.0); // округление до 1 знака
+        productRepository.save(product);
     }
 
     @Transactional

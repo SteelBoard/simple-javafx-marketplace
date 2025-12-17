@@ -6,19 +6,46 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.steelboard.marketplace.entity.Product;
 import org.steelboard.marketplace.entity.Review;
+import org.steelboard.marketplace.entity.User;
 import org.steelboard.marketplace.exception.OrderNotFoundException;
 import org.steelboard.marketplace.repository.ReviewRepository;
+
+import java.util.List;
 
 @AllArgsConstructor
 @Service
 public class ReviewService {
 
+    private final ProductService productService;
+    private final UserService userService;
     private ReviewRepository reviewRepository;
 
     public Page<Review> findAll(Pageable pageable) {
         return reviewRepository.findAll(pageable);
     }
+
+    public List<Review> findByProductId(Long productId) {
+        return reviewRepository.findByProduct_Id(productId);
+    }
+
+    @Transactional
+    public void addReview(User userDetails, Long productId, Integer rating, String comment) {
+        Product product = productService.getProduct(productId);
+        User user = userService.findById(userDetails.getId());
+
+        Review review = new Review();
+        review.setUser(user);
+        review.setProduct(product);
+        review.setRating(rating);
+        review.setComment(comment);
+
+        reviewRepository.save(review);
+        productService.updateRating(productId, findByProductId(productId));
+    }
+
 
     public void updateReview(Long id, Integer rating, String comment) {
         Review review = reviewRepository.findById(id).orElseThrow(() -> new OrderNotFoundException(id));

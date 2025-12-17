@@ -6,16 +6,19 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import org.steelboard.marketplace.dto.product.AddProductDto;
 import org.steelboard.marketplace.entity.Product;
 import org.steelboard.marketplace.entity.Review;
-import org.steelboard.marketplace.exception.ProductNotFoundException;
+import org.steelboard.marketplace.entity.User;
 import org.steelboard.marketplace.service.FileStorageService;
+import org.steelboard.marketplace.service.OrderService;
 import org.steelboard.marketplace.service.ProductService;
 import org.steelboard.marketplace.service.ReviewService;
 
@@ -30,11 +33,13 @@ public class ProductController {
     private final ProductService productService;
     private final FileStorageService fileStorageService;
     private final ReviewService reviewService;
+    private final OrderService orderService;
 
     @GetMapping("/{id}")
     public String productPage(
             @PathVariable Long id,
             @RequestParam(defaultValue = "best") String sort,
+            @RequestParam(required = false) String error,
             Model model
     ) {
         Product product = productService.getProduct(id);
@@ -88,6 +93,30 @@ public class ProductController {
         return "reviews";
     }
 
+    @PostMapping("/{id}/review")
+    public String addReview(
+            @PathVariable Long id,
+            @RequestParam(required = false) Integer rating,
+            @RequestParam(required = false) String comment,
+            @AuthenticationPrincipal User user,
+            RedirectAttributes redirectAttributes
+    ) {
+        if (rating == null || comment == null || comment.isEmpty()) {
+            redirectAttributes.addFlashAttribute("error", "Заполните все поля");
+        }
+
+        boolean bought = orderService.hasUserBoughtProduct(user.getId(), id);
+        if (!bought) {
+            redirectAttributes.addFlashAttribute("error", "Вы можете оставить отзыв только после покупки товара.");
+            return "redirect:/product/" + id;
+        }
+
+        reviewService.addReview(user, id, rating, comment);
+
+        return "redirect:/product/" + id + "?sort=best";
+    }
+
+
     @GetMapping("/new")
     public String addProduct(Model model) {
         model.addAttribute("productDto", new AddProductDto());
@@ -96,8 +125,7 @@ public class ProductController {
 
     @PostMapping("/new")
     public String addProduct(@Valid @ModelAttribute("productDto") AddProductDto productDto,
-                             BindingResult bindingResult,
-                             Model model) {
+                             BindingResult bindingResult) {
 
         if (bindingResult.hasErrors()) {
             return "add_product"; // возвращаем форму с ошибками

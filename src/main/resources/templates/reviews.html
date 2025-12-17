@@ -47,11 +47,11 @@
 </ul>
 
 <!-- Пагинация -->
-<div class="pagination">
+<div class="pagination" th:if="${reviews.content.size() > 0}">
     <span th:each="p : ${#numbers.sequence(0, reviews.totalPages - 1)}">
         <a th:href="@{'/product/' + ${productId} + '/reviews/all?(page=' + ${p} + ',sort=' + ${currentSort} + ')'}"
            th:text="${p + 1}"
-           th:classappend="${p == reviews.number} ? 'current'"></a>
+           th:classappend="${p == reviews.number} ? ' current' : ''"></a>
     </span>
 </div>
 

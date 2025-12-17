@@ -28,6 +28,13 @@ public class OrderService {
                 .orElseThrow(() -> new OrderNotFoundException(id));
     }
 
+    public boolean hasUserBoughtProduct(Long userId, Long productId) {
+        return orderItemRepository.existsByOrder_User_IdAndProduct_IdAndOrder_Status(
+                userId, productId, OrderStatus.DELIVERED // или CONFIRMED, если сразу после покупки можно
+        );
+    }
+
+
     @Transactional(readOnly = false)
     public Order createOrder(
             User user,
