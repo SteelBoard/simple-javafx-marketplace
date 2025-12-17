@@ -1,27 +1,35 @@
 package org.steelboard.marketplace.controller;
 
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor; // Лучше использовать это вместо AllArgsConstructor
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.steelboard.marketplace.entity.Order;
-import org.steelboard.marketplace.mapper.OrderMapper;
 import org.steelboard.marketplace.service.OrderService;
+
+import java.security.Principal; // <-- Важный импорт
 
 @Controller
 @RequestMapping("/order")
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class OrderController {
 
     private final OrderService orderService;
 
-    // Страница просмотра заказа по ID
     @GetMapping("/{orderId}")
-    public String getOrderPage(@PathVariable Long orderId, Model model) {
-        Order order = orderService.getOrderById(orderId); // метод в сервисе, который ищет заказ по ID
+    public String getOrderPage(@PathVariable Long orderId, Model model, Principal principal) {
+        // Если пользователь не вошел, Spring Security обычно перекинет на логин,
+        // но проверка на null не помешает
+        if (principal == null) {
+            return "redirect:/login";
+        }
+
+        // Передаем ID заказа и email текущего пользователя
+        Order order = orderService.getOrderById(orderId, principal.getName());
+
         model.addAttribute("order", order);
-        return "order"; // имя Thymeleaf шаблона order.html
+        return "order";
     }
 }

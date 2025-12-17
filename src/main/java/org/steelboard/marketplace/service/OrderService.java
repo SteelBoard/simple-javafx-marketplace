@@ -1,6 +1,7 @@
 package org.steelboard.marketplace.service;
 
 import lombok.RequiredArgsConstructor;
+import lombok.SneakyThrows;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -12,6 +13,7 @@ import org.steelboard.marketplace.repository.OrderRepository;
 import org.steelboard.marketplace.repository.PickupPointRepository;
 
 import java.math.BigDecimal;
+import java.nio.file.AccessDeniedException;
 import java.util.List;
 
 @Service
@@ -37,6 +39,21 @@ public class OrderService {
         return orderItemRepository.existsByOrder_User_IdAndProduct_IdAndOrder_Status(
                 userId, productId, OrderStatus.DELIVERED
         );
+    }
+
+    @SneakyThrows
+    public Order getOrderById(Long id, String currentUsername) {
+        Order order = orderRepository.findById(id)
+                .orElseThrow(() -> new OrderNotFoundException(id));
+
+        // 🔥 ПРОВЕРКА: "Свой-Чужой"
+        // Сравниваем email владельца заказа с тем, кто зашел
+        // (Предполагаю, что логин у тебя идет по email. Если нет - используй .getUsername())
+        if (!order.getUser().getUsername().equals(currentUsername)) {
+            throw new AccessDeniedException("Вы не можете просматривать чужие заказы");
+        }
+
+        return order;
     }
 
     public Page<Order> findAll(Pageable pageable) {
