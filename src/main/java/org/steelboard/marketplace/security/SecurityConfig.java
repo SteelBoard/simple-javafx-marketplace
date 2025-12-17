@@ -27,7 +27,7 @@ public class SecurityConfig {
                         .ignoringRequestMatchers("/api/**", "/admin/**")
                 )
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/", "/login", "/register", "/css/**").permitAll()
+                        .requestMatchers("/", "/login", "/register", "/css/**", "/uploads/**").permitAll()
                         .requestMatchers("/api/cart/**").authenticated()
                         .requestMatchers("/admin/**").hasRole("ADMIN")
                         .anyRequest().authenticated()

@@ -25,6 +25,9 @@ public class OrderService {
     private final PickupPointRepository pickupPointRepository;
     private final PaymentService paymentService;
 
+    // 🔥 1. Внедряем ProductService
+    private final ProductService productService;
+
     public Order getOrderById(Long id) {
         return orderRepository.findById(id)
                 .orElseThrow(() -> new OrderNotFoundException(id));
@@ -32,7 +35,7 @@ public class OrderService {
 
     public boolean hasUserBoughtProduct(Long userId, Long productId) {
         return orderItemRepository.existsByOrder_User_IdAndProduct_IdAndOrder_Status(
-                userId, productId, OrderStatus.DELIVERED // или CONFIRMED, если сразу после покупки можно
+                userId, productId, OrderStatus.DELIVERED
         );
     }
 
@@ -70,10 +73,10 @@ public class OrderService {
                 .map(CartItem::getUnitPrice)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
-        // ==== ОПЛАТА (ДО СОЗДАНИЯ ЗАКАЗА) ====
+        // ==== ОПЛАТА ====
         paymentService.pay(total);
 
-        // ==== СОЗДАЁМ ЗАКАЗ ТОЛЬКО ПОСЛЕ УСПЕХА ====
+        // ==== СОЗДАНИЕ ЗАКАЗА ====
         Order order = new Order();
         order.setUser(user);
         order.setPickupPoint(pickupPoint);
@@ -91,6 +94,13 @@ public class OrderService {
             oi.setUnitPrice(ci.getUnitPrice());
 
             orderItemRepository.save(oi);
+
+            // 🔥 2. Увеличиваем счетчик продаж
+            // Берем ID товара и кол-во из корзины
+            productService.incrementProductSales(
+                    ci.getProduct().getId(),
+                    ci.getQuantity()
+            );
         }
 
         cartService.removeItemsFromCart(

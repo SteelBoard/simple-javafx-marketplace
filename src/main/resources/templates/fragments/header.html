@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<body>
+
+<!-- Название фрагмента: 'navbar' -->
+<header th:fragment="navbar">
+    <style>
+        /* Сброс отступов для body, если еще не сделан */
+        body { margin: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+
+        /* Основной контейнер шапки */
+        .marketplace-header {
+            background-color: #2c3e50; /* Темно-синий цвет */
+            color: #ecf0f1;
+            padding: 0 20px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        /* Левая часть: Лого */
+        .header-left { display: flex; align-items: center; gap: 20px; }
+        .brand-logo {
+            font-size: 22px;
+            font-weight: bold;
+            color: #fff;
+            text-decoration: none;
+            letter-spacing: 1px;
+        }
+        .brand-logo:hover { color: #3498db; }
+
+        /* Центральная часть: Поиск */
+        .header-center { flex-grow: 1; max-width: 600px; margin: 0 20px; }
+        .search-form { display: flex; width: 100%; }
+        .search-input {
+            width: 100%;
+            padding: 8px 12px;
+            border: none;
+            border-radius: 4px 0 0 4px;
+            outline: none;
+        }
+        .search-btn {
+            padding: 8px 16px;
+            border: none;
+            background-color: #3498db;
+            color: white;
+            cursor: pointer;
+            border-radius: 0 4px 4px 0;
+            transition: background 0.2s;
+        }
+        .search-btn:hover { background-color: #2980b9; }
+
+        /* Правая часть: Навигация */
+        .header-right { display: flex; align-items: center; gap: 15px; }
+        .nav-link {
+            color: #bdc3c7;
+            text-decoration: none;
+            font-size: 15px;
+            transition: color 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .nav-link:hover { color: white; }
+        .nav-link.active { color: white; font-weight: bold; }
+
+        /* Кнопка админки */
+        .admin-link { color: #e74c3c !important; font-weight: bold; }
+        .admin-link:hover { color: #ff6b6b !important; }
+
+        /* Корзина с бейджем */
+        .cart-wrapper { position: relative; }
+        .cart-badge {
+            background-color: #e74c3c;
+            color: white;
+            font-size: 11px;
+            font-weight: bold;
+            padding: 2px 6px;
+            border-radius: 10px;
+            position: absolute;
+            top: -8px;
+            right: -8px;
+        }
+
+        /* Кнопка выхода */
+        .logout-btn {
+            background: none;
+            border: 1px solid #7f8c8d;
+            color: #bdc3c7;
+            padding: 5px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            margin-left: 10px;
+        }
+        .logout-btn:hover { border-color: white; color: white; }
+
+        /* Мобильная адаптивность (минимальная) */
+        @media (max-width: 768px) {
+            .header-center { display: none; } /* Скрываем поиск на мобильных для простоты */
+            .brand-logo { font-size: 18px; }
+        }
+    </style>
+
+    <div class="marketplace-header">
+
+        <!-- 1. Логотип -->
+        <div class="header-left">
+            <a th:href="@{/}" class="brand-logo">STEELBOARD</a>
+        </div>
+
+        <!-- 2. Поиск (форма отправляет GET на главную, нужно будет доработать контроллер для приема ?search=...) -->
+        <div class="header-center">
+            <form th:action="@{/}" method="get" class="search-form">
+                <!-- Сохраняем параметры сортировки, если они были -->
+                <input type="hidden" name="sortField" th:value="${sortField}">
+                <input type="hidden" name="sortOrder" th:value="${sortOrder}">
+
+                <input type="text" name="search" class="search-input" placeholder="Поиск товаров..." th:value="${param.search}">
+                <button type="submit" class="search-btn">🔍</button>
+            </form>
+        </div>
+
+        <!-- 3. Меню -->
+        <div class="header-right">
+
+            <!-- Ссылка на Админку (видна только ADMIN) -->
+            <a sec:authorize="hasRole('ADMIN')" th:href="@{/admin/orders}" class="nav-link admin-link">
+                ⚙ Админка
+            </a>
+
+            <!-- Корзина (доступна всем, но логика показа бейджа зависит от контроллера) -->
+            <a th:href="@{/cart}" class="nav-link cart-wrapper">
+                🛒 Корзина
+            </a>
+
+            <!-- Блок для НЕ авторизованных (Гости) -->
+            <div sec:authorize="isAnonymous()" style="display:flex; gap:15px;">
+                <a th:href="@{/login}" class="nav-link">Войти</a>
+                <a th:href="@{/register}" class="nav-link">Регистрация</a>
+            </div>
+
+            <!-- Блок для АВТОРИЗОВАННЫХ -->
+            <div sec:authorize="isAuthenticated()" style="display:flex; align-items:center;">
+                <!-- Профиль -->
+                <a th:href="@{/profile}" class="nav-link">
+                    👤 <span sec:authentication="name">Username</span>
+                </a>
+
+                <!-- Кнопка Выхода (обязательно через POST форму из-за CSRF защиты, если она включена) -->
+                <form th:action="@{/logout}" method="post" style="margin:0;">
+                    <button type="submit" class="logout-btn">Выйти</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</header>
+
+</body>
+</html>

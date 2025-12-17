@@ -27,6 +27,11 @@ public class ProductService {
         return productRepository.findAll(pageable);
     }
 
+    @Transactional
+    public void incrementProductSales(Long productId, int quantity) {
+        productRepository.incrementSales(productId, quantity);
+    }
+
     public Product getProduct(Long id) {
         return productRepository.findProductById(id)
                 .orElseThrow(() -> new ProductNotFoundException(id));

@@ -21,6 +21,7 @@ import org.steelboard.marketplace.mapper.UserMapper;
 import org.steelboard.marketplace.repository.RoleRepository;
 import org.steelboard.marketplace.repository.UserRepository;
 
+import java.util.Optional;
 import java.util.Set;
 
 @AllArgsConstructor
@@ -39,8 +40,8 @@ public class UserService implements UserDetailsService {
         return userRepository.findByUsername(username).orElseThrow(() -> new UsernameNotFoundException(username));
     }
 
-    public User findByUsername(String username) {
-        return userRepository.findByUsername(username).orElseThrow(() -> new UsernameNotFoundException(username));
+    public Optional<User> findByUsername(String username) {
+        return userRepository.findByUsername(username);
     }
 
     public boolean usernameExists(String username) {

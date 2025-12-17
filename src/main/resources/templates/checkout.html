@@ -2,183 +2,113 @@
 <html lang="ru" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title>Checkout</title>
+    <title>Оформление заказа</title>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 20px;
-            background: #f9f9f9;
-            color: #333;
-        }
-
-        h1 {
-            margin-bottom: 20px;
-        }
-
-        a {
-            color: #0066cc;
-            text-decoration: none;
-        }
-
-        a:hover {
-            text-decoration: underline;
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-bottom: 20px;
-            background: white;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-        }
-
-        th, td {
-            border: 1px solid #ddd;
-            padding: 10px;
-            text-align: center;
-        }
-
-        th {
-            background: #f5f5f5;
-            font-weight: bold;
-        }
-
-        tr:hover {
-            background: #f0f8ff;
-        }
-
-        img {
-            max-width: 80px;
-            height: auto;
-        }
-
-        .btn {
-            padding: 8px 16px;
-            background: #333;
-            color: white;
-            border: none;
-            cursor: pointer;
-            font-size: 14px;
-            border-radius: 4px;
-        }
-
-        .btn:hover {
-            background: #555;
-        }
-
-        #selected-total {
-            font-weight: bold;
-            color: #0066cc;
-        }
-
-        label {
-            display: block;
-            margin: 10px 0 5px;
-        }
-
-        #city-filter {
-            padding: 6px;
-            width: 200px;
-            margin-bottom: 10px;
-        }
-
-        select {
-            padding: 6px;
-            width: 100%;
-            max-width: 400px;
-            margin-bottom: 20px;
-        }
-
-        .top-links {
-            text-align: right;
-            margin-bottom: 20px;
-        }
-
-        .top-links a {
-            margin-left: 15px;
-        }
+        body { font-family: 'Segoe UI', sans-serif; background-color: #f4f6f8; margin: 0; }
+        .container { max-width: 900px; margin: 30px auto; padding: 0 20px; }
+        .checkout-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 20px; }
+        .card { background: white; padding: 25px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); margin-bottom: 20px; }
+        h2 { margin-top: 0; font-size: 20px; color: #333; margin-bottom: 15px; border-bottom: 1px solid #eee; padding-bottom: 10px; }
+        .item-row { display: flex; align-items: center; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #f9f9f9; }
+        .item-info { display: flex; align-items: center; gap: 10px; }
+        .item-img { width: 40px; height: 40px; border-radius: 4px; object-fit: cover; }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; font-weight: 600; font-size: 14px; }
+        select, input[type="text"] { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; box-sizing: border-box; }
+        .summary-row { display: flex; justify-content: space-between; margin-bottom: 10px; font-size: 14px; color: #555; }
+        .total-row { display: flex; justify-content: space-between; margin-top: 15px; font-size: 18px; font-weight: bold; color: #333; padding-top: 15px; border-top: 1px solid #eee; }
+        .btn-confirm { background-color: #27ae60; color: white; width: 100%; padding: 12px; border: none; border-radius: 6px; font-size: 16px; font-weight: bold; cursor: pointer; margin-top: 10px; }
+        .checkbox-wrapper { display: flex; align-items: center; gap: 10px; }
+        input[type="checkbox"] { width: 18px; height: 18px; cursor: pointer; }
     </style>
 </head>
 <body>
 
-<h1>Checkout</h1>
+<div th:replace="~{fragments/header :: navbar}"></div>
 
-<div class="top-links">
-    <a href="/profile">My Profile</a>
-    <a href="/cart">Back to Cart</a>
-</div>
+<div class="container">
+    <h1>Оформление заказа</h1>
 
-<!-- Если корзина пустая -->
-<div th:if="${#lists.isEmpty(cartItems)}">
-    <p>Your cart is empty.</p>
-</div>
+    <div th:if="${#lists.isEmpty(cartItems)}">
+        <p>Корзина пуста. <a th:href="@{/}">В каталог</a></p>
+    </div>
 
-<!-- Если корзина не пустая -->
-<div th:if="${!#lists.isEmpty(cartItems)}">
-    <form id="checkout-form" method="post" th:action="@{/checkout}">
+    <form th:if="${!#lists.isEmpty(cartItems)}" id="checkout-form" method="post" th:action="@{/checkout}">
+        <div class="checkout-grid">
 
-        <table>
-            <thead>
-            <tr>
-                <th>Select</th>
-                <th>Product</th>
-                <th>Image</th>
-                <th>Price</th>
-                <th>Quantity</th>
-                <th>Subtotal</th>
-            </tr>
-            </thead>
-            <tbody>
-            <tr th:each="item : ${cartItems}">
-                <td>
-                    <input type="checkbox" class="select-product"
-                           th:data-id="${item.product.id}"
-                           th:data-price="${item.product.price}"
-                           th:data-qty="${item.quantity}">
-                </td>
-                <td th:text="${item.product.name}"></td>
-                <td><img th:src="@{${item.product.mainImageUrl}}" alt="Product Image"></td>
-                <td th:text="${item.product.price}"></td>
-                <td th:text="${item.quantity}"></td>
-                <td th:text="${item.quantity * item.product.price}"></td>
-            </tr>
-            </tbody>
-        </table>
+            <div class="card">
+                <h2>1. Выберите товары для заказа</h2>
+                <div th:each="item : ${cartItems}" class="item-row">
+                    <div class="checkbox-wrapper">
+                        <input type="checkbox" class="select-product" checked
+                               th:data-id="${item.product.id}"
+                               th:data-price="${item.product.price}"
+                               th:data-qty="${item.quantity}">
+                        <div class="item-info">
+                            <img th:src="@{${item.product.mainImageUrl}}" class="item-img">
+                            <div>
+                                <div th:text="${item.product.name}" style="font-weight: 500;">Name</div>
+                                <div style="font-size: 12px; color: #777;" th:text="${item.quantity} + ' шт. x ' + ${item.product.price} + ' ₽'"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- РУБЛИ -->
+                    <div th:text="${item.quantity * item.product.price} + ' ₽'" style="font-weight: 600;">000 ₽</div>
+                </div>
+            </div>
 
-        <h3>Selected total: <span id="selected-total">0.00</span></h3>
+            <div>
+                <div class="card">
+                    <h2>2. Доставка (ПВЗ)</h2>
+                    <div class="form-group">
+                        <label>Фильтр по городу</label>
+                        <input type="text" id="city-filter" placeholder="Начните вводить город...">
+                    </div>
+                    <div class="form-group">
+                        <label>Выберите пункт выдачи</label>
+                        <select name="pickupPointId" id="pickup-point" required size="5" style="height: 120px;">
+                            <option value="" disabled selected>-- Выберите из списка --</option>
+                            <option th:each="pp : ${pickupPoints}" th:value="${pp.id}" th:text="${pp.address.city + ', ' + pp.address.street + ' ' + pp.address.houseNumber}"></option>
+                        </select>
+                    </div>
+                </div>
 
-        <!-- Фильтр ПВЗ по городу -->
-        <label for="city-filter">Filter Pickup Points by city:</label>
-        <input type="text" id="city-filter" placeholder="Enter city name">
+                <div class="card">
+                    <h2>Итого</h2>
+                    <div class="summary-row">
+                        <span>Товары (<span id="count-label">0</span>)</span>
+                        <span id="subtotal-label">0.00 ₽</span>
+                    </div>
+                    <div class="summary-row">
+                        <span>Доставка</span>
+                        <span>Бесплатно</span>
+                    </div>
+                    <div class="total-row">
+                        <span>К оплате:</span>
+                        <span id="total-label">0.00 ₽</span>
+                    </div>
 
-        <!-- Выбор ПВЗ на отдельной строке -->
-        <label for="pickup-point">Select Pickup Point:</label>
-        <select name="pickupPointId" id="pickup-point" required>
-            <option value="" disabled selected>Select pickup point</option>
-            <option th:each="pp : ${pickupPoints}"
-                    th:value="${pp.id}"
-                    th:text="${pp.address.city + ', ' + pp.address.street + ' ' + pp.address.houseNumber + (pp.address.apartmentNumber != null ? ', ' + pp.address.apartmentNumber : '') + ' - ' + pp.phone}">
-            </option>
-        </select>
-
-        <!-- Скрытое поле для выбранных продуктов -->
-        <input type="hidden" name="selectedProductIds" id="selected-product-ids">
-
-        <button type="submit" class="btn">Create Order</button>
+                    <input type="hidden" name="selectedProductIds" id="selected-product-ids">
+                    <button type="submit" class="btn-confirm">Подтвердить заказ</button>
+                </div>
+            </div>
+        </div>
     </form>
 </div>
 
 <script>
     document.addEventListener("DOMContentLoaded", () => {
         const checkboxes = document.querySelectorAll(".select-product");
-        const totalEl = document.getElementById("selected-total");
-        const hiddenSelected = document.getElementById("selected-product-ids");
-        const form = document.getElementById("checkout-form");
+        const totalLabel = document.getElementById("total-label");
+        const subtotalLabel = document.getElementById("subtotal-label");
+        const countLabel = document.getElementById("count-label");
+        const hiddenInput = document.getElementById("selected-product-ids");
         const cityFilter = document.getElementById("city-filter");
         const pickupSelect = document.getElementById("pickup-point");
 
-        function recalcTotal() {
+        function recalc() {
             let sum = 0;
+            let count = 0;
             let ids = [];
 
             checkboxes.forEach(cb => {
@@ -186,30 +116,35 @@
                     const price = parseFloat(cb.dataset.price);
                     const qty = parseInt(cb.dataset.qty);
                     sum += price * qty;
+                    count += qty;
                     ids.push(cb.dataset.id);
                 }
             });
 
-            totalEl.textContent = sum.toFixed(2);
-            hiddenSelected.value = ids.join(",");
+            // ИСПРАВЛЕНО: Добавлен символ рубля
+            const formattedSum = sum.toFixed(2) + ' ₽';
+            totalLabel.textContent = formattedSum;
+            subtotalLabel.textContent = formattedSum;
+            countLabel.textContent = count;
+            hiddenInput.value = ids.join(",");
         }
 
-        checkboxes.forEach(cb => cb.addEventListener("change", recalcTotal));
+        checkboxes.forEach(cb => cb.addEventListener("change", recalc));
+        recalc();
 
-        form.addEventListener("submit", (e) => {
-            const selected = document.querySelectorAll(".select-product:checked");
-            if (selected.length === 0) {
-                e.preventDefault();
-                alert("Please select at least one product.");
+        cityFilter.addEventListener("input", () => {
+            const val = cityFilter.value.toLowerCase();
+            Array.from(pickupSelect.options).forEach(opt => {
+                if(opt.disabled) return;
+                opt.style.display = opt.text.toLowerCase().includes(val) ? 'block' : 'none';
+            });
+            if(pickupSelect.selectedOptions[0] && pickupSelect.selectedOptions[0].style.display === 'none') {
+                pickupSelect.value = "";
             }
         });
 
-        cityFilter.addEventListener("input", () => {
-            const filter = cityFilter.value.toLowerCase();
-            Array.from(pickupSelect.options).forEach(option => {
-                if (option.value === "") return;
-                option.hidden = !option.text.toLowerCase().includes(filter);
-            });
+        document.getElementById('checkout-form').addEventListener('submit', (e) => {
+            if(!hiddenInput.value) { e.preventDefault(); alert('Выберите хотя бы один товар!'); }
         });
     });
 </script>

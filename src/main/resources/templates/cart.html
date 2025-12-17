@@ -1,155 +1,110 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<html lang="ru" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title>Your Cart</title>
+    <title>Корзина — SteelBoard</title>
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; background-color: #f4f6f8; margin: 0; }
+        .container { max-width: 1100px; margin: 30px auto; padding: 0 20px; }
+        h1 { margin-top: 0; color: #333; }
+        .top-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .link-back { text-decoration: none; color: #555; display: flex; align-items: center; gap: 5px; }
+        .cart-card { background: white; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); overflow: hidden; }
+        table { width: 100%; border-collapse: collapse; }
+        th { background: #f9f9f9; text-align: left; padding: 15px; font-weight: 600; color: #555; border-bottom: 1px solid #eee; }
+        td { padding: 15px; vertical-align: middle; border-bottom: 1px solid #eee; }
+        .product-col { display: flex; align-items: center; gap: 15px; }
+        .product-img { width: 60px; height: 60px; object-fit: cover; border-radius: 4px; border: 1px solid #eee; }
+        .product-name { font-weight: 500; color: #333; }
+        .qty-control { display: flex; align-items: center; border: 1px solid #ddd; border-radius: 4px; width: fit-content; }
+        .qty-btn { background: white; border: none; width: 30px; height: 30px; cursor: pointer; font-size: 16px; color: #555; }
+        .qty-input { width: 40px; text-align: center; border: none; border-left: 1px solid #ddd; border-right: 1px solid #ddd; height: 30px; outline: none; }
+        .price-text { font-weight: 600; color: #333; }
+        .remove-btn { color: #e74c3c; background: none; border: none; cursor: pointer; font-size: 14px; }
+        .cart-footer { padding: 20px; background: #fdfdfd; display: flex; justify-content: space-between; align-items: center; border-top: 1px solid #eee; }
+        .total-price { font-size: 20px; font-weight: bold; }
+        .btn-checkout { background-color: #27ae60; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; font-weight: 600; }
+        .btn-clear { background-color: #e74c3c; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; }
+        .empty-state { text-align: center; padding: 50px; display: none; }
+        .empty-icon { font-size: 50px; color: #ddd; margin-bottom: 20px; }
+    </style>
 </head>
 <body>
-<style>
-    body {
-        font-family: Arial, sans-serif;
-        margin: 20px;
-        background: #f9f9f9;
-    }
 
-    h1 {
-        color: #333;
-    }
+<div th:replace="~{fragments/header :: navbar}"></div>
 
-    table {
-        width: 100%;
-        border-collapse: collapse;
-        background: white;
-        margin-bottom: 15px;
-    }
+<div class="container">
+    <div class="top-bar">
+        <h1>Ваша корзина</h1>
+        <a th:href="@{/}" class="link-back">← Продолжить покупки</a>
+    </div>
 
-    th, td {
-        border: 1px solid #ccc;
-        padding: 8px;
-        text-align: left;
-    }
+    <div id="empty-cart" class="empty-state" th:style="${#lists.isEmpty(cartItems)} ? 'display:block;' : ''">
+        <div class="empty-icon">🛒</div>
+        <h2>Корзина пуста</h2>
+        <a th:href="@{/}" class="btn-checkout" style="background:#3498db;">Перейти в каталог</a>
+    </div>
 
-    th {
-        background: #f0f0f0;
-    }
+    <div id="cart-content" class="cart-card" th:if="${!#lists.isEmpty(cartItems)}">
+        <table id="cart-table">
+            <thead>
+            <tr>
+                <th style="width: 50%;">Товар</th>
+                <th style="width: 15%;">Цена</th>
+                <th style="width: 15%;">Количество</th>
+                <th style="width: 15%;">Сумма</th>
+                <th style="width: 5%;"></th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="item : ${cartItems}" th:id="'row-' + ${item.product.id}">
+                <td>
+                    <div class="product-col">
+                        <img th:src="@{${item.product.mainImageUrl}}" class="product-img" alt="img">
+                        <span th:text="${item.product.name}" class="product-name">Product</span>
+                    </div>
+                </td>
+                <!-- РУБЛИ -->
+                <td th:text="${item.product.price} + ' ₽'">0 ₽</td>
+                <td>
+                    <div class="qty-control">
+                        <button class="qty-btn decrease" th:data-id="${item.product.id}">-</button>
+                        <input type="text" class="qty-input" th:value="${item.quantity}" readonly>
+                        <button class="qty-btn increase" th:data-id="${item.product.id}">+</button>
+                    </div>
+                </td>
+                <!-- РУБЛИ -->
+                <td class="price-text" th:text="${item.quantity * item.product.price} + ' ₽'">0 ₽</td>
+                <td><button class="remove-btn remove" th:data-id="${item.product.id}">✕</button></td>
+            </tr>
+            </tbody>
+        </table>
 
-    tr:hover {
-        background: #eef;
-    }
-
-    button {
-        padding: 4px 8px;
-        border: 1px solid #888;
-        background: #fff;
-        cursor: pointer;
-    }
-
-    button:hover {
-        background: #ddd;
-    }
-
-    #clear {
-        background: #f44336;
-        color: white;
-        border: none;
-        padding: 6px 12px;
-    }
-
-    #clear:hover {
-        background: #d32f2f;
-    }
-
-    a {
-        text-decoration: none;
-        color: #333;
-    }
-
-    a:hover {
-        color: #007bff;
-    }
-
-    #empty-cart {
-        margin-top: 20px;
-        font-size: 18px;
-        color: #666;
-    }
-
-    .toolbar {
-        display: flex;
-        justify-content: space-between;
-        margin-bottom: 10px;
-    }
-</style>
-
-<h1>Your Shopping Cart</h1>
-<div style="text-align: right;">
-    <a href="/profile">My Profile</a>
+        <div class="cart-footer">
+            <button id="clear-btn" class="btn-clear">Очистить корзину</button>
+            <div style="text-align: right;">
+                <!-- РУБЛИ -->
+                <div style="margin-bottom: 10px;">Итого: <span id="total-price" class="total-price" th:text="${totalPrice} + ' ₽'">0.00 ₽</span></div>
+                <a th:href="@{/checkout}" class="btn-checkout">Оформить заказ</a>
+            </div>
+        </div>
+    </div>
 </div>
-
-<!-- Можно оставить этот блок, он не обязательный, JS создаст div, если пусто -->
-<div id="empty-cart" th:style="${#lists.isEmpty(cartItems)} ? 'display:block;' : 'display:none;'">
-    <p>Your cart is empty.</p>
-</div>
-
-
-<div th:if="${!#lists.isEmpty(cartItems)}">
-    <table border="1" cellpadding="10" id="cart-table">
-        <thead>
-        <tr>
-            <th>Product</th>
-            <th>Image</th>
-            <th>Price</th>
-            <th>Quantity</th>
-            <th>Subtotal</th>
-            <th>Action</th>
-        </tr>
-        </thead>
-        <tbody>
-        <tr th:each="item : ${cartItems}" th:id="'row-' + ${item.product.id}">
-            <td th:text="${item.product.name}"></td>
-            <td><img th:src="@{${item.product.mainImageUrl}}" alt="product image" width="100"/></td>
-            <td th:text="${item.product.price}"></td>
-            <td>
-                <button class="decrease" th:data-id="${item.product.id}">-</button>
-                <input type="text" th:value="${item.quantity}" size="2" readonly/>
-                <button class="increase" th:data-id="${item.product.id}">+</button>
-            </td>
-            <td th:text="${item.quantity * item.product.price}"></td>
-            <td><button class="remove" th:data-id="${item.product.id}">Remove</button></td>
-        </tr>
-        </tbody>
-    </table>
-
-    <h3>Total: <span id="total-price" th:text="${totalPrice}"></span></h3>
-
-    <a th:href="@{/checkout}">Checkout</a> |
-    <button id="clear" style="margin-left:10px;">Clear cart</button>
-
-</div>
-
-<a th:href="@{/}">Continue shopping</a>
 
 <script>
     document.addEventListener('DOMContentLoaded', () => {
-
         const table = document.getElementById('cart-table');
         const tbody = table ? table.querySelector('tbody') : null;
+        const emptyDiv = document.getElementById('empty-cart');
+        const cartContent = document.getElementById('cart-content');
 
         function refreshCartUI(data) {
-            const table = document.getElementById('cart-table');
-            const tbody = table.querySelector('tbody');
-            const emptyDiv = document.getElementById('empty-cart');
-
             if (!data.cartItems || data.cartItems.length === 0) {
-                table.style.display = 'none';
+                if(cartContent) cartContent.style.display = 'none';
                 emptyDiv.style.display = 'block';
                 return;
             }
-            emptyDiv.style.display = 'none';
-            table.style.display = 'table';
 
-
-            // Обновляем существующие строки и добавляем новые
             const existingRows = Array.from(tbody.querySelectorAll('tr')).reduce((map, row) => {
                 map[row.id] = row;
                 return map;
@@ -160,98 +115,43 @@
                 let row = existingRows[rowId];
 
                 if (row) {
-                    // Обновляем только количество и subtotal
-                    row.querySelector('input').value = item.quantity;
-                    row.querySelector('td:nth-child(5)').textContent = (item.quantity * item.price).toFixed(2);
+                    row.querySelector('.qty-input').value = item.quantity;
+                    // ИСПРАВЛЕНО: Добавлен символ рубля в JS
+                    row.querySelector('td:nth-child(4)').textContent = (item.quantity * item.price).toFixed(2) + ' ₽';
                     delete existingRows[rowId];
-                } else {
-                    // Добавляем новую строку
-                    row = document.createElement('tr');
-                    row.id = rowId;
-                    row.innerHTML = `
-                <td>${item.productName}</td>
-                <td><img src="${item.mainImageUrl}" width="100" alt="product image"></td>
-                <td>${item.price.toFixed(2)}</td>
-                <td>
-                    <button class="decrease" data-id="${item.productId}">-</button>
-                    <input type="text" value="${item.quantity}" size="2" readonly>
-                    <button class="increase" data-id="${item.productId}">+</button>
-                </td>
-                <td>${(item.price * item.quantity).toFixed(2)}</td>
-                <td><button class="remove" data-id="${item.productId}">Remove</button></td>
-            `;
-                    tbody.appendChild(row);
                 }
             });
 
-            // Удаляем строки, которых больше нет
             Object.values(existingRows).forEach(row => row.remove());
 
-            // Обновляем total
-            document.getElementById('total-price').textContent = (data.totalPrice ?? 0).toFixed(2);
-
+            // ИСПРАВЛЕНО: Добавлен символ рубля в JS
+            document.getElementById('total-price').textContent = (data.totalPrice ?? 0).toFixed(2) + ' ₽';
         }
 
-
-
-        function updateCart(productId, quantity) {
-            fetch('/api/cart/update', {
-                method: 'POST',
-                credentials: 'same-origin',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({ productId, quantity })
-            })
-                .then(r => r.json())
-                .then(data => refreshCartUI(data))
-                .catch(console.error);
+        function apiCall(url, body) {
+            return fetch(url, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(body) }).then(r => r.json());
         }
 
-        function removeFromCart(productId) {
-            fetch('/api/cart/remove', {
-                method: 'POST',
-                credentials: 'same-origin',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({ productId })
-            })
-                .then(r => r.json())
-                .then(data => refreshCartUI(data))
-                .catch(console.error);
-        }
-
-        function clearCart() {
-            fetch('/api/cart/clear', {
-                method: 'POST',
-                credentials: 'same-origin',
-                headers: {'Content-Type': 'application/json'}
-            })
-                .then(r => r.json())
-                .then(data => refreshCartUI(data))
-                .catch(console.error);
-
-            document.getElementById('total-price').textContent = '0.00'
-        }
-
-        // Делегирование событий на tbody
         if (tbody) {
             tbody.addEventListener('click', (e) => {
                 const target = e.target;
+                const row = target.closest('tr');
+                if(!row) return;
+                const input = row.querySelector('.qty-input');
+                const id = target.dataset.id;
+
                 if (target.classList.contains('increase')) {
-                    const row = target.closest('tr');
-                    const input = row.querySelector('input');
-                    updateCart(target.dataset.id, parseInt(input.value) + 1);
+                    apiCall('/api/cart/update', {productId: id, quantity: parseInt(input.value) + 1}).then(refreshCartUI);
                 } else if (target.classList.contains('decrease')) {
-                    const row = target.closest('tr');
-                    const input = row.querySelector('input');
-                    updateCart(target.dataset.id, Math.max(1, parseInt(input.value) - 1));
+                    apiCall('/api/cart/update', {productId: id, quantity: Math.max(1, parseInt(input.value) - 1)}).then(refreshCartUI);
                 } else if (target.classList.contains('remove')) {
-                    removeFromCart(target.dataset.id);
+                    apiCall('/api/cart/remove', {productId: id}).then(refreshCartUI);
                 }
             });
         }
-
-        const clearBtn = document.getElementById('clear');
+        const clearBtn = document.getElementById('clear-btn');
         if (clearBtn) {
-            clearBtn.addEventListener('click', clearCart);
+            clearBtn.addEventListener('click', () => { if(confirm('Очистить корзину?')) apiCall('/api/cart/clear', {}).then(refreshCartUI); });
         }
     });
 </script>
