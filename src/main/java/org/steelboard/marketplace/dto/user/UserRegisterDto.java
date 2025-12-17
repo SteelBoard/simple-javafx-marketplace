@@ -17,7 +17,7 @@ public class UserRegisterDto {
     private String email;
 
     @NotBlank(message = "Phone number is required")
-    @Size(min = 10, max = 10)
+    @Size(min = 16, max = 16)
     private String phoneNumber;
 
     @NotBlank(message = "Password is required")

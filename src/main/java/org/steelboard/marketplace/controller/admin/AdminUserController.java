@@ -5,17 +5,24 @@ import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import org.steelboard.marketplace.entity.Product;
+import org.steelboard.marketplace.entity.Review;
 import org.steelboard.marketplace.entity.User;
 import org.steelboard.marketplace.service.CartService;
+import org.steelboard.marketplace.service.ProductService;
+import org.steelboard.marketplace.service.ReviewService;
 import org.steelboard.marketplace.service.UserService;
+
+import java.util.List;
 
 @Controller
 @AllArgsConstructor
 @RequestMapping("/admin/users")
 public class AdminUserController {
 
+    private final ProductService productService;
+    private final ReviewService reviewService;
     private UserService userService;
-    private CartService cartService;
 
     @GetMapping
     public String users(
@@ -33,7 +40,7 @@ public class AdminUserController {
         model.addAttribute("size", size);   // ← прокидываем в thymeleaf
         model.addAttribute("q", q);
 
-        return "admin/users";
+        return "admin/user/users";
     }
 
     @GetMapping("/{id}")
@@ -41,7 +48,7 @@ public class AdminUserController {
                        @PathVariable Long id) {
 
         model.addAttribute("user", userService.findById(id));
-        return "admin/user_details";
+        return "admin/user/user_details";
     }
 
     @PostMapping("/{id}/active")
@@ -60,6 +67,34 @@ public class AdminUserController {
         User user = userService.findById(id);
         model.addAttribute("user", user);
         model.addAttribute("cartItems", user.getCart().getCartItems());
-        return "admin/user_cart";
+        return "admin/user/user_cart";
+    }
+
+    @GetMapping("/{id}/products")
+    public String userProducts(
+            @PathVariable Long id,
+            Model model
+    ) {
+        User user = userService.findById(id);
+        List<Product> products = productService.findBySellerId(id);
+
+        model.addAttribute("user", user);
+        model.addAttribute("products", products);
+
+        return "admin/user/user_products";
+    }
+
+    @GetMapping("/{id}/reviews")
+    public String userReviews(
+            @PathVariable Long id,
+            Model model
+    ) {
+        User user = userService.findById(id);
+        List<Review> reviews = reviewService.findByUserId(id);
+
+        model.addAttribute("user", user);
+        model.addAttribute("reviews", reviews);
+
+        return "admin/user/user_reviews";
     }
 }

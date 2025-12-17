@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Товары пользователя</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+
+        h2 {
+            margin-bottom: 15px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            border: 1px solid #ccc;
+            padding: 8px;
+        }
+
+        th {
+            background: #f5f5f5;
+            text-align: left;
+        }
+
+        tr:hover {
+            background: #eef;
+        }
+
+        .btn {
+            padding: 6px 14px;
+            border: 1px solid #333;
+            background: #333;
+            color: white;
+            text-decoration: none;
+        }
+
+        .btn:hover {
+            background: #555;
+        }
+    </style>
+</head>
+
+<body>
+
+<h2>
+    Товары пользователя:
+    <span th:text="${user.username}"></span>
+</h2>
+
+<table>
+    <thead>
+    <tr>
+        <th>ID</th>
+        <th>Название</th>
+        <th>Цена</th>
+        <th>Рейтинг</th>
+        <th>Создан</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    <tr th:each="product : ${products}">
+        <td th:text="${product.id}"></td>
+        <td th:text="${product.name}"></td>
+        <td th:text="${product.price}"></td>
+        <td th:text="${product.rating}"></td>
+        <td th:text="${#dates.format(product.createdAt, 'yyyy-MM-dd HH:mm')}"></td>
+    </tr>
+    </tbody>
+</table>
+
+<br>
+
+<a th:href="@{/admin/users/{id}(id=${user.id})}" class="btn">
+    ← Назад к пользователю
+</a>
+
+</body>
+</html>

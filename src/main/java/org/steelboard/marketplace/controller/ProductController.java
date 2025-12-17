@@ -17,10 +17,7 @@ import org.steelboard.marketplace.dto.product.AddProductDto;
 import org.steelboard.marketplace.entity.Product;
 import org.steelboard.marketplace.entity.Review;
 import org.steelboard.marketplace.entity.User;
-import org.steelboard.marketplace.service.FileStorageService;
-import org.steelboard.marketplace.service.OrderService;
-import org.steelboard.marketplace.service.ProductService;
-import org.steelboard.marketplace.service.ReviewService;
+import org.steelboard.marketplace.service.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -34,6 +31,7 @@ public class ProductController {
     private final FileStorageService fileStorageService;
     private final ReviewService reviewService;
     private final OrderService orderService;
+    private final UserService userService;
 
     @GetMapping("/{id}")
     public String productPage(
@@ -125,7 +123,8 @@ public class ProductController {
 
     @PostMapping("/new")
     public String addProduct(@Valid @ModelAttribute("productDto") AddProductDto productDto,
-                             BindingResult bindingResult) {
+                             BindingResult bindingResult,
+                             @AuthenticationPrincipal User user) {
 
         if (bindingResult.hasErrors()) {
             return "add_product"; // возвращаем форму с ошибками
@@ -150,7 +149,8 @@ public class ProductController {
                 productDto.getDescription(),
                 productDto.getPrice(),
                 mainImagePath,
-                additionalImagePaths);
+                additionalImagePaths,
+                userService.findById(user.getId()));
 
         return "redirect:/product/" + product.getId();
     }

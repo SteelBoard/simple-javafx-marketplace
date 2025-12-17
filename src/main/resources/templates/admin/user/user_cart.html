@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Корзина пользователя</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+
+        h1 {
+            margin-bottom: 15px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            border: 1px solid #ccc;
+            padding: 8px;
+            text-align: left;
+        }
+
+        th {
+            background: #f5f5f5;
+        }
+
+        tr:hover {
+            background: #eef;
+        }
+
+        .toolbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .back-link {
+            text-decoration: none;
+            padding: 6px 12px;
+            border: 1px solid #aaa;
+            color: black;
+            background: #f9f9f9;
+        }
+
+        .back-link:hover {
+            background: #ddd;
+        }
+
+        .empty {
+            padding: 20px;
+            background: #f5f5f5;
+            border: 1px dashed #aaa;
+            text-align: center;
+            color: #666;
+        }
+    </style>
+</head>
+
+<body>
+
+<h1>
+    Корзина пользователя:
+    <span th:text="${user.username}"></span>
+</h1>
+
+<div class="toolbar">
+    <div>
+        Пользователь ID:
+        <strong th:text="${user.id}"></strong>
+    </div>
+
+    <a class="back-link"
+       th:href="@{/admin/users/{id}(id=${user.id})}">
+        ← Назад к пользователю
+    </a>
+</div>
+
+<!-- Если корзина пустая -->
+<div class="empty" th:if="${#lists.isEmpty(cartItems)}">
+    Корзина пуста
+</div>
+
+<!-- Таблица корзины -->
+<table th:if="${!#lists.isEmpty(cartItems)}">
+    <thead>
+    <tr>
+        <th>ID товара</th>
+        <th>Название товара</th>
+        <th>Цена за единицу</th>
+        <th>Количество</th>
+        <th>Общая цена</th>
+        <th>Дата добавления</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    <tr th:each="item : ${cartItems}">
+        <td th:text="${item.product.id}"></td>
+        <td th:text="${item.product.name}"></td>
+        <td th:text="${item.product.price}"></td>
+        <td th:text="${item.quantity}"></td>
+        <td th:text="${item.unitPrice}"></td>
+        <td th:text="${#dates.format(item.createdAt, 'yyyy-MM-dd HH:mm')}"></td>
+    </tr>
+    </tbody>
+</table>
+
+</body>
+</html>

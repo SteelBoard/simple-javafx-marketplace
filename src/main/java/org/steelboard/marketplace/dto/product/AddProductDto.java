@@ -18,7 +18,7 @@ public class AddProductDto {
     private String name;
 
     @NotBlank(message = "Описание продукта обязательно")
-    @Size(max = 1000, message = "Описание продукта должно быть не длиннее 1000 символов")
+    @Size(max = 5000, message = "Описание продукта должно быть не длиннее 1000 символов")
     private String description;
 
     @NotNull(message = "Цена продукта обязательна")

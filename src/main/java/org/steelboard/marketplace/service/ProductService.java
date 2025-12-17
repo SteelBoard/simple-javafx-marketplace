@@ -5,16 +5,15 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.steelboard.marketplace.entity.ImageType;
-import org.steelboard.marketplace.entity.Product;
-import org.steelboard.marketplace.entity.ProductImage;
-import org.steelboard.marketplace.entity.Review;
+import org.steelboard.marketplace.dto.product.ProductEditDto;
+import org.steelboard.marketplace.entity.*;
 import org.steelboard.marketplace.exception.ProductNotFoundException;
 import org.steelboard.marketplace.repository.ProductImageRepository;
 import org.steelboard.marketplace.repository.ProductRepository;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Optional;
 
 @AllArgsConstructor
 @Service
@@ -32,6 +31,45 @@ public class ProductService {
         return productRepository.findProductById(id)
                 .orElseThrow(() -> new ProductNotFoundException(id));
     }
+
+    public List<Product> findBySellerId(Long id) {
+        return productRepository.findBySeller_Id(id);
+    }
+
+    public Page<Product> searchProductsByName(String name, Pageable pageable) {
+        return productRepository.findByNameContainingIgnoreCase(name, pageable);
+    }
+
+    public ProductEditDto toEditDto(Product product) {
+        return new  ProductEditDto(product);
+    }
+
+    @Transactional
+    public void updateProductFromDto(Long productId, ProductEditDto dto) {
+        Product product = getProduct(productId);
+
+        product.setName(dto.getName());
+        product.setDescription(dto.getDescription());
+        product.setPrice(dto.getPrice());
+        product.setActive(dto.getActive());
+
+        // удаляем картинки
+        if (dto.getImageIdsToDelete() != null) {
+            dto.getImageIdsToDelete().forEach(id ->
+                    product.getImages().removeIf(img -> img.getId().equals(id))
+            );
+        }
+
+        productRepository.save(product);
+    }
+
+    @Transactional
+    public void deleteImage(Long productId, Long imageId) {
+        Product product = getProduct(productId);
+        Optional<ProductImage> image = productImageRepository.findById(imageId);
+        image.ifPresent(productImage -> product.getImages().remove(productImage));
+    }
+
 
     @Transactional
     public void updateRating(Long productId, List<Review> reviews) {
@@ -51,13 +89,15 @@ public class ProductService {
                               String description,
                               BigDecimal price,
                               String mainImagePath,
-                              List<String> additionalImagePaths) {
+                              List<String> additionalImagePaths,
+                              User seller) {
 
         // 1. Создаём продукт
         Product product = new Product();
         product.setName(name);
         product.setDescription(description);
         product.setPrice(price);
+        product.setSeller(seller);
 
         // сохраняем продукт, чтобы получить id для FK
         product = productRepository.save(product);
