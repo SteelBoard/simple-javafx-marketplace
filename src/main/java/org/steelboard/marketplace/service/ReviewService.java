@@ -50,12 +50,27 @@ public class ReviewService {
         productService.updateRating(productId, findByProductId(productId));
     }
 
+    @Transactional(readOnly = true)
+    public Page<Review> findAll(String search, Pageable pageable) {
+        // Если строка поиска пустая, метод репозитория thanks to (:search IS NULL OR :search = '')
+        // всё равно вернет все записи, но можно оптимизировать вызов:
 
-    public void updateReview(Long id, Integer rating, String comment) {
-        Review review = reviewRepository.findById(id).orElseThrow(() -> new OrderNotFoundException(id));
-        review.setRating(rating);
-        review.setComment(comment);
-        reviewRepository.save(review);
+        if (search == null || search.isBlank()) {
+            return reviewRepository.findAll(pageable);
+        }
+
+        return reviewRepository.search(search.trim(), pageable);
+    }
+
+    @Transactional(readOnly = true)
+    public Review findById(Long id) {
+        return reviewRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Review not found"));
+    }
+
+    @Transactional
+    public void delete(Long id) {
+        reviewRepository.deleteById(id);
     }
 
     public Page<Review> findByProductId(Long id, Pageable pageable) {
