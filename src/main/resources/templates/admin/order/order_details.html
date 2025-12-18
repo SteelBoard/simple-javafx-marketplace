@@ -20,6 +20,12 @@
 
                 <button onclick="toggleEdit()" class="btn btn-dark">✎ Редактировать</button>
                 <a th:href="@{/admin/orders}" class="btn">К списку</a>
+                <form th:action="@{/admin/orders/{id}/delete(id=${order.id})}" method="post">
+                    <button type="submit" class="btn btn-danger"
+                            onclick="return confirm('Вы уверены, что хотите УДАЛИТЬ этот заказ? Это действие необратимо!');">
+                        Удалить заказ
+                    </button>
+                </form>
             </div>
         </div>
 

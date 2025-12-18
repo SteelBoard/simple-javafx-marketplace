@@ -56,16 +56,17 @@ public class OrderService {
         return orderRepository.findAll(pageable);
     }
 
-    public Page<Order> findByUsernameOrStatus(String search, Pageable pageable) {
-        return orderRepository.findBySearch(search, pageable);
-    }
-
     public Page<Order> getUserOrders(Long userId, String search, Pageable pageable) {
         if (search != null && !search.isBlank()) {
             // Ищем по частичному совпадению ID заказа
             return orderRepository.findByUserIdAndSearch(userId, search.trim(), pageable);
         }
         return orderRepository.findByUser_Id(userId, pageable);
+    }
+
+    @Transactional
+    public void deleteOrder(Long id) {
+        orderRepository.deleteById(id);
     }
 
 

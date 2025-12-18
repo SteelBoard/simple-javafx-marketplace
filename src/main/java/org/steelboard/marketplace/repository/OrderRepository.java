@@ -64,4 +64,6 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
 
     // 4. Поиск заказов по ПВЗ (Исправление для вашей проблемы с ПВЗ)
     Page<Order> findByPickupPoint_Id(Long pickupPointId, Pageable pageable);
+
+    boolean existsByPickupPoint_Id(Long pickupPointId);
 }

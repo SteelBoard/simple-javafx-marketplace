@@ -74,9 +74,18 @@
                 </tr>
             </table>
 
-            <div style="margin-top: 20px;">
+            <div style="margin-top: 30px; border-top: 1px solid #eee; padding-top: 20px; display: flex; justify-content: space-between;">
                 <button type="submit" class="btn btn-dark">Сохранить</button>
                 <a th:href="@{/admin/pickup-points}" class="btn">← Назад к списку</a>
+                <div></div> <!-- Пустой блок для выравнивания flex -->
+
+                <!-- КНОПКА УДАЛЕНИЯ -->
+                <form th:action="@{/admin/pickup-points/{id}/delete(id=${pickupPoint.id})}" method="post">
+                    <button type="submit" class="btn btn-danger"
+                            onclick="return confirm('ВНИМАНИЕ: Удалить пункт выдачи? \nЭто возможно только если на нем нет заказов.');">
+                        Удалить ПВЗ
+                    </button>
+                </form>
             </div>
         </form>
     </div>

@@ -88,6 +88,12 @@ public class AdminOrderController {
         return "admin/order/pickup_point_orders";
     }
 
+    @PostMapping("/{id}/delete")
+    public String deleteOrder(@PathVariable Long id) {
+        orderService.deleteOrder(id);
+        return "redirect:/admin/orders"; // Возврат к списку
+    }
+
     // ... (Остальные методы: orderDetails, updateOrder, searchPickupPoints оставляем как были)
     @GetMapping("/{id}")
     public String orderDetails(@PathVariable Long id, Model model) {

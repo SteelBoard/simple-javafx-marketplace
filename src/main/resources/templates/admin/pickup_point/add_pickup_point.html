@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/admin_layout :: head('Добавление ПВЗ')}"></head>
+<style>
+    .form-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+        max-width: 800px;
+    }
+    .form-group {
+        margin-bottom: 15px;
+    }
+    .form-group label {
+        display: block;
+        margin-bottom: 5px;
+        font-weight: bold;
+        color: #555;
+    }
+    /* Растягиваем инпуты на всю ширину родителя */
+    .form-group input {
+        width: 100%;
+        box-sizing: border-box; /* Важно, чтобы padding не ломал ширину */
+    }
+    .full-width {
+        grid-column: span 2;
+    }
+    .error-msg {
+        color: #e74c3c;
+        font-size: 0.85em;
+        margin-top: 5px;
+    }
+    .input-error {
+        border-color: #e74c3c !important;
+        background-color: #fdf2f2;
+    }
+</style>
+<body>
+
+<div th:replace="~{fragments/admin_layout :: sidebar}"></div>
+
+<div class="main-content">
+    <div class="card">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <h2>Добавить Пункт Выдачи</h2>
+            <a th:href="@{/admin/pickup-points}" class="btn">← Назад к списку</a>
+        </div>
+
+        <form th:action="@{/admin/pickup-points/new}" th:object="${dto}" method="post">
+
+            <div class="form-grid">
+
+                <!-- Город -->
+                <div class="form-group full-width">
+                    <label>Город *</label>
+                    <input type="text" th:field="*{city}" placeholder="например: Екатеринбург"
+                           th:classappend="${#fields.hasErrors('city')} ? 'input-error' : ''">
+                    <div class="error-msg" th:if="${#fields.hasErrors('city')}" th:errors="*{city}"></div>
+                </div>
+
+                <!-- Улица -->
+                <div class="form-group full-width">
+                    <label>Улица *</label>
+                    <input type="text" th:field="*{street}" placeholder="например: Ленина"
+                           th:classappend="${#fields.hasErrors('street')} ? 'input-error' : ''">
+                    <div class="error-msg" th:if="${#fields.hasErrors('street')}" th:errors="*{street}"></div>
+                </div>
+
+                <!-- Дом -->
+                <div class="form-group">
+                    <label>Номер дома *</label>
+                    <input type="text" th:field="*{houseNumber}" placeholder="10 / 10А"
+                           th:classappend="${#fields.hasErrors('houseNumber')} ? 'input-error' : ''">
+                    <div class="error-msg" th:if="${#fields.hasErrors('houseNumber')}" th:errors="*{houseNumber}"></div>
+                </div>
+
+                <!-- Квартира/Офис -->
+                <div class="form-group">
+                    <label>Офис / Помещение</label>
+                    <input type="text" th:field="*{apartmentNumber}" placeholder="105">
+                </div>
+
+                <!-- Индекс -->
+                <div class="form-group">
+                    <label>Почтовый индекс *</label>
+                    <input type="text" th:field="*{postalCode}" placeholder="620000" maxlength="6"
+                           th:classappend="${#fields.hasErrors('postalCode')} ? 'input-error' : ''">
+                    <div class="error-msg" th:if="${#fields.hasErrors('postalCode')}" th:errors="*{postalCode}"></div>
+                </div>
+
+                <!-- Телефон -->
+                <div class="form-group">
+                    <label>Контактный телефон *</label>
+                    <input type="text" id="phoneInput" th:field="*{phone}" placeholder="+7 999 000-00-00" maxlength="16"
+                           th:classappend="${#fields.hasErrors('phone')} ? 'input-error' : ''">
+                    <div style="font-size: 0.8em; color: #888; margin-top: 4px;">Формат: +7 XXX XXX-XX-XX</div>
+                    <div class="error-msg" th:if="${#fields.hasErrors('phone')}" th:errors="*{phone}"></div>
+                </div>
+
+            </div>
+
+            <div style="margin-top: 30px;">
+                <button type="submit" class="btn btn-primary">Создать ПВЗ</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- СКРИПТ ВАЛИДАЦИИ ТЕЛЕФОНА (Тот же, что и раньше) -->
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const input = document.getElementById("phoneInput");
+
+        function formatPhone(value) {
+            // Удаляем всё, кроме цифр
+            let digits = value.replace(/\D/g, "");
+
+            if (!digits) return "";
+
+            // Если первая цифра 8, меняем на 7. Если не 7, добавляем 7 в начало.
+            if (digits[0] === "8") digits = "7" + digits.substring(1);
+            if (digits[0] !== "7") digits = "7" + digits;
+
+            // Обрезаем лишнее
+            digits = digits.substring(0, 11);
+
+            // Формируем маску
+            let res = "+7";
+            if (digits.length > 1) res += " " + digits.substring(1, 4);
+            if (digits.length > 4) res += " " + digits.substring(4, 7);
+            if (digits.length > 7) res += "-" + digits.substring(7, 9);
+            if (digits.length > 9) res += "-" + digits.substring(9, 11);
+
+            return res;
+        }
+
+        input.addEventListener("input", function (e) {
+            // Запоминаем позицию курсора, чтобы не прыгал в конец при редактировании середины
+            // (простая реализация - просто форматируем)
+            const formatted = formatPhone(e.target.value);
+            e.target.value = formatted;
+        });
+
+        // При фокусе добавляем +7, если пусто
+        input.addEventListener("focus", function () {
+            if (this.value === "") {
+                this.value = "+7 ";
+            }
+        });
+
+        // Удаляем маску, если пользователь стер всё кроме +7
+        input.addEventListener("blur", function () {
+            if (this.value === "+7 " || this.value === "+7") {
+                this.value = "";
+            }
+        });
+    });
+</script>
+
+</body>
+</html>

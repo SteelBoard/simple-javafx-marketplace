@@ -7,7 +7,11 @@
 
 <div class="main-content">
     <div class="card">
-        <h2>Пункты выдачи (ПВЗ)</h2>
+        <!-- Внутри .main-content, перед формой поиска или рядом с заголовком -->
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <h2>Пункты выдачи (ПВЗ)</h2>
+            <a th:href="@{/admin/pickup-points/new}" class="btn btn-primary">+ Добавить ПВЗ</a>
+        </div>
         <form class="search-container" th:action="@{/admin/pickup-points}" method="get">
             <input type="text" name="search" th:value="${search}"
                    placeholder="Город, улица или телефон..."
