@@ -44,9 +44,36 @@ public class AdminOrderController {
         Page<Order> ordersPage;
 
         if (search != null && !search.isBlank()) {
-            ordersPage = orderService.findByUsernameOrStatus(search.trim(), pageable);
+            String term = search.trim();
+
+            if (term.startsWith("product:")) {
+                // === ПОИСК ПО ТОВАРУ ===
+                try {
+                    Long productId = Long.parseLong(term.split(":")[1]);
+                    // Вызываем наш @Query метод
+                    ordersPage = orderRepository.findOrdersByProductId(productId, pageable);
+                } catch (NumberFormatException e) {
+                    // Если ввели чепуху типа "product:abc", возвращаем пустой результат или все
+                    ordersPage = Page.empty();
+                }
+
+            } else if (term.startsWith("pvz:")) {
+                // === ПОИСК ПО ПВЗ ===
+                try {
+                    Long pvzId = Long.parseLong(term.split(":")[1]);
+                    ordersPage = orderRepository.findOrdersByPvzId(pvzId, pageable);
+                } catch (NumberFormatException e) {
+                    ordersPage = Page.empty();
+                }
+
+            } else {
+                // === ОБЫЧНЫЙ ПОИСК (по юзеру или статусу) ===
+                // Оставляем твою старую логику
+                ordersPage = orderService.findByUsernameOrStatus(term, pageable);
+            }
         } else {
-            ordersPage = orderService.findAll(pageable);
+            // Если поиска нет, возвращаем всё
+            ordersPage = orderService.findAll(pageable); // Или orderRepository.findAll(pageable)
         }
 
         model.addAttribute("ordersPage", ordersPage);

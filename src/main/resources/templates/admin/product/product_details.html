@@ -2,93 +2,123 @@
 <html lang="ru" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title>Админка — Редактирование товара</title>
+    <title>Редактирование товара</title>
     <style>
         body { font-family: Arial, sans-serif; margin: 20px; }
-        table { width: 100%; border-collapse: collapse; }
-        th, td { border: 1px solid #ccc; padding: 8px; }
-        th { background: #f5f5f5; text-align: left; width: 200px; }
-        .btn { padding: 6px 14px; border: 1px solid #333; background: #333; color: white; cursor: pointer; }
+        table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
+        th, td { border: 1px solid #ccc; padding: 10px; vertical-align: top; }
+        th { background: #f5f5f5; width: 200px; text-align: left; }
+
+        input[type="text"], input[type="number"], textarea { width: 100%; max-width: 500px; padding: 6px; border: 1px solid #ccc; }
+        textarea { resize: none; height: 100px; }
+
+        .btn { padding: 8px 16px; background: #333; color: white; cursor: pointer; text-decoration: none; border: 1px solid #333; display: inline-block; }
         .btn:hover { background: #555; }
-        .error { color: red; font-size: 0.9em; }
-        .images { display: flex; gap: 10px; margin-top: 10px; }
-        .images img { width: 100px; height: 100px; object-fit: cover; }
-        .links a { margin-right: 15px; text-decoration: none; color: #0066cc; }
-        .links a:hover { text-decoration: underline; }
+        .btn-danger { background: #dc3545; border-color: #dc3545; }
+        .btn-danger:hover { background: #bb2d3b; }
+        .btn-back { background: #fff; color: #333; border: 1px solid #ccc; margin-left: 10px; }
+
+        .images-grid { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 10px; }
+        .image-card { border: 1px solid #ddd; padding: 5px; text-align: center; }
+        .image-card img { width: 100px; height: 100px; object-fit: cover; display: block; margin-bottom: 5px; }
+        .error { color: red; font-size: 0.9em; display: block; margin-top: 4px; }
+        .input-error { border-color: red !important; background: #fff8f8; }
     </style>
 </head>
 <body>
 
-<h2>Редактирование товара</h2>
+<h2>Карточка товара</h2>
 
-<form th:action="@{/admin/products/{id}/update(id=${product.id})}"
-      th:object="${productDto}" method="post">
+<div th:if="${param.success}" style="color: green; margin-bottom: 15px;">Успешно сохранено!</div>
+
+<form th:action="@{/admin/products/{id}/update(id=${product.id})}" th:object="${productDto}" method="post">
     <table>
-        <tr>
-            <th>ID</th>
-            <td th:text="${product.id}"></td>
-        </tr>
+        <tr><th>ID</th><td th:text="${product.id}"></td></tr>
 
-        <tr>
-            <th>Название</th>
-            <td>
-                <input type="text" th:field="*{name}" />
-                <div th:if="${#fields.hasErrors('name')}" th:errors="*{name}" class="error"></div>
-            </td>
-        </tr>
+        <tr><th>Продавец</th><td>
+            <a th:href="@{/admin/users/{id}(id=${product.seller.id})}" th:text="${product.seller.username}">User</a>
+            <small style="color:gray;">(ID: <span th:text="${product.seller.id}"></span>)</small>
+        </td></tr>
 
-        <tr>
-            <th>Описание</th>
-            <td>
-                <textarea th:field="*{description}" rows="4" cols="50"></textarea>
-                <div th:if="${#fields.hasErrors('description')}" th:errors="*{description}" class="error"></div>
-            </td>
-        </tr>
+        <tr><th>Название</th><td>
+            <input type="text" th:field="*{name}" required th:classappend="${#fields.hasErrors('name')} ? 'input-error' : ''"/>
+            <span class="error" th:if="${#fields.hasErrors('name')}" th:errors="*{name}"></span>
+        </td></tr>
 
-        <tr>
-            <th>Цена</th>
-            <td>
-                <input type="number" step="0.01" th:field="*{price}" />
-                <div th:if="${#fields.hasErrors('price')}" th:errors="*{price}" class="error"></div>
-            </td>
-        </tr>
+        <tr><th>Описание</th><td>
+            <textarea th:field="*{description}" th:classappend="${#fields.hasErrors('description')} ? 'input-error' : ''"></textarea>
+            <span class="error" th:if="${#fields.hasErrors('description')}" th:errors="*{description}"></span>
+        </td></tr>
 
-        <tr>
-            <th>Активен</th>
-            <td>
-                <input type="checkbox" th:field="*{active}" />
-            </td>
-        </tr>
+        <tr><th>Цена</th><td>
+            <input type="number" step="0.01" th:field="*{price}" required th:classappend="${#fields.hasErrors('price')} ? 'input-error' : ''"/>
+            <span class="error" th:if="${#fields.hasErrors('price')}" th:errors="*{price}"></span>
+        </td></tr>
 
-        <tr>
-            <th>Фотографии</th>
-            <td>
-                <div class="images">
-                    <div th:each="img : ${product.images}">
-                        <img th:src="@{${img.filepath}}" alt="Фото" />
+        <tr><th>Статистика</th><td>Рейтинг: <b th:text="${product.rating}"></b>, Продажи: <b th:text="${product.sales}"></b></td></tr>
+        <tr><th>Активен</th><td><input type="checkbox" th:field="*{active}" style="transform: scale(1.3); margin-left: 5px;"></td></tr>
 
-                        <form th:action="@{/admin/products/images/delete}" method="post" style="display:inline">
-                            <input type="hidden" name="productId" th:value="${product.id}" />
-                            <input type="hidden" name="imageId" th:value="${img.id}" />
-                            <button type="submit" class="btn">Удалить</button>
-                        </form>
+        <tr><th>Фотографии</th><td>
+            <div class="images-grid">
+                <div th:each="img : ${product.images}" class="image-card"
+                     th:style="${img.type.name() == 'MAIN'} ? 'border: 2px solid green; background: #eaffea;' : ''">
+
+                    <img th:src="@{${img.filepath}}" />
+
+                    <!-- Если картинка ГЛАВНАЯ -->
+                    <div th:if="${img.type.name() == 'MAIN'}"
+                         style="color: green; font-weight: bold; font-size: 12px; margin-bottom: 5px;">
+                        ГЛАВНАЯ
                     </div>
-                </div>
-            </td>
-        </tr>
 
+                    <!-- Кнопки управления -->
+                    <div style="display: flex; gap: 5px; justify-content: center;">
+
+                        <!-- Кнопка "Сделать главной" (показываем только если НЕ главная) -->
+                        <button th:if="${img.type.name() != 'MAIN'}" type="submit" class="btn"
+                                style="padding: 2px 5px; font-size: 12px; background: #28a745; border-color: #28a745;"
+                                th:formaction="@{/admin/products/images/set-main}"
+                                name="imageId" th:value="${img.id}"
+                                title="Сделать главной">
+                            ★
+                        </button>
+
+                        <!-- Кнопка Удалить -->
+                        <button type="submit" class="btn btn-danger" style="padding: 2px 8px; font-size: 12px;"
+                                th:formaction="@{/admin/products/images/delete}"
+                                name="imageId" th:value="${img.id}"
+                                onclick="return confirm('Удалить фото?');">
+                            X
+                        </button>
+                    </div>
+
+                    <input type="hidden" name="productId" th:value="${product.id}">
+                </div>
+            </div>
+            <div style="border: 1px dashed #ccc; padding: 10px; margin-top: 10px;">
+                <b>Добавить фото:</b><br>
+                <input type="file" name="file" accept="image/*" style="margin: 5px 0;">
+                <button type="submit" class="btn" style="padding: 4px 10px;"
+                        th:formaction="@{/admin/products/{id}/images/add(id=${product.id})}"
+                        th:formenctype="'multipart/form-data'">Загрузить</button>
+            </div>
+        </td></tr>
     </table>
 
-    <div style="margin-top: 15px;">
-        <button type="submit" class="btn">Сохранить</button>
-        <a th:href="@{/admin/products}" class="btn">← Назад к списку</a>
+    <div style="margin-top: 20px; display: flex; justify-content: space-between;">
+        <div>
+            <button type="submit" class="btn">Сохранить</button>
+            <a th:href="@{/admin/products}" class="btn btn-back">Назад</a>
+        </div>
+        <button type="submit" class="btn btn-danger"
+                th:formaction="@{/admin/products/{id}/delete(id=${product.id})}"
+                onclick="return confirm('Удалить ВЕСЬ ТОВАР? Нельзя отменить!');">УДАЛИТЬ ТОВАР</button>
     </div>
 </form>
 
-<div class="links" style="margin-top: 30px;">
-    <a th:href="@{/admin/products/{id}/reviews(id=${product.id})}">Отзывы на товар</a>
-    <a th:href="@{/admin/products/{id}/orders(id=${product.id})}">Заказы товара</a>
-    <a th:href="@{/admin/users/{id}(id=${product.seller.id})}">Профиль продавца</a>
+<div style="margin-top: 30px; padding-top: 10px; border-top: 1px solid #ccc;">
+    <a th:href="@{/admin/products/{id}/reviews(id=${product.id})}" style="margin-right: 20px; font-weight: bold; text-decoration: none;">📄 Отзывы (<span th:text="${#lists.size(product.reviews)}"></span>)</a>
+    <a th:href="@{/admin/orders(search=${'product:' + product.id})}" style="font-weight: bold; text-decoration: none;">📦 Заказы товара</a>
 </div>
 
 </body>

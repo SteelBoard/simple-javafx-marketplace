@@ -5,6 +5,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 import org.steelboard.marketplace.dto.product.ProductEditDto;
 import org.steelboard.marketplace.entity.*;
 import org.steelboard.marketplace.exception.ProductNotFoundException;
@@ -22,6 +23,7 @@ public class ProductService {
 
     private final ProductRepository productRepository;
     private final ProductImageRepository productImageRepository;
+    private final FileStorageService fileStorageService;
 
     public Page<Product> getProducts(Pageable pageable) {
         return productRepository.findAll(pageable);
@@ -41,33 +43,35 @@ public class ProductService {
     }
 
     public ProductEditDto toEditDto(Product product) {
-        return new  ProductEditDto(product);
+        ProductEditDto dto = new ProductEditDto();
+        dto.setName(product.getName());
+        dto.setDescription(product.getDescription());
+        dto.setPrice(product.getPrice());
+        dto.setActive(product.getActive());
+        return dto;
     }
 
     @Transactional
-    public void updateProductFromDto(Long productId, ProductEditDto dto) {
-        Product product = getProduct(productId);
-
+    public void updateProductFromDto(Long id, ProductEditDto dto) {
+        Product product = getProduct(id);
         product.setName(dto.getName());
         product.setDescription(dto.getDescription());
         product.setPrice(dto.getPrice());
-        product.setActive(dto.getActive());
-
-        // удаляем картинки
-        if (dto.getImageIdsToDelete() != null) {
-            dto.getImageIdsToDelete().forEach(id ->
-                    product.getImages().removeIf(img -> img.getId().equals(id))
-            );
-        }
-
+        product.setActive(dto.getActive() != null ? dto.getActive() : false); // Checkbox может вернуть null
         productRepository.save(product);
+    }
+
+    @Transactional
+    public void deleteProduct(Long id) {
+        productRepository.deleteById(id);
     }
 
     @Transactional
     public void deleteImage(Long productId, Long imageId) {
         Product product = getProduct(productId);
-        Optional<ProductImage> image = productImageRepository.findById(imageId);
-        image.ifPresent(productImage -> product.getImages().remove(productImage));
+        // Удаляем картинку из списка (JPA orphanRemoval = true сделает delete из БД)
+        product.getImages().removeIf(img -> img.getId().equals(imageId));
+        productRepository.save(product);
     }
 
 
@@ -126,5 +130,57 @@ public class ProductService {
         }
 
         return product;
+    }
+
+    // === НОВЫЙ МЕТОД: Добавление картинки к существующему товару ===
+    public void addImage(Long productId, MultipartFile file) {
+        if (file.isEmpty()) return;
+
+        Product product = getProduct(productId);
+        String filePath = fileStorageService.saveFile(file, "products");
+
+        ProductImage image = new ProductImage();
+        image.setProduct(product);
+        image.setFilepath(filePath);
+
+        // ЛОГИКА: Если список картинок пуст или в нем нет главной — новая станет MAIN
+        boolean hasMain = product.getImages().stream()
+                .anyMatch(img -> img.getType() == ImageType.MAIN);
+
+        if (!hasMain) {
+            image.setType(ImageType.MAIN);
+            image.setSortOrder(0);
+        } else {
+            image.setType(ImageType.GALLERY);
+            image.setSortOrder(product.getImages().size() + 1);
+        }
+
+        productImageRepository.save(image);
+    }
+
+    // === 2. НОВЫЙ МЕТОД: СДЕЛАТЬ КАРТИНКУ ГЛАВНОЙ ===
+    @Transactional
+    public void setMainImage(Long productId, Long imageId) {
+        Product product = getProduct(productId);
+
+        for (ProductImage img : product.getImages()) {
+            if (img.getId().equals(imageId)) {
+                // Эту делаем главной
+                img.setType(ImageType.MAIN);
+                img.setSortOrder(0);
+            } else {
+                // Остальные делаем галереей
+                if (img.getType() == ImageType.MAIN) {
+                    img.setType(ImageType.GALLERY);
+                    img.setSortOrder(1); // Сдвигаем бывшую главную
+                }
+            }
+        }
+        productRepository.save(product);
+    }
+
+
+    public void incrementProductSales(Long productId, int quantity) {
+        productRepository.incrementSales(productId, quantity);
     }
 }

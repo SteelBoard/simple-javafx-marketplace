@@ -35,6 +35,10 @@ public class ReviewService {
         return reviewRepository.findByUser_Id(userId);
     }
 
+    public void deleteById(Long id) {
+        reviewRepository.deleteById(id);
+    }
+
     @Transactional
     public void addReview(User userDetails, Long productId, Integer rating, String comment) {
         Product product = productService.getProduct(productId);
