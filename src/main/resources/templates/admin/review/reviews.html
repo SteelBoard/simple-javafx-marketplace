@@ -3,33 +3,29 @@
 <head>
     <meta charset="UTF-8">
     <title>Админка — Отзывы</title>
-
     <style>
         body { font-family: Arial, sans-serif; margin: 20px; }
 
-        table { width: 100%; border-collapse: collapse; }
+        .search-container { margin-bottom: 20px; display: flex; gap: 10px; align-items: center; }
+
+        table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
         th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
         th { background: #f5f5f5; cursor: pointer; user-select: none; }
         th:hover { background: #e0e0e0; }
+        tr:hover { background: #f9f9f9; cursor: pointer; }
 
-        tr:hover { background: #eef; }
-        tr.clickable { cursor: pointer; }
-
-        .pagination { list-style: none; display: flex; gap: 5px; padding: 0; margin-top: 15px; }
-        .pagination li a { padding: 6px 10px; border: 1px solid #aaa; text-decoration: none; color: black; }
+        .pagination { list-style: none; display: flex; gap: 5px; padding: 0; }
+        .pagination li a { padding: 6px 10px; border: 1px solid #ccc; text-decoration: none; color: black; }
         .pagination .active a { background: #333; color: white; border-color: #333; }
-        .pagination .disabled a { color: #aaa; pointer-events: none; border-color: #ddd; }
+        .pagination .disabled a { color: #aaa; pointer-events: none; border-color: #eee; }
 
-        .search-box { margin-bottom: 15px; }
-        .search-box input[type="text"] { padding: 6px; width: 300px; margin-right: 10px; border: 1px solid #ccc; }
-
-        .btn { padding: 6px 14px; border: 1px solid #333; background: #333; color: white; cursor: pointer; text-decoration: none; font-size: 13.33px; }
-        .btn:hover { background: #555; }
-        .btn.reset { background: #999; border-color: #999; margin-left: 10px; }
-        .btn.reset:hover { background: #777; }
+        .btn { padding: 6px 12px; background: #fff; color: #333; border: 1px solid #ccc; text-decoration: none; cursor: pointer; font-size: 14px; }
+        .btn:hover { background: #eee; }
+        .btn-dark { background: #333; color: white; border-color: #333; }
+        .btn-dark:hover { background: #555; border-color: #555; }
 
         .rating-star { color: #f5c518; }
-        .sort-icon { font-size: 0.8em; margin-left: 5px; }
+        .no-data { color: #666; font-style: italic; margin: 20px 0; }
     </style>
 </head>
 
@@ -37,38 +33,47 @@
 
 <h2>Отзывы пользователей</h2>
 
-<div class="search-box">
-    <form th:action="@{/admin/reviews}" method="get">
-        <input type="text" name="search" placeholder="Email, товар или текст отзыва" th:value="${search}" />
-        <button type="submit" class="btn">Поиск</button>
-        <a th:href="@{/admin/reviews}" class="btn reset">Сброс</a>
-    </form>
+<form class="search-container" th:action="@{/admin/reviews}" method="get">
+    <input type="text" name="search" th:value="${search}"
+           placeholder="Username, товар или текст..."
+           style="padding: 6px; width: 300px; border: 1px solid #ccc;"/>
+
+    <input type="hidden" name="sort" th:value="${sort}" />
+    <input type="hidden" name="dir" th:value="${dir}" />
+    <input type="hidden" name="size" th:value="${size}" />
+
+    <button type="submit" class="btn btn-dark">Поиск</button>
+    <a th:href="@{/admin/reviews}" class="btn">Сброс</a>
+</form>
+
+<div th:if="${page.isEmpty()}" class="no-data">
+    Отзывы не найдены.
 </div>
 
-<table>
+<table th:unless="${page.isEmpty()}">
     <thead>
     <tr>
         <th style="width: 50px;"
             th:onclick="|window.location='@{/admin/reviews(sort='id', dir=${sort=='id' and dir=='asc' ? 'desc' : 'asc'}, size=${size}, search=${search})}'|">
-            ID <span th:if="${sort == 'id'}" th:text="${dir == 'asc' ? '▲' : '▼'}" class="sort-icon"></span>
+            ID <span th:if="${sort == 'id'}" th:text="${dir == 'asc' ? '▲' : '▼'}"></span>
         </th>
 
         <th style="width: 150px;"
-            th:onclick="|window.location='@{/admin/reviews(sort='date', dir=${sort=='date' and dir=='asc' ? 'desc' : 'asc'}, size=${size}, search=${search})}'|">
-            Дата <span th:if="${sort == 'date'}" th:text="${dir == 'asc' ? '▲' : '▼'}" class="sort-icon"></span>
+            th:onclick="|window.location='@{/admin/reviews(sort='createdAt', dir=${sort=='createdAt' and dir=='asc' ? 'desc' : 'asc'}, size=${size}, search=${search})}'|">
+            Дата <span th:if="${sort == 'createdAt'}" th:text="${dir == 'asc' ? '▲' : '▼'}"></span>
         </th>
 
-        <th th:onclick="|window.location='@{/admin/reviews(sort='user', dir=${sort=='user' and dir=='asc' ? 'desc' : 'asc'}, size=${size}, search=${search})}'|">
-            Пользователь <span th:if="${sort == 'user'}" th:text="${dir == 'asc' ? '▲' : '▼'}" class="sort-icon"></span>
+        <th th:onclick="|window.location='@{/admin/reviews(sort='user.username', dir=${sort=='user.username' and dir=='asc' ? 'desc' : 'asc'}, size=${size}, search=${search})}'|">
+            Пользователь <span th:if="${sort == 'user.username'}" th:text="${dir == 'asc' ? '▲' : '▼'}"></span>
         </th>
 
-        <th th:onclick="|window.location='@{/admin/reviews(sort='product', dir=${sort=='product' and dir=='asc' ? 'desc' : 'asc'}, size=${size}, search=${search})}'|">
-            Товар <span th:if="${sort == 'product'}" th:text="${dir == 'asc' ? '▲' : '▼'}" class="sort-icon"></span>
+        <th th:onclick="|window.location='@{/admin/reviews(sort='product.name', dir=${sort=='product.name' and dir=='asc' ? 'desc' : 'asc'}, size=${size}, search=${search})}'|">
+            Товар <span th:if="${sort == 'product.name'}" th:text="${dir == 'asc' ? '▲' : '▼'}"></span>
         </th>
 
         <th style="width: 100px;"
             th:onclick="|window.location='@{/admin/reviews(sort='rating', dir=${sort=='rating' and dir=='asc' ? 'desc' : 'asc'}, size=${size}, search=${search})}'|">
-            Рейтинг <span th:if="${sort == 'rating'}" th:text="${dir == 'asc' ? '▲' : '▼'}" class="sort-icon"></span>
+            Рейтинг <span th:if="${sort == 'rating'}" th:text="${dir == 'asc' ? '▲' : '▼'}"></span>
         </th>
 
         <th>Комментарий</th>
@@ -76,20 +81,17 @@
     </thead>
 
     <tbody>
-    <tr th:if="${page.empty}">
-        <td colspan="6" style="text-align:center; padding: 20px; color: #777;">Отзывы не найдены</td>
-    </tr>
-
-    <tr th:each="review : ${page.content}" class="clickable"
+    <tr th:each="review : ${page.content}"
         th:onclick="|window.location='@{/admin/reviews/{id}(id=${review.id})}'|">
 
         <td th:text="${review.id}"></td>
 
         <td th:text="${#dates.format(review.createdAt, 'yyyy-MM-dd HH:mm')}"></td>
 
-        <td th:text="${review.user?.email ?: 'Неизвестно'}"></td>
+        <!-- Здесь теперь Username -->
+        <td th:text="${review.user?.username ?: 'Удален'}"></td>
 
-        <td th:text="${review.product?.name ?: 'Товар удален'}"></td>
+        <td th:text="${review.product?.name ?: 'Удален'}"></td>
 
         <td>
             <span class="rating-star">★</span> <span th:text="${review.rating}"></span>
@@ -100,9 +102,9 @@
     </tbody>
 </table>
 
-<ul class="pagination" th:if="${page.totalPages > 0}">
+<ul class="pagination" th:if="${page.totalPages > 1}">
     <li th:classappend="${page.first} ? 'disabled'">
-        <a th:href="${page.first} ? '#' : @{/admin/reviews(page=${page.number - 1}, size=${size}, sort=${sort}, dir=${dir}, search=${search})}">←</a>
+        <a th:href="@{/admin/reviews(page=${page.number - 1}, size=${size}, sort=${sort}, dir=${dir}, search=${search})}">←</a>
     </li>
     <li th:each="i : ${#numbers.sequence(0, page.totalPages - 1)}"
         th:classappend="${i == page.number} ? 'active'">
@@ -110,7 +112,7 @@
            th:text="${i + 1}"></a>
     </li>
     <li th:classappend="${page.last} ? 'disabled'">
-        <a th:href="${page.last} ? '#' : @{/admin/reviews(page=${page.number + 1}, size=${size}, sort=${sort}, dir=${dir}, search=${search})}">→</a>
+        <a th:href="@{/admin/reviews(page=${page.number + 1}, size=${size}, sort=${sort}, dir=${dir}, search=${search})}">→</a>
     </li>
 </ul>
 

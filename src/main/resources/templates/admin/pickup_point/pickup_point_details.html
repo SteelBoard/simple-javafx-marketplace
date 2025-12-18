@@ -2,32 +2,41 @@
 <html lang="ru" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title>Админка — ПВЗ</title>
+    <title>ПВЗ — Редактирование</title>
     <style>
         body { font-family: Arial, sans-serif; margin: 20px; }
-        table { width: 100%; border-collapse: collapse; }
-        th, td { border: 1px solid #ccc; padding: 8px; }
-        th { background: #f5f5f5; text-align: left; width: 200px; }
-        .btn { padding: 6px 14px; border: 1px solid #333; background: #333; color: white; cursor: pointer; text-decoration: none; display: inline-block; font-size: 13.33px; }
-        .btn:hover { background: #555; }
-        .btn-back { background: #fff; color: #333; margin-left: 10px; }
-        .btn-back:hover { background: #eee; }
+
+        table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
+        th, td { border: 1px solid #ccc; padding: 10px; text-align: left; vertical-align: middle; }
+        th { background: #f5f5f5; width: 250px; }
+
+        .btn { padding: 8px 16px; background: #fff; color: #333; border: 1px solid #ccc; text-decoration: none; cursor: pointer; display: inline-block; font-size: 14px; }
+        .btn:hover { background: #eee; }
+        .btn-dark { background: #333; color: white; border-color: #333; }
+        .btn-dark:hover { background: #555; border-color: #555; }
+
         .msg-box { padding: 10px; margin-bottom: 20px; border-radius: 4px; }
         .error { background-color: #fce4e4; border: 1px solid #fcc2c3; color: #cc0033; }
         .success { background-color: #e6ffe6; border: 1px solid #c3e6cb; color: #155724; }
-        .links { margin-top: 30px; }
-        .links a { margin-right: 15px; text-decoration: none; color: #0066cc; }
-        .links a:hover { text-decoration: underline; }
-        input[type="text"] { padding: 5px; width: 300px; border: 1px solid #ccc; font-size: 14px;}
-        .readonly-text { color: #333; }
+
+        input[type="text"] { padding: 6px; width: 100%; max-width: 400px; border: 1px solid #ccc; font-size: 14px; box-sizing: border-box; }
+
+        .links-block { margin: 20px 0; padding: 15px; background: #f9f9f9; border: 1px solid #eee; }
+        .links-block a { margin-right: 20px; text-decoration: none; color: #0066cc; font-weight: bold; }
+        .links-block a:hover { text-decoration: underline; }
     </style>
 </head>
 <body>
 
-<h2>Пункт выдачи (ПВЗ)</h2>
+<h2>Пункт выдачи #<span th:text="${pickupPoint.id}"></span></h2>
 
 <div th:if="${error}" class="msg-box error" th:text="${error}"></div>
 <div th:if="${param.success}" class="msg-box success">Телефон успешно обновлен!</div>
+
+<div class="links-block">
+    <span style="color:#666; margin-right:10px;">Действия:</span>
+    <a th:href="@{/admin/orders(search=${'pvz:' + pickupPoint.id})}">📦 Заказы на этом ПВЗ</a>
+</div>
 
 <form th:action="@{/admin/pickup-points/{id}/update(id=${pickupPoint.id})}" method="post">
     <table>
@@ -38,33 +47,32 @@
 
         <tr>
             <th>Страна</th>
-            <td th:text="${pickupPoint.address.country}" class="readonly-text"></td>
+            <td th:text="${pickupPoint.address.country}"></td>
         </tr>
 
         <tr>
             <th>Город</th>
-            <td th:text="${pickupPoint.address.city}" class="readonly-text"></td>
+            <td th:text="${pickupPoint.address.city}" style="font-weight: bold;"></td>
         </tr>
 
         <tr>
             <th>Улица</th>
-            <td th:text="${pickupPoint.address.street}" class="readonly-text"></td>
+            <td th:text="${pickupPoint.address.street}"></td>
         </tr>
 
         <tr>
-            <th>Дом</th>
-            <td th:text="${pickupPoint.address.houseNumber}" class="readonly-text"></td>
+            <th>Дом / Корпус</th>
+            <td th:text="${pickupPoint.address.houseNumber}"></td>
         </tr>
 
         <tr>
             <th>Квартира / Офис</th>
-            <td th:text="${pickupPoint.address.apartmentNumber != null ? pickupPoint.address.apartmentNumber : '-'}"
-                class="readonly-text"></td>
+            <td th:text="${pickupPoint.address.apartmentNumber != null ? pickupPoint.address.apartmentNumber : '-'}"></td>
         </tr>
 
         <tr>
             <th>Индекс</th>
-            <td th:text="${pickupPoint.address.postalCode}" class="readonly-text"></td>
+            <td th:text="${pickupPoint.address.postalCode}"></td>
         </tr>
 
         <tr>
@@ -75,7 +83,7 @@
                        placeholder="+7 999 000-00-00"
                        maxlength="16"
                        required />
-                <div style="font-size: 0.8em; color: #777; margin-top: 4px;">
+                <div style="font-size: 0.85em; color: #777; margin-top: 5px;">
                     * Формат: +7 XXX XXX-XX-XX
                 </div>
             </td>
@@ -83,22 +91,15 @@
 
         <tr>
             <th>Дата создания</th>
-            <td th:text="${#dates.format(pickupPoint.address.createdAt, 'yyyy-MM-dd HH:mm')}"
-                class="readonly-text"></td>
+            <td th:text="${#dates.format(pickupPoint.address.createdAt, 'yyyy-MM-dd HH:mm')}"></td>
         </tr>
     </table>
 
-    <div style="margin-top: 15px;">
-        <button type="submit" class="btn">Сохранить</button>
-        <a th:href="@{/admin/pickup-points}" class="btn btn-back">← Назад к списку</a>
+    <div style="margin-top: 20px;">
+        <button type="submit" class="btn btn-dark">Сохранить</button>
+        <a th:href="@{/admin/pickup-points}" class="btn">← Назад к списку</a>
     </div>
 </form>
-
-<div class="links">
-    <a th:href="@{/admin/orders(search=${'pvz:' + pickupPoint.id})}">
-        Посмотреть все заказы на этом ПВЗ
-    </a>
-</div>
 
 <script>
     document.addEventListener("DOMContentLoaded", function () {
@@ -106,12 +107,9 @@
 
         function formatPhone(value) {
             let digits = value.replace(/\D/g, "");
-
             if (!digits) return "";
-
             if (digits[0] === "8") digits = "7" + digits.substring(1);
             if (digits[0] !== "7") digits = "7" + digits;
-
             digits = digits.substring(0, 11);
 
             let res = "+7";
@@ -119,19 +117,15 @@
             if (digits.length > 4) res += " " + digits.substring(4, 7);
             if (digits.length > 7) res += "-" + digits.substring(7, 9);
             if (digits.length > 9) res += "-" + digits.substring(9, 11);
-
             return res;
         }
 
         input.addEventListener("input", function (e) {
-            const formatted = formatPhone(e.target.value);
-            e.target.value = formatted;
+            e.target.value = formatPhone(e.target.value);
         });
 
         input.addEventListener("focus", function () {
-            if (this.value === "") {
-                this.value = "+7 ";
-            }
+            if (this.value === "") this.value = "+7 ";
         });
     });
 </script>

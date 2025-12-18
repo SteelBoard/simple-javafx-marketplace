@@ -28,4 +28,8 @@ public interface PickupPointRepository extends JpaRepository<PickupPoint, Intege
     @Query(value = "SELECT p FROM PickupPoint p JOIN FETCH p.address",
             countQuery = "SELECT count(p) FROM PickupPoint p")
     Page<PickupPoint> findAll(Pageable pageable);
+
+    @Query("SELECT p FROM PickupPoint p JOIN p.address a " +
+            "WHERE LOWER(a.city) LIKE LOWER(CONCAT('%', :city, '%'))")
+    List<PickupPoint> searchByCity(@Param("city") String city);
 }

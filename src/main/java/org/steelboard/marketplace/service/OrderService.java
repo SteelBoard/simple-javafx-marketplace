@@ -129,4 +129,39 @@ public class OrderService {
 
         return order;
     }
+
+    public Page<Order> findOrdersByProductId(Long id, Pageable pageable) {
+        return orderRepository.findOrdersByProductId(id, pageable);
+    }
+
+    public Page<Order> getAllOrders(String search, Pageable pageable) {
+        if (search != null && !search.isBlank()) {
+            return orderRepository.findAllBySearch(search.trim(), pageable);
+        }
+        return orderRepository.findAll(pageable);
+    }
+
+    // Внутри OrderService
+
+    @Transactional
+    public void updateOrderDetails(Long orderId, OrderStatus status, Long pickupPointId) {
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new RuntimeException("Order not found"));
+
+        if (status != null) {
+            order.setStatus(status);
+        }
+
+        if (pickupPointId != null) {
+            PickupPoint pp = pickupPointRepository.findById(pickupPointId)
+                    .orElseThrow(() -> new RuntimeException("Pickup point not found"));
+            order.setPickupPoint(pp);
+        }
+
+        orderRepository.save(order);
+    }
+
+    public Order findById(Long id) {
+        return orderRepository.findById(id).orElseThrow(() -> new OrderNotFoundException(id));
+    }
 }

@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org">
+<head th:fragment="head(title)">
+    <meta charset="UTF-8">
+    <title th:text="${title}">Админ-панель</title>
+    <!-- Подключаем наш единый CSS -->
+    <link rel="stylesheet" th:href="@{/css/admin.css}">
+    <!-- Подключаем Chart.js для графиков -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+
+<div th:fragment="sidebar" class="sidebar">
+    <div class="sidebar-header">
+        STEELBOARD ADMIN
+    </div>
+    <ul class="nav-links">
+        <li><a th:href="@{/admin}" th:classappend="${activeTab == 'dashboard'} ? 'active'">📊 Дэшбоард</a></li>
+        <li><a th:href="@{/admin/users}" th:classappend="${activeTab == 'users'} ? 'active'">👥 Пользователи</a></li>
+        <li><a th:href="@{/admin/products}" th:classappend="${activeTab == 'products'} ? 'active'">📦 Товары</a></li>
+        <li><a th:href="@{/admin/orders}" th:classappend="${activeTab == 'orders'} ? 'active'">📄 Заказы</a></li>
+        <li><a th:href="@{/admin/reviews}" th:classappend="${activeTab == 'reviews'} ? 'active'">💬 Отзывы</a></li>
+        <li><a th:href="@{/admin/pickup-points}" th:classappend="${activeTab == 'pvz'} ? 'active'">📍 Пункты выдачи</a></li>
+    </ul>
+    <div class="sidebar-footer">
+        <!-- Кнопка выхода -->
+        <form th:action="@{/logout}" method="post">
+            <button type="submit" class="btn btn-danger" style="width: 100%;">Выйти</button>
+        </form>
+        <div style="text-align: center; margin-top: 10px;">
+            <a th:href="@{/}" style="color: #bbb; font-size: 12px; text-decoration: none;">На сайт →</a>
+        </div>
+    </div>
+</div>
+
+</body>
+</html>

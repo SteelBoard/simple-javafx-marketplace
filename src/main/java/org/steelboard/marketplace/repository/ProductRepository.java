@@ -29,4 +29,7 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
     Page<Product> findBySeller_Id(Long sellerId, Pageable pageable);
 
     Page<Product> findBySeller_IdAndNameContainingIgnoreCase(Long sellerId, String name, Pageable pageable);
+
+    @Query("SELECT p FROM Product p ORDER BY p.sales DESC LIMIT 5")
+    List<Product> findTop5BestSellers();
 }

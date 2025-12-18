@@ -3,72 +3,118 @@
 <head>
     <meta charset="UTF-8">
     <title>Админка — Заказы</title>
-
     <style>
         body { font-family: Arial, sans-serif; margin: 20px; }
-        table { width: 100%; border-collapse: collapse; }
+
+        /* Заголовок и поиск */
+        .search-container { margin-bottom: 20px; display: flex; gap: 10px; align-items: center; }
+
+        /* Таблицы */
+        table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
         th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
-        th { background: #f5f5f5; cursor: pointer; }
-        tr:hover { background: #eef; }
-        tr.clickable { cursor: pointer; }
-        .pagination { list-style: none; display: flex; gap: 5px; padding: 0; margin-top: 15px; }
-        .pagination li a { padding: 6px 10px; border: 1px solid #aaa; text-decoration: none; color: black; }
-        .pagination .active a { background: #333; color: white; }
-        .pagination .disabled a { color: #aaa; pointer-events: none; }
-        .search-box { margin-bottom: 15px; }
-        .search-box input[type="text"] { padding: 6px; width: 250px; margin-right: 10px; }
-        .btn { padding: 6px 14px; border: 1px solid #333; background: #333; color: white; cursor: pointer; }
-        .btn:hover { background: #555; }
-        .btn.reset { background: #999; border-color: #999; margin-left: 10px; }
+        th { background: #f5f5f5; cursor: pointer; user-select: none; }
+        th:hover { background: #e0e0e0; }
+        tr:hover { background: #f9f9f9; cursor: pointer; }
+
+        /* Пагинация */
+        .pagination { list-style: none; display: flex; gap: 5px; padding: 0; }
+        .pagination li a { padding: 6px 10px; border: 1px solid #ccc; text-decoration: none; color: black; }
+        .pagination .active a { background: #333; color: white; border-color: #333; }
+        .pagination .disabled a { color: #aaa; pointer-events: none; border-color: #eee; }
+
+        /* Кнопки */
+        .btn { padding: 6px 12px; background: #fff; color: #333; border: 1px solid #ccc; text-decoration: none; cursor: pointer; font-size: 14px; }
+        .btn:hover { background: #eee; }
+        .btn-dark { background: #333; color: white; border-color: #333; }
+        .btn-dark:hover { background: #555; border-color: #555; }
+
+        /* Доп. элементы */
+        .no-data { color: #666; font-style: italic; margin: 20px 0; }
+        .status-badge { padding: 3px 6px; border-radius: 4px; font-size: 0.9em; font-weight: bold; }
+        .inner-link { color: #0066cc; text-decoration: none; font-weight: bold; }
+        .inner-link:hover { text-decoration: underline; }
     </style>
 </head>
 
 <body>
 
-<h2>Заказы</h2>
+<h2>Все заказы</h2>
 
-<div class="search-box">
-    <form th:action="@{/admin/orders}" method="get">
-        <input type="text" name="search" placeholder="Поиск по имени пользователя или статусу" th:value="${search}" />
-        <button type="submit" class="btn">Поиск</button>
-        <a th:href="@{/admin/orders}" class="btn reset">Сброс</a>
-    </form>
+<form class="search-container" th:action="@{/admin/orders}" method="get">
+    <input type="text" name="search" th:value="${search}"
+           placeholder="Поиск по ID, User, Статусу..."
+           style="padding: 6px; width: 300px; border: 1px solid #ccc;"/>
+
+    <input type="hidden" name="sort" th:value="${sort}" />
+    <input type="hidden" name="dir" th:value="${dir}" />
+    <input type="hidden" name="size" th:value="${size}" />
+
+    <button type="submit" class="btn btn-dark">Найти</button>
+    <a th:href="@{/admin/orders}" class="btn">Сброс</a>
+</form>
+
+<div th:if="${ordersPage.isEmpty()}" class="no-data">
+    Заказы не найдены.
 </div>
 
-<table>
+<table th:unless="${ordersPage.isEmpty()}">
     <thead>
     <tr>
-        <th th:onclick="|window.location='@{/admin/orders(sort='id', dir=${sort=='id' and dir=='asc' ? 'desc' : 'asc'}, size=${size}, search=${search})}'|">ID</th>
+        <th th:data-href="@{/admin/orders(sort='id', dir=${sort=='id' and dir=='asc' ? 'desc' : 'asc'}, size=${size}, search=${search})}"
+            onclick="window.location=this.getAttribute('data-href')">
+            ID <span th:if="${sort == 'id'}" th:text="${dir == 'asc' ? '▲' : '▼'}"></span>
+        </th>
 
-        <th th:onclick="|window.location='@{/admin/orders(sort='user', dir=${sort=='user' and dir=='asc' ? 'desc' : 'asc'}, size=${size}, search=${search})}'|">Пользователь</th>
+        <th th:data-href="@{/admin/orders(sort='user.username', dir=${sort=='user.username' and dir=='asc' ? 'desc' : 'asc'}, size=${size}, search=${search})}"
+            onclick="window.location=this.getAttribute('data-href')">
+            Пользователь <span th:if="${sort == 'user.username'}" th:text="${dir == 'asc' ? '▲' : '▼'}"></span>
+        </th>
 
-        <th th:onclick="|window.location='@{/admin/orders(sort='status', dir=${sort=='status' and dir=='asc' ? 'desc' : 'asc'}, size=${size}, search=${search})}'|">Статус</th>
+        <th th:data-href="@{/admin/orders(sort='status', dir=${sort=='status' and dir=='asc' ? 'desc' : 'asc'}, size=${size}, search=${search})}"
+            onclick="window.location=this.getAttribute('data-href')">
+            Статус <span th:if="${sort == 'status'}" th:text="${dir == 'asc' ? '▲' : '▼'}"></span>
+        </th>
 
-        <th th:onclick="|window.location='@{/admin/orders(sort='totalAmount', dir=${sort=='totalAmount' and dir=='asc' ? 'desc' : 'asc'}, size=${size}, search=${search})}'|">Сумма</th>
+        <th th:data-href="@{/admin/orders(sort='totalAmount', dir=${sort=='totalAmount' and dir=='asc' ? 'desc' : 'asc'}, size=${size}, search=${search})}"
+            onclick="window.location=this.getAttribute('data-href')">
+            Сумма <span th:if="${sort == 'totalAmount'}" th:text="${dir == 'asc' ? '▲' : '▼'}"></span>
+        </th>
 
-        <th th:onclick="|window.location='@{/admin/orders(sort='createdAt', dir=${sort=='createdAt' and dir=='asc' ? 'desc' : 'asc'}, size=${size}, search=${search})}'|">Дата создания</th>
+        <th th:data-href="@{/admin/orders(sort='createdAt', dir=${sort=='createdAt' and dir=='asc' ? 'desc' : 'asc'}, size=${size}, search=${search})}"
+            onclick="window.location=this.getAttribute('data-href')">
+            Дата <span th:if="${sort == 'createdAt'}" th:text="${dir == 'asc' ? '▲' : '▼'}"></span>
+        </th>
     </tr>
     </thead>
 
     <tbody>
-    <tr th:if="${ordersPage.empty}">
-        <td colspan="5" style="text-align:center;">Заказы не найдены</td>
-    </tr>
+    <tr th:each="order : ${ordersPage.content}"
+        th:onclick="|window.location='@{/admin/orders/{id}(id=${order.id})}'|">
 
-    <tr th:each="order : ${ordersPage.content}" class="clickable"
-        th:onclick="|window.location='@{/admin/orders/}${order.id}'|">
-        <td th:text="${order.id}"></td>
-        <td th:text="${order.user?.username}"></td>
-        <td th:text="${order.status}"></td>
-        <td th:text="${#numbers.formatDecimal(order.totalAmount, 1, 2)}"></td>
+        <td th:text="'#' + ${order.id}"></td>
+
+        <!-- stopPropagation, чтобы клик по ссылке не открывал строку -->
+        <td onclick="event.stopPropagation()">
+            <a th:href="@{/admin/users/{id}(id=${order.user.id})}" class="inner-link" th:text="${order.user.username}">User</a>
+        </td>
+
+        <td>
+            <span th:text="${order.status}" class="status-badge"
+                  th:style="${order.status.name() == 'COMPLETED'} ? 'color:green;' :
+                           (${order.status.name() == 'CANCELLED'} ? 'color:red;' : 'color:#b58900;')">
+            </span>
+        </td>
+
+        <td th:text="${order.totalAmount} + ' ₽'"></td>
+
         <td th:text="${#dates.format(order.createdAt, 'yyyy-MM-dd HH:mm')}"></td>
     </tr>
     </tbody>
 </table>
 
-<ul class="pagination" th:if="${ordersPage.totalPages > 0}">
+<ul class="pagination" th:if="${ordersPage.totalPages > 1}">
     <li th:classappend="${ordersPage.first} ? 'disabled'">
-        <a th:href="${ordersPage.first} ? '#' : @{/admin/orders(page=${ordersPage.number - 1}, size=${size}, sort=${sort}, dir=${dir}, search=${search})}">←</a>
+        <a th:href="@{/admin/orders(page=${ordersPage.number - 1}, size=${size}, sort=${sort}, dir=${dir}, search=${search})}">←</a>
     </li>
 
     <li th:each="i : ${#numbers.sequence(0, ordersPage.totalPages - 1)}"
@@ -78,7 +124,7 @@
     </li>
 
     <li th:classappend="${ordersPage.last} ? 'disabled'">
-        <a th:href="${ordersPage.last} ? '#' : @{/admin/orders(page=${ordersPage.number + 1}, size=${size}, sort=${sort}, dir=${dir}, search=${search})}">→</a>
+        <a th:href="@{/admin/orders(page=${ordersPage.number + 1}, size=${size}, sort=${sort}, dir=${dir}, search=${search})}">→</a>
     </li>
 </ul>
 

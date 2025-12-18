@@ -1,6 +1,5 @@
 package org.steelboard.marketplace.repository;
 
-import lombok.extern.java.Log;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -8,7 +7,6 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import org.steelboard.marketplace.entity.Order;
-import org.steelboard.marketplace.entity.OrderStatus;
 
 import java.math.BigDecimal;
 import java.util.Date;
@@ -16,7 +14,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
-public interface OrderRepository extends JpaRepository<Order, Integer> {
+public interface OrderRepository extends JpaRepository<Order, Long> {
     Optional<Order> findById(Long id);
 
     @Query("SELECT o FROM Order o WHERE " +
@@ -29,9 +27,6 @@ public interface OrderRepository extends JpaRepository<Order, Integer> {
 
     @Query("SELECT o FROM Order o JOIN o.orderItems oi WHERE oi.product.id = :productId")
     Page<Order> findOrdersByProductId(@Param("productId") Long productId, Pageable pageable);
-
-    @Query("SELECT o FROM Order o WHERE o.pickupPoint.id = :pvzId")
-    Page<Order> findOrdersByPvzId(@Param("pvzId") Long pvzId, Pageable pageable);
 
     @Query("SELECT SUM(o.totalAmount) FROM Order o")
     BigDecimal sumTotalRevenue();
@@ -46,4 +41,27 @@ public interface OrderRepository extends JpaRepository<Order, Integer> {
                                       Pageable pageable);
 
     Long countByCreatedAtAfter(Date date);
+
+    @Query("SELECT o FROM Order o WHERE " +
+            "(:search IS NULL OR :search = '') OR " +
+            "(CAST(o.id AS string) LIKE %:search%) OR " +
+            "(LOWER(o.user.username) LIKE LOWER(CONCAT('%', :search, '%'))) OR " +
+            "(LOWER(CAST(o.status AS string)) LIKE LOWER(CONCAT('%', :search, '%')))")
+    Page<Order> findAllBySearch(@Param("search") String search, Pageable pageable);
+
+    @Query("SELECT COALESCE(SUM(o.totalAmount), 0) FROM Order o WHERE o.createdAt >= CURRENT_DATE")
+    BigDecimal sumTotalToday();
+
+    // 2. Количество заказов за сегодня
+    @Query("SELECT COUNT(o) FROM Order o WHERE o.createdAt >= CURRENT_DATE")
+    Long countOrdersToday();
+
+    // 3. Данные для графика (Выручка по дням за последние 7 дней)
+    @Query(value = "SELECT CAST(created_at AS DATE) as date, SUM(total_amount) as total " +
+            "FROM orders WHERE created_at >= CURRENT_DATE - 7 " +
+            "GROUP BY CAST(created_at AS DATE) ORDER BY date ASC", nativeQuery = true)
+    List<Object[]> getRevenueLast7Days();
+
+    // 4. Поиск заказов по ПВЗ (Исправление для вашей проблемы с ПВЗ)
+    Page<Order> findByPickupPoint_Id(Long pickupPointId, Pageable pageable);
 }

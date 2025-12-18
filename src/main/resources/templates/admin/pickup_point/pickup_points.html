@@ -3,26 +3,28 @@
 <head>
     <meta charset="UTF-8">
     <title>Админка — Пункты выдачи</title>
-
     <style>
         body { font-family: Arial, sans-serif; margin: 20px; }
-        table { width: 100%; border-collapse: collapse; }
+
+        .search-container { margin-bottom: 20px; display: flex; gap: 10px; align-items: center; }
+
+        table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
         th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
         th { background: #f5f5f5; cursor: pointer; user-select: none; }
         th:hover { background: #e0e0e0; }
-        tr:hover { background: #eef; }
-        tr.clickable { cursor: pointer; }
-        .pagination { list-style: none; display: flex; gap: 5px; padding: 0; margin-top: 15px; }
-        .pagination li a { padding: 6px 10px; border: 1px solid #aaa; text-decoration: none; color: black; }
+        tr:hover { background: #f9f9f9; cursor: pointer; }
+
+        .pagination { list-style: none; display: flex; gap: 5px; padding: 0; }
+        .pagination li a { padding: 6px 10px; border: 1px solid #ccc; text-decoration: none; color: black; }
         .pagination .active a { background: #333; color: white; border-color: #333; }
-        .pagination .disabled a { color: #aaa; pointer-events: none; border-color: #ddd; }
-        .search-box { margin-bottom: 15px; }
-        .search-box input[type="text"] { padding: 6px; width: 250px; margin-right: 10px; border: 1px solid #ccc; }
-        .btn { padding: 6px 14px; border: 1px solid #333; background: #333; color: white; cursor: pointer; text-decoration: none; font-size: 13.33px; }
-        .btn:hover { background: #555; }
-        .btn.reset { background: #999; border-color: #999; margin-left: 10px; }
-        .btn.reset:hover { background: #777; }
-        .sort-icon { font-size: 0.8em; margin-left: 5px; }
+        .pagination .disabled a { color: #aaa; pointer-events: none; border-color: #eee; }
+
+        .btn { padding: 6px 12px; background: #fff; color: #333; border: 1px solid #ccc; text-decoration: none; cursor: pointer; font-size: 14px; }
+        .btn:hover { background: #eee; }
+        .btn-dark { background: #333; color: white; border-color: #333; }
+        .btn-dark:hover { background: #555; border-color: #555; }
+
+        .no-data { color: #666; font-style: italic; margin: 20px 0; }
     </style>
 </head>
 
@@ -30,41 +32,46 @@
 
 <h2>Пункты выдачи (ПВЗ)</h2>
 
-<div class="search-box">
-    <form th:action="@{/admin/pickup-points}" method="get">
-        <input type="text" name="search" placeholder="Город, улица или телефон" th:value="${search}" />
-        <button type="submit" class="btn">Поиск</button>
-        <a th:href="@{/admin/pickup-points}" class="btn reset">Сброс</a>
-    </form>
+<form class="search-container" th:action="@{/admin/pickup-points}" method="get">
+    <input type="text" name="search" th:value="${search}"
+           placeholder="Город, улица или телефон..."
+           style="padding: 6px; width: 300px; border: 1px solid #ccc;"/>
+
+    <input type="hidden" name="sort" th:value="${sort}" />
+    <input type="hidden" name="dir" th:value="${dir}" />
+    <input type="hidden" name="size" th:value="${size}" />
+
+    <button type="submit" class="btn btn-dark">Поиск</button>
+    <a th:href="@{/admin/pickup-points}" class="btn">Сброс</a>
+</form>
+
+<div th:if="${page.isEmpty()}" class="no-data">
+    Пункты выдачи не найдены.
 </div>
 
-<table>
+<table th:unless="${page.isEmpty()}">
     <thead>
     <tr>
         <th th:onclick="|window.location='@{/admin/pickup-points(sort='id', dir=${sort=='id' and dir=='asc' ? 'desc' : 'asc'}, size=${size}, search=${search})}'|">
-            ID <span th:if="${sort == 'id'}" th:text="${dir == 'asc' ? '▲' : '▼'}" class="sort-icon"></span>
+            ID <span th:if="${sort == 'id'}" th:text="${dir == 'asc' ? '▲' : '▼'}"></span>
         </th>
 
         <th th:onclick="|window.location='@{/admin/pickup-points(sort='city', dir=${sort=='city' and dir=='asc' ? 'desc' : 'asc'}, size=${size}, search=${search})}'|">
-            Город <span th:if="${sort == 'city'}" th:text="${dir == 'asc' ? '▲' : '▼'}" class="sort-icon"></span>
+            Город <span th:if="${sort == 'city'}" th:text="${dir == 'asc' ? '▲' : '▼'}"></span>
         </th>
 
         <th th:onclick="|window.location='@{/admin/pickup-points(sort='street', dir=${sort=='street' and dir=='asc' ? 'desc' : 'asc'}, size=${size}, search=${search})}'|">
-            Адрес (Улица, Дом) <span th:if="${sort == 'street'}" th:text="${dir == 'asc' ? '▲' : '▼'}" class="sort-icon"></span>
+            Адрес <span th:if="${sort == 'street'}" th:text="${dir == 'asc' ? '▲' : '▼'}"></span>
         </th>
 
         <th th:onclick="|window.location='@{/admin/pickup-points(sort='phone', dir=${sort=='phone' and dir=='asc' ? 'desc' : 'asc'}, size=${size}, search=${search})}'|">
-            Телефон <span th:if="${sort == 'phone'}" th:text="${dir == 'asc' ? '▲' : '▼'}" class="sort-icon"></span>
+            Телефон <span th:if="${sort == 'phone'}" th:text="${dir == 'asc' ? '▲' : '▼'}"></span>
         </th>
     </tr>
     </thead>
 
-
     <tbody>
-    <tr th:if="${page.empty}">
-        <td colspan="4" style="text-align:center; padding: 20px; color: #777;">Пункты выдачи не найдены</td>
-    </tr>
-    <tr th:each="pp : ${page.content}" class="clickable"
+    <tr th:each="pp : ${page.content}"
         th:onclick="|window.location='@{/admin/pickup-points/{id}(id=${pp.id})}'|">
 
         <td th:text="${pp.id}"></td>
@@ -73,13 +80,11 @@
         <td th:text="${pp.phone}"></td>
     </tr>
     </tbody>
-
-
 </table>
-<ul class="pagination" th:if="${page.totalPages > 0}">
 
+<ul class="pagination" th:if="${page.totalPages > 1}">
     <li th:classappend="${page.first} ? 'disabled'">
-        <a th:href="${page.first} ? '#' : @{/admin/pickup-points(page=${page.number - 1}, size=${size}, sort=${sort}, dir=${dir}, search=${search})}">←</a>
+        <a th:href="@{/admin/pickup-points(page=${page.number - 1}, size=${size}, sort=${sort}, dir=${dir}, search=${search})}">←</a>
     </li>
 
     <li th:each="i : ${#numbers.sequence(0, page.totalPages - 1)}"
@@ -89,7 +94,7 @@
     </li>
 
     <li th:classappend="${page.last} ? 'disabled'">
-        <a th:href="${page.last} ? '#' : @{/admin/pickup-points(page=${page.number + 1}, size=${size}, sort=${sort}, dir=${dir}, search=${search})}">→</a>
+        <a th:href="@{/admin/pickup-points(page=${page.number + 1}, size=${size}, sort=${sort}, dir=${dir}, search=${search})}">→</a>
     </li>
 </ul>
 

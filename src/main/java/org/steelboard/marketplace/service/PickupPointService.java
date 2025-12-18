@@ -36,4 +36,8 @@ public class PickupPointService {
         }
         return pickupPointRepository.findAll(pageable);
     }
+
+    public List<PickupPoint> searchByCity(String city) {
+        return pickupPointRepository.searchByCity(city);
+    }
 }
