@@ -27,7 +27,7 @@ public class AdminProductController {
     private final ProductService productService;
     private final ReviewService reviewService;
 
-    // ... (Метод products оставляем без изменений) ...
+    
     @GetMapping
     public String products(
             @RequestParam(defaultValue = "0") int page,
@@ -78,16 +78,16 @@ public class AdminProductController {
             Model model
     ) {
         if (result.hasErrors()) {
-            // Если есть ошибки валидации, возвращаем ту же страницу
+            
             Product product = productService.getProduct(id);
-            model.addAttribute("product", product); // Возвращаем entity для отображения readonly полей
+            model.addAttribute("product", product); 
             return "admin/product/product_details";
         }
         productService.updateProductFromDto(id, dto);
         return "redirect:/admin/products/" + id + "?success";
     }
 
-    // --- ЛОГИКА ОТЗЫВОВ ---
+    
 
     @GetMapping("/{id}/reviews")
     public String productReviews(@PathVariable Long id, Model model) {
@@ -96,7 +96,7 @@ public class AdminProductController {
 
         model.addAttribute("product", product);
         model.addAttribute("reviews", reviews);
-        return "admin/product/product_reviews"; // Новый шаблон
+        return "admin/product/product_reviews"; 
     }
 
     @PostMapping("/{productId}/reviews/{reviewId}/delete")
@@ -105,7 +105,7 @@ public class AdminProductController {
         return "redirect:/admin/products/" + productId + "/reviews";
     }
 
-    // --- УДАЛЕНИЕ ---
+    
 
     @PostMapping("/{id}/delete")
     public String deleteProduct(@PathVariable Long id) {
@@ -127,8 +127,8 @@ public class AdminProductController {
         try {
             productService.addImage(id, file);
         } catch (Exception e) {
-            e.printStackTrace(); // В консоль, чтобы видеть ошибку
-            // Можно добавить redirectAttributes.addFlashAttribute("error", "Ошибка загрузки");
+            e.printStackTrace(); 
+            
         }
         return "redirect:/admin/products/" + id;
     }

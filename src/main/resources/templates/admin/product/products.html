@@ -47,7 +47,6 @@
     </tr>
     </tbody>
 </table>
-<!-- Пагинация простая -->
 <ul class="pagination" th:if="${productsPage.totalPages > 1}">
     <li th:each="i : ${#numbers.sequence(0, productsPage.totalPages - 1)}" th:classappend="${i == productsPage.number} ? 'active'">
         <a th:href="@{/admin/products(page=${i},size=${size},sort=${sort},dir=${dir},search=${search})}" th:text="${i + 1}"></a>

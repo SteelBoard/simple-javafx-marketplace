@@ -5,60 +5,16 @@
     <title>Админка — Пользователи</title>
 
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 20px;
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-
-        th, td {
-            border: 1px solid #ccc;
-            padding: 8px;
-            text-align: left;
-        }
-
-        th {
-            background: #f5f5f5;
-        }
-
-        tr:hover {
-            background: #eef;
-            cursor: pointer;
-        }
-
-        .toolbar {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 10px;
-        }
-
-        .pagination {
-            list-style: none;
-            display: flex;
-            gap: 5px;
-            padding: 0;
-        }
-
-        .pagination li a {
-            padding: 6px 10px;
-            border: 1px solid #aaa;
-            text-decoration: none;
-            color: black;
-        }
-
-        .pagination .active a {
-            background: #333;
-            color: white;
-        }
-
-        .pagination .disabled a {
-            color: #aaa;
-            pointer-events: none;
-        }
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
+        th { background: #f5f5f5; }
+        tr:hover { background: #eef; cursor: pointer; }
+        .toolbar { display: flex; justify-content: space-between; margin-bottom: 10px; }
+        .pagination { list-style: none; display: flex; gap: 5px; padding: 0; }
+        .pagination li a { padding: 6px 10px; border: 1px solid #aaa; text-decoration: none; color: black; }
+        .pagination .active a { background: #333; color: white; }
+        .pagination .disabled a { color: #aaa; pointer-events: none; }
     </style>
 </head>
 
@@ -68,7 +24,6 @@
 
 <div class="toolbar">
 
-    <!-- Поиск -->
     <form method="get" th:action="@{/admin/users}">
         <input type="text"
                name="q"
@@ -80,7 +35,6 @@
         <button type="submit">Поиск</button>
     </form>
 
-    <!-- Размер страницы -->
     <form method="get" th:action="@{/admin/users}">
         <input type="hidden" name="q" th:value="${q}"/>
 
@@ -97,7 +51,6 @@
 
 </div>
 
-<!-- Таблица пользователей -->
 <table>
     <thead>
     <tr>
@@ -126,7 +79,6 @@
     </tbody>
 </table>
 
-<!-- Пагинация -->
 <nav style="margin-top: 15px;">
     <ul class="pagination">
 

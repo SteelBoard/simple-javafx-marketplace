@@ -57,7 +57,7 @@ public class ProductService {
         product.setName(dto.getName());
         product.setDescription(dto.getDescription());
         product.setPrice(dto.getPrice());
-        product.setActive(dto.getActive() != null ? dto.getActive() : false); // Checkbox может вернуть null
+        product.setActive(dto.getActive() != null ? dto.getActive() : false); 
         productRepository.save(product);
     }
 
@@ -69,7 +69,7 @@ public class ProductService {
     @Transactional
     public void deleteImage(Long productId, Long imageId) {
         Product product = getProduct(productId);
-        // Удаляем картинку из списка (JPA orphanRemoval = true сделает delete из БД)
+        
         product.getImages().removeIf(img -> img.getId().equals(imageId));
         productRepository.save(product);
     }
@@ -84,7 +84,7 @@ public class ProductService {
                 .average()
                 .orElse(0.0);
 
-        product.setRating(Math.round(average * 100.0) / 100.0); // округление до 1 знака
+        product.setRating(Math.round(average * 100.0) / 100.0); 
         productRepository.save(product);
     }
 
@@ -96,34 +96,34 @@ public class ProductService {
                               List<String> additionalImagePaths,
                               User seller) {
 
-        // 1. Создаём продукт
+        
         Product product = new Product();
         product.setName(name);
         product.setDescription(description);
         product.setPrice(price);
         product.setSeller(seller);
 
-        // сохраняем продукт, чтобы получить id для FK
+        
         product = productRepository.save(product);
 
-        // 2. Сохраняем главную картинку
+        
         if (mainImagePath != null) {
             ProductImage mainImage = new ProductImage();
             mainImage.setFilepath(mainImagePath);
             mainImage.setProduct(product);
-            mainImage.setType(ImageType.MAIN); // предполагаем, что есть MAIN
+            mainImage.setType(ImageType.MAIN); 
             mainImage.setSortOrder(0);
             productImageRepository.save(mainImage);
         }
 
-        // 3. Сохраняем дополнительные картинки
+        
         if (additionalImagePaths != null && !additionalImagePaths.isEmpty()) {
-            int order = 1; // сортировка начиная с 1
+            int order = 1; 
             for (String path : additionalImagePaths) {
                 ProductImage image = new ProductImage();
                 image.setFilepath(path);
                 image.setProduct(product);
-                image.setType(ImageType.GALLERY); // дополнительные
+                image.setType(ImageType.GALLERY); 
                 image.setSortOrder(order++);
                 productImageRepository.save(image);
             }
@@ -132,7 +132,7 @@ public class ProductService {
         return product;
     }
 
-    // === НОВЫЙ МЕТОД: Добавление картинки к существующему товару ===
+    
     public void addImage(Long productId, MultipartFile file) {
         if (file.isEmpty()) return;
 
@@ -143,7 +143,7 @@ public class ProductService {
         image.setProduct(product);
         image.setFilepath(filePath);
 
-        // ЛОГИКА: Если список картинок пуст или в нем нет главной — новая станет MAIN
+        
         boolean hasMain = product.getImages().stream()
                 .anyMatch(img -> img.getType() == ImageType.MAIN);
 
@@ -158,21 +158,21 @@ public class ProductService {
         productImageRepository.save(image);
     }
 
-    // === 2. НОВЫЙ МЕТОД: СДЕЛАТЬ КАРТИНКУ ГЛАВНОЙ ===
+    
     @Transactional
     public void setMainImage(Long productId, Long imageId) {
         Product product = getProduct(productId);
 
         for (ProductImage img : product.getImages()) {
             if (img.getId().equals(imageId)) {
-                // Эту делаем главной
+                
                 img.setType(ImageType.MAIN);
                 img.setSortOrder(0);
             } else {
-                // Остальные делаем галереей
+                
                 if (img.getType() == ImageType.MAIN) {
                     img.setType(ImageType.GALLERY);
-                    img.setSortOrder(1); // Сдвигаем бывшую главную
+                    img.setSortOrder(1); 
                 }
             }
         }

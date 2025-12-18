@@ -22,9 +22,9 @@ public class HomeController {
     public String home(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "12") int size,
-            @RequestParam(defaultValue = "id") String sortField, // По умолчанию сортируем по новизне (ID или date)
+            @RequestParam(defaultValue = "id") String sortField, 
             @RequestParam(defaultValue = "desc") String sortOrder,
-            @RequestParam(required = false) String search, // Добавили параметр поиска
+            @RequestParam(required = false) String search, 
             Model model) {
 
         Sort sort = sortOrder.equalsIgnoreCase("asc") ?
@@ -35,7 +35,7 @@ public class HomeController {
 
         Page<Product> productPage;
 
-        // Если есть поиск - ищем, если нет - показываем всё
+        
         if (search != null && !search.isEmpty()) {
             productPage = productService.searchProductsByName(search, pageable);
         } else {
@@ -47,7 +47,7 @@ public class HomeController {
         model.addAttribute("size", size);
         model.addAttribute("sortField", sortField);
         model.addAttribute("sortOrder", sortOrder);
-        model.addAttribute("search", search); // Возвращаем строку поиска, чтобы не исчезала из поля
+        model.addAttribute("search", search); 
 
         return "index";
     }

@@ -90,7 +90,6 @@ public class UserService implements UserDetailsService {
         if (dto.getPhoneNumber() != null) user.setPhoneNumber(dto.getPhoneNumber());
 
         if (dto.isPasswordBeingUpdated()) {
-            // Хэширование пароля через PasswordEncoder
             user.setPassword(passwordEncoder.encode(dto.getPassword()));
         }
     }

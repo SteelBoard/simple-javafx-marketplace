@@ -64,7 +64,7 @@
                         <span th:text="${item.product.name}" class="product-name">Product</span>
                     </div>
                 </td>
-                <!-- РУБЛИ -->
+                
                 <td th:text="${item.product.price} + ' ₽'">0 ₽</td>
                 <td>
                     <div class="qty-control">
@@ -73,7 +73,7 @@
                         <button class="qty-btn increase" th:data-id="${item.product.id}">+</button>
                     </div>
                 </td>
-                <!-- РУБЛИ -->
+                
                 <td class="price-text" th:text="${item.quantity * item.product.price} + ' ₽'">0 ₽</td>
                 <td><button class="remove-btn remove" th:data-id="${item.product.id}">✕</button></td>
             </tr>
@@ -83,7 +83,7 @@
         <div class="cart-footer">
             <button id="clear-btn" class="btn-clear">Очистить корзину</button>
             <div style="text-align: right;">
-                <!-- РУБЛИ -->
+                
                 <div style="margin-bottom: 10px;">Итого: <span id="total-price" class="total-price" th:text="${totalPrice} + ' ₽'">0.00 ₽</span></div>
                 <a th:href="@{/checkout}" class="btn-checkout">Оформить заказ</a>
             </div>

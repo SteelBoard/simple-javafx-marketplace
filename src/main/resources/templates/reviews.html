@@ -23,7 +23,7 @@
 
 <h1>Отзывы продукта</h1>
 
-<!-- Сортировка -->
+
 <div class="sort-container">
     <form method="get" th:action="@{'/product/' + ${productId} + '/reviews/all'}">
         <label for="sort">Сортировать:</label>
@@ -35,7 +35,7 @@
     </form>
 </div>
 
-<!-- Список отзывов -->
+
 <ul class="reviews-list">
     <li th:each="review : ${reviews.content}">
         <div>
@@ -46,7 +46,7 @@
     </li>
 </ul>
 
-<!-- Пагинация -->
+
 <div class="pagination" th:if="${reviews.content.size() > 0}">
     <span th:each="p : ${#numbers.sequence(0, reviews.totalPages - 1)}">
         <a th:href="@{'/product/' + ${productId} + '/reviews/all?(page=' + ${p} + ',sort=' + ${currentSort} + ')'}"

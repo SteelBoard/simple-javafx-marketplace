@@ -2,7 +2,7 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <body>
 
-<!-- Параметр activeTab передается при вызове фрагмента -->
+
 <div th:fragment="profile-sidebar(activeTab)">
     <div class="card sidebar-card" style="border: none; box-shadow: 0 4px 12px rgba(0,0,0,0.05); border-radius: 12px; overflow: hidden;">
         <div class="sidebar-header" style="background: #fff; padding: 25px 20px; text-align: center; border-bottom: 1px solid #eee;">
@@ -34,7 +34,7 @@
                 ⭐ Мои отзывы
             </a>
 
-            <!-- Показываем, если есть товары -->
+            
             <a href="/seller/products"
                class="list-group-item list-group-item-action"
                th:classappend="${activeTab == 'products'} ? 'active'">

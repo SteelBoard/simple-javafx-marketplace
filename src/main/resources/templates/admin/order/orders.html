@@ -38,7 +38,6 @@
 <table>
     <thead>
     <tr>
-        <!-- Исправлено построение URL: Thymeleaf сам проигнорирует search, если он null -->
         <th th:onclick="|window.location='@{/admin/orders(sort='id', dir=${sort=='id' and dir=='asc' ? 'desc' : 'asc'}, size=${size}, search=${search})}'|">ID</th>
 
         <th th:onclick="|window.location='@{/admin/orders(sort='user', dir=${sort=='user' and dir=='asc' ? 'desc' : 'asc'}, size=${size}, search=${search})}'|">Пользователь</th>
@@ -52,7 +51,6 @@
     </thead>
 
     <tbody>
-    <!-- Добавлена проверка на пустоту, чтобы таблица не ломалась -->
     <tr th:if="${ordersPage.empty}">
         <td colspan="5" style="text-align:center;">Заказы не найдены</td>
     </tr>
@@ -60,31 +58,25 @@
     <tr th:each="order : ${ordersPage.content}" class="clickable"
         th:onclick="|window.location='@{/admin/orders/}${order.id}'|">
         <td th:text="${order.id}"></td>
-        <!-- Используем безопасную навигацию ?., чтобы избежать ошибки, если user удален -->
         <td th:text="${order.user?.username}"></td>
         <td th:text="${order.status}"></td>
-        <!-- Исправлен формат децимал: (число, мин. целых, мин. дробных) -->
         <td th:text="${#numbers.formatDecimal(order.totalAmount, 1, 2)}"></td>
         <td th:text="${#dates.format(order.createdAt, 'yyyy-MM-dd HH:mm')}"></td>
     </tr>
     </tbody>
 </table>
 
-<!-- Пагинация показывается только если есть страницы -->
 <ul class="pagination" th:if="${ordersPage.totalPages > 0}">
-    <!-- Предыдущая страница -->
     <li th:classappend="${ordersPage.first} ? 'disabled'">
         <a th:href="${ordersPage.first} ? '#' : @{/admin/orders(page=${ordersPage.number - 1}, size=${size}, sort=${sort}, dir=${dir}, search=${search})}">←</a>
     </li>
 
-    <!-- Номера страниц -->
     <li th:each="i : ${#numbers.sequence(0, ordersPage.totalPages - 1)}"
         th:classappend="${i == ordersPage.number} ? 'active'">
         <a th:href="@{/admin/orders(page=${i}, size=${size}, sort=${sort}, dir=${dir}, search=${search})}"
            th:text="${i + 1}"></a>
     </li>
 
-    <!-- Следующая страница -->
     <li th:classappend="${ordersPage.last} ? 'disabled'">
         <a th:href="${ordersPage.last} ? '#' : @{/admin/orders(page=${ordersPage.number + 1}, size=${size}, sort=${sort}, dir=${dir}, search=${search})}">→</a>
     </li>

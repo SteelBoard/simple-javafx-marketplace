@@ -5,27 +5,21 @@
     <title>Админка — Редактирование отзыва</title>
     <style>
         body { font-family: Arial, sans-serif; margin: 20px; }
-
         table { width: 100%; border-collapse: collapse; max-width: 800px; }
         th, td { border: 1px solid #ccc; padding: 10px; vertical-align: top; }
         th { background: #f5f5f5; text-align: left; width: 200px; }
-
         .btn { padding: 8px 16px; border: 1px solid #333; background: #333; color: white; cursor: pointer; text-decoration: none; display: inline-block; font-size: 14px; margin-right: 10px;}
         .btn:hover { background: #555; }
         .btn-back { background: #fff; color: #333; }
         .btn-back:hover { background: #eee; }
         .btn-delete { background: #a00; border-color: #a00; float: right; }
         .btn-delete:hover { background: #c00; }
-
         .msg-box { padding: 10px; margin-bottom: 20px; border-radius: 4px; max-width: 800px; }
         .error { background-color: #fce4e4; border: 1px solid #fcc2c3; color: #cc0033; }
         .success { background-color: #e6ffe6; border: 1px solid #c3e6cb; color: #155724; }
-
         .readonly-text { color: #555; font-weight: bold; }
-
         input[type="number"] { padding: 5px; width: 60px; font-size: 16px; }
         textarea { width: 100%; height: 150px; padding: 8px; font-family: inherit; font-size: 14px; border: 1px solid #ccc; box-sizing: border-box; resize: vertical; }
-
         .link-item { color: #0066cc; text-decoration: none; }
         .link-item:hover { text-decoration: underline; }
     </style>
@@ -34,7 +28,6 @@
 
 <h2>Модерация отзыва #<span th:text="${review.id}"></span></h2>
 
-<!-- Сообщения -->
 <div th:if="${error}" class="msg-box error" th:text="${error}"></div>
 <div th:if="${param.success}" class="msg-box success">Отзыв успешно обновлен!</div>
 
@@ -45,11 +38,9 @@
             <td th:text="${review.id}"></td>
         </tr>
 
-        <!-- Инфо о пользователе (Только чтение) -->
         <tr>
             <th>Пользователь</th>
             <td>
-                <!-- Ссылка на профиль юзера (если есть такая страница) -->
                 <a th:href="@{/admin/users/{uid}(uid=${review.user.id})}" class="link-item"
                    th:text="${review.user.email}">user@example.com</a>
                 <div style="font-size: 0.8em; color: #777; margin-top: 5px;"
@@ -57,7 +48,6 @@
             </td>
         </tr>
 
-        <!-- Инфо о товаре (Только чтение) -->
         <tr>
             <th>Товар</th>
             <td>
@@ -73,7 +63,6 @@
             <td th:text="${#dates.format(review.createdAt, 'dd MMMM yyyy, HH:mm')}" class="readonly-text"></td>
         </tr>
 
-        <!-- Редактируемый Рейтинг -->
         <tr>
             <th>Рейтинг (1-5)</th>
             <td>
@@ -82,7 +71,6 @@
             </td>
         </tr>
 
-        <!-- Редактируемый Текст -->
         <tr>
             <th>Текст отзыва</th>
             <td>
@@ -95,8 +83,6 @@
         <button type="submit" class="btn">Сохранить изменения</button>
         <a th:href="@{/admin/reviews}" class="btn btn-back">← Назад</a>
 
-        <!-- Кнопка удаления (через отдельную форму или JS, здесь простая реализация через formaction не сработает в одной форме чисто, лучше JS или отдельная форма) -->
-        <!-- Для простоты сделаем кнопку типом button, которая сабмитит на другой URL через JS -->
         <button type="button" class="btn btn-delete"
                 th:onclick="|if(confirm('Удалить отзыв навсегда?')) { document.getElementById('deleteForm').submit(); }|">
             Удалить отзыв
@@ -104,7 +90,6 @@
     </div>
 </form>
 
-<!-- Скрытая форма для удаления -->
 <form id="deleteForm" th:action="@{/admin/reviews/{id}/delete(id=${review.id})}" method="post" style="display:none;"></form>
 
 </body>

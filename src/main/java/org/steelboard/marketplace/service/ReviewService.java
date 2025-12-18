@@ -56,9 +56,6 @@ public class ReviewService {
 
     @Transactional(readOnly = true)
     public Page<Review> findAll(String search, Pageable pageable) {
-        // Если строка поиска пустая, метод репозитория thanks to (:search IS NULL OR :search = '')
-        // всё равно вернет все записи, но можно оптимизировать вызов:
-
         if (search == null || search.isBlank()) {
             return reviewRepository.findAll(pageable);
         }

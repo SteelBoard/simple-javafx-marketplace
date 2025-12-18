@@ -28,7 +28,7 @@ public class AdminOrderController {
     private final OrderRepository orderRepository;
     private final PickupPointRepository pickupPointRepository;
 
-    // --- СПИСОК ЗАКАЗОВ ---
+    
     @GetMapping
     public String orders(
             @RequestParam(defaultValue = "0") int page,
@@ -47,18 +47,18 @@ public class AdminOrderController {
             String term = search.trim();
 
             if (term.startsWith("product:")) {
-                // === ПОИСК ПО ТОВАРУ ===
+                
                 try {
                     Long productId = Long.parseLong(term.split(":")[1]);
-                    // Вызываем наш @Query метод
+                    
                     ordersPage = orderRepository.findOrdersByProductId(productId, pageable);
                 } catch (NumberFormatException e) {
-                    // Если ввели чепуху типа "product:abc", возвращаем пустой результат или все
+                    
                     ordersPage = Page.empty();
                 }
 
             } else if (term.startsWith("pvz:")) {
-                // === ПОИСК ПО ПВЗ ===
+                
                 try {
                     Long pvzId = Long.parseLong(term.split(":")[1]);
                     ordersPage = orderRepository.findOrdersByPvzId(pvzId, pageable);
@@ -67,13 +67,13 @@ public class AdminOrderController {
                 }
 
             } else {
-                // === ОБЫЧНЫЙ ПОИСК (по юзеру или статусу) ===
-                // Оставляем твою старую логику
+                
+                
                 ordersPage = orderService.findByUsernameOrStatus(term, pageable);
             }
         } else {
-            // Если поиска нет, возвращаем всё
-            ordersPage = orderService.findAll(pageable); // Или orderRepository.findAll(pageable)
+            
+            ordersPage = orderService.findAll(pageable); 
         }
 
         model.addAttribute("ordersPage", ordersPage);
@@ -85,13 +85,13 @@ public class AdminOrderController {
         return "admin/order/orders";
     }
 
-    // --- ДЕТАЛИ ЗАКАЗА ---
+    
     @GetMapping("/{id}")
     public String orderDetails(@PathVariable Long id, Model model) {
         Order order = orderRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Заказ не найден"));
 
-        // Загружаем ПВЗ вместе с Адресами (оптимизация), сортируем по Городу, затем Улице
+        
         List<PickupPoint> pickupPoints = pickupPointRepository.findAllWithAddress(
                 Sort.by("address.city", "address.street", "address.houseNumber")
         );
@@ -102,7 +102,7 @@ public class AdminOrderController {
         return "admin/order/order_details";
     }
 
-    // --- ОБНОВЛЕНИЕ ЗАКАЗА ---
+    
     @PostMapping("/{id}/update")
     public String updateOrder(
             @PathVariable Long id,
@@ -112,16 +112,16 @@ public class AdminOrderController {
         Order order = orderRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Заказ не найден"));
 
-        // Обновляем статус
+        
         order.setStatus(status);
 
-        // Обновляем ПВЗ
+        
         if (pickupPointId != null) {
             PickupPoint pp = pickupPointRepository.findById(pickupPointId)
                     .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "ПВЗ не найден"));
             order.setPickupPoint(pp);
         } else {
-            // Если выбрали "Не выбрано"
+            
             order.setPickupPoint(null);
         }
 
@@ -130,7 +130,7 @@ public class AdminOrderController {
         return "redirect:/admin/orders/" + id;
     }
 
-    // --- ВСПОМОГАТЕЛЬНЫЕ МЕТОДЫ ---
+    
     private String mapSortField(String sort) {
         return switch (sort) {
             case "user" -> "user.username";

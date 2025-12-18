@@ -33,6 +33,6 @@ public class CartController {
                             @AuthenticationPrincipal User userDetails) {
         User user = userService.findById(userDetails.getId());
         cartService.addProductToCart(id, user);
-        return "redirect:/cart"; // после добавления перенаправляем на страницу корзины
+        return "redirect:/cart"; 
     }
 }

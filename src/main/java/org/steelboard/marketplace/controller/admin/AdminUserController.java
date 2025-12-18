@@ -8,7 +8,6 @@ import org.springframework.web.bind.annotation.*;
 import org.steelboard.marketplace.entity.Product;
 import org.steelboard.marketplace.entity.Review;
 import org.steelboard.marketplace.entity.User;
-import org.steelboard.marketplace.service.CartService;
 import org.steelboard.marketplace.service.ProductService;
 import org.steelboard.marketplace.service.ReviewService;
 import org.steelboard.marketplace.service.UserService;
@@ -27,7 +26,7 @@ public class AdminUserController {
     @GetMapping
     public String users(
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "20") int size,   // ← ВОТ ОН
+            @RequestParam(defaultValue = "20") int size,   
             @RequestParam(required = false) String q,
             Model model
     ) {
@@ -37,7 +36,7 @@ public class AdminUserController {
                 : userService.search(q.trim(), page, size);
 
         model.addAttribute("usersPage", usersPage);
-        model.addAttribute("size", size);   // ← прокидываем в thymeleaf
+        model.addAttribute("size", size);   
         model.addAttribute("q", q);
 
         return "admin/user/users";

@@ -21,10 +21,10 @@ public class AdminPickupPointController {
     private final PickupPointService pickupPointService;
     private final PickupPointRepository pickupPointRepository;
 
-    // Регулярное выражение: +7, пробел, 3 цифры, пробел, 3 цифры, тире, 2 цифры, тире, 2 цифры
+    
     private static final Pattern PHONE_PATTERN = Pattern.compile("^\\+7 \\d{3} \\d{3}-\\d{2}-\\d{2}$");
 
-    // --- СПИСОК ПВЗ ---
+    
     @GetMapping
     public String list(
             @RequestParam(defaultValue = "0") int page,
@@ -49,44 +49,44 @@ public class AdminPickupPointController {
         return "admin/pickup_point/pickup_points";
     }
 
-    // --- ДЕТАЛИ ---
+    
     @GetMapping("/{id}")
     public String details(@PathVariable Long id, Model model) {
         PickupPoint pickupPoint = pickupPointRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "ПВЗ не найден"));
         model.addAttribute("pickupPoint", pickupPoint);
-        return "admin/pickup_point/pickup_point_details"; // Убедитесь, что имя файла совпадает
+        return "admin/pickup_point/pickup_point_details"; 
     }
 
-    // --- ОБНОВЛЕНИЕ (С ВАЛИДАЦИЕЙ) ---
+    
     @PostMapping("/{id}/update")
     public String update(
             @PathVariable Long id,
             @RequestParam("phone") String phone,
-            Model model // Важно добавить Model для передачи ошибок
+            Model model 
     ) {
         PickupPoint pickupPoint = pickupPointRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "ПВЗ не найден"));
 
-        // 1. Проверяем формат телефона на сервере
+        
         if (phone == null || !PHONE_PATTERN.matcher(phone).matches()) {
-            // Если ошибка:
+            
             model.addAttribute("error", "Неверный формат телефона! Требуется: +7 XXX XXX-XX-XX");
 
-            // Устанавливаем введенный (неверный) телефон в объект, чтобы он отобразился в поле ввода
-            // и пользователю не пришлось вводить его заново. В базу НЕ сохраняем.
+            
+            
             pickupPoint.setPhone(phone);
             model.addAttribute("pickupPoint", pickupPoint);
 
-            // Возвращаем ту же страницу HTML (не редирект), чтобы показать ошибку
+            
             return "admin/pickup_point/pickup_point_details";
         }
 
-        // 2. Если все хорошо — сохраняем
+        
         pickupPoint.setPhone(phone);
         pickupPointRepository.save(pickupPoint);
 
-        // Редирект с параметром success
+        
         return "redirect:/admin/pickup-points/" + id + "?success";
     }
 

@@ -24,19 +24,19 @@ public class Address {
     private String country = "Россия";
 
     @Column(nullable = false)
-    private String city;              // "Москва"
+    private String city;              
 
     @Column(nullable = false)
-    private String street;            // "Ленина"
+    private String street;            
 
     @Column(name = "house_number", nullable = false)
-    private String houseNumber;       // "15", "15к1"
+    private String houseNumber;       
 
     @Column(name = "apartment_number")
-    private String apartmentNumber;   // для офисного ПВЗ, можно null
+    private String apartmentNumber;   
 
     @Column(name = "postal_code", nullable = false)
-    private String postalCode;        // "123456"
+    private String postalCode;        
 
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)

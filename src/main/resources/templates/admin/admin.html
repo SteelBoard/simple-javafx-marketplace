@@ -1,27 +1,85 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html lang="ru" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title>Admin panel</title>
-    <link rel="stylesheet" th:href="@{/css/admin.css}">
+    <title>Административная панель</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; color: #333; }
+        h1 { margin-bottom: 20px; }
+        h2 { margin-top: 30px; margin-bottom: 15px; font-size: 1.4em; }
+        .stats-container { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 15px; margin-bottom: 30px; }
+        .stat-card { border: 1px solid #ccc; padding: 15px; background: #f9f9f9; border-radius: 4px; }
+        .stat-card h3 { margin: 0 0 10px; font-size: 14px; color: #666; font-weight: normal; text-transform: uppercase; }
+        .stat-card .value { font-size: 24px; font-weight: bold; color: #000; }
+        .admin-nav { display: flex; gap: 10px; margin-bottom: 30px; flex-wrap: wrap; }
+        .admin-nav a { padding: 10px 20px; text-decoration: none; color: #333; border: 1px solid #ccc; background-color: #f5f5f5; border-radius: 4px; transition: background 0.2s, color 0.2s; font-weight: bold; }
+        .admin-nav a:hover { background-color: #333; color: white; border-color: #333; }
+        table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
+        th, td { border: 1px solid #ccc; padding: 10px; text-align: left; }
+        th { background: #f5f5f5; font-weight: bold; }
+        tr:hover { background: #f9f9f9; cursor: default; }
+        .empty-message { color: #888; font-style: italic; }
+    </style>
 </head>
 <body>
 
 <h1>Административная панель</h1>
 
-<nav>
-    <ul>
-        <li><a th:href="@{/admin/users}">Пользователи</a></li>
-        <li><a th:href="@{/admin/products}">Товары</a></li>
-        <li><a th:href="@{/admin/orders}">Заказы</a></li>
-        <li><a th:href="@{/admin/pickup-points}">ПВЗ</a></li>
-        <li><a th:href="@{/admin/reviews}">Отзывы</a></li>
-    </ul>
+<nav class="admin-nav">
+    <a th:href="@{/admin/users}">Пользователи</a>
+    <a th:href="@{/admin/products}">Товары</a>
+    <a th:href="@{/admin/orders}">Заказы</a>
+    <a th:href="@{/admin/pickup-points}">ПВЗ</a>
+    <a th:href="@{/admin/reviews}">Отзывы</a>
 </nav>
 
-<hr/>
+<div class="stats-container">
+    <div class="stat-card">
+        <h3>Общая выручка</h3>
+        <div class="value" th:text="${totalRevenue} + ' ₽'">0 ₽</div>
+    </div>
+    <div class="stat-card">
+        <h3>Заказов сегодня</h3>
+        <div class="value" th:text="${ordersToday}">0</div>
+    </div>
+    <div class="stat-card">
+        <h3>Всего пользователей</h3>
+        <div class="value" th:text="${totalUsers}">0</div>
+    </div>
+</div>
 
-<p>Выберите таблицу для просмотра и редактирования.</p>
+<hr style="border: 0; border-top: 1px solid #eee; margin: 30px 0;">
+
+<h2>Топ-5 товаров по выручке</h2>
+<p th:if="${topProducts.empty}" class="empty-message">Заказов пока нет, статистика недоступна.</p>
+
+<table th:if="${!topProducts.empty}">
+    <thead>
+    <tr>
+        <th style="width: 50px;">#</th>
+        <th>Название товара</th>
+        <th>Продано (шт.)</th>
+        <th>Выручка с товара</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr th:each="stat, iter : ${topProducts}">
+        <td th:text="${iter.count}">1</td>
+
+        <td>
+            <a th:href="@{/admin/products/{id}(id=${stat.productId})}"
+               th:text="${stat.productName}"
+               style="color: #333; text-decoration: none; font-weight: bold;">
+                Название
+            </a>
+        </td>
+
+        <td th:text="${stat.totalSoldQuantity}">100</td>
+
+        <td th:text="${stat.totalRevenue} + ' ₽'" style="color: green; font-weight: bold;">1000 ₽</td>
+    </tr>
+    </tbody>
+</table>
 
 </body>
 </html>

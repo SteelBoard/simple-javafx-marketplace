@@ -45,7 +45,7 @@ public class CheckoutController {
             @RequestParam Long pickupPointId
     ) {
         if (selectedProductIds == null || selectedProductIds.isEmpty()) {
-            // можно перенаправить обратно с ошибкой
+            
             return "redirect:/checkout?error=noProductsSelected";
         }
 

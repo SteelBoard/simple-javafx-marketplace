@@ -31,13 +31,13 @@ public class ProfileController {
 
     @GetMapping("/profile")
     public String getProfile(@AuthenticationPrincipal User userDetails, Model model) {
-        // Загружаем свежего юзера из БД
+        
         User user = userService.findById(userDetails.getId());
 
-        // Передаем юзера для отображения в сайдбаре (имя, роль)
+        
         model.addAttribute("user", user);
 
-        // Заполняем форму
+        
         UserUpdateDto dto = new UserUpdateDto();
         dto.setUsername(user.getUsername());
         dto.setEmail(user.getEmail());
@@ -56,47 +56,47 @@ public class ProfileController {
     ) {
         User user = userService.findById(userDetails.getId());
 
-        // 1. Проверка паролей
+        
         if (dto.isPasswordBeingUpdated() && !dto.getPassword().equals(dto.getConfirmPassword())) {
             bindingResult.rejectValue("confirmPassword", "error.userUpdateDto", "Пароли не совпадают");
         }
 
-        // 2. Проверка уникальности username (только если он изменился)
+        
         if (!user.getUsername().equals(dto.getUsername()) && userService.usernameExists(dto.getUsername())) {
             bindingResult.rejectValue("username", "error.userUpdateDto", "Этот Username уже занят");
         }
 
-        // Если есть ошибки - возвращаем форму НАЗАД
+        
         if (bindingResult.hasErrors()) {
-            // ВАЖНО: Возвращаем объект user, чтобы сайдбар не сломался
+            
             model.addAttribute("user", user);
             return "profile";
         }
 
         userService.updateUser(user, dto);
 
-        // Обновляем данные юзера для модели (чтобы сразу отобразилось новое имя в сайдбаре)
-        user = userService.findById(userDetails.getId()); // или просто обновить поля в объекте
+        
+        user = userService.findById(userDetails.getId()); 
         model.addAttribute("user", user);
 
         model.addAttribute("successMessage", "Профиль успешно обновлен");
         return "profile";
     }
 
-    @GetMapping("/orders/my") // Маппинг изменил на более логичный /profile/orders, но оставим как ты просил
-    // Лучше сделай @GetMapping("/my-orders") или внутри ProfileController
+    @GetMapping("/orders/my") 
+    
     public String getMyOrders(@AuthenticationPrincipal User userDetails, Model model) {
         User user = userService.findById(userDetails.getId());
-        model.addAttribute("user", user); // Для сайдбара
+        model.addAttribute("user", user); 
 
-        // Достаем заказы
+        
         List<Order> orders = orderService.findByUserId(user.getId());
         model.addAttribute("orders", orders);
 
         return "my_orders";
     }
 
-    // --- МОИ ОТЗЫВЫ ---
+    
     @GetMapping("/reviews/my")
     public String getMyReviews(@AuthenticationPrincipal User userDetails, Model model) {
         User user = userService.findById(userDetails.getId());
@@ -108,7 +108,7 @@ public class ProfileController {
         return "my_reviews";
     }
 
-    // --- МОИ ТОВАРЫ (Продавец) ---
+    
     @GetMapping("/seller/products")
     public String getMyProducts(@AuthenticationPrincipal User userDetails, Model model) {
         User user = userService.findById(userDetails.getId());

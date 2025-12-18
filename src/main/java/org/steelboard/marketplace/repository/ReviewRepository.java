@@ -23,7 +23,7 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
             "LEFT JOIN r.product p " +
             "WHERE (:search IS NULL OR :search = '' OR " +
             "LOWER(u.email) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
-            "LOWER(p.name) LIKE LOWER(CONCAT('%', :search, '%')) OR " + // <-- ИСПРАВЛЕНО ЗДЕСЬ (было p.title)
+            "LOWER(p.name) LIKE LOWER(CONCAT('%', :search, '%')) OR " + 
             "LOWER(r.comment) LIKE LOWER(CONCAT('%', :search, '%')))")
     Page<Review> search(@Param("search") String search, Pageable pageable);
 }

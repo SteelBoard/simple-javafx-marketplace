@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 
-// дописать обработчики
+
 @Slf4j
 @ControllerAdvice
 public class GlobalExceptionHandler {
@@ -37,11 +37,11 @@ public class GlobalExceptionHandler {
         return "index";
     }
 
-    // Валидация форм (Bean Validation)
+    
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public String handleValidation(MethodArgumentNotValidException e, Model model) {
         log.warn("Validation failed: {}", e.getMessage());
         model.addAttribute("errors", e.getBindingResult().getAllErrors());
-        return "auth/register"; // или другая форма
+        return "auth/register"; 
     }
 }

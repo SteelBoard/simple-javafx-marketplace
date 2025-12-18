@@ -4,67 +4,17 @@
     <meta charset="UTF-8">
     <title>Регистрация — SteelBoard</title>
     <style>
-        /* Базовые стили такие же, как в логине */
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f6f8; margin: 0; }
-
-        .auth-wrapper {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: calc(100vh - 60px);
-            padding: 40px 20px; /* Больше отступ сверху/снизу т.к. форма длинная */
-        }
-
-        .auth-card {
-            background: white;
-            padding: 40px;
-            border-radius: 10px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-            width: 100%;
-            max-width: 450px; /* Чуть шире для регистрации */
-        }
-
+        .auth-wrapper { display: flex; justify-content: center; align-items: center; min-height: calc(100vh - 60px); padding: 40px 20px; }
+        .auth-card { background: white; padding: 40px; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); width: 100%; max-width: 450px; }
         .auth-title { text-align: center; margin-bottom: 30px; color: #333; font-size: 24px; }
-
         .form-group { margin-bottom: 20px; }
         .form-label { display: block; margin-bottom: 8px; color: #555; font-weight: 500; }
-
-        .form-control {
-            width: 100%;
-            padding: 10px 12px;
-            border: 1px solid #ddd;
-            border-radius: 6px;
-            font-size: 16px;
-            box-sizing: border-box;
-            transition: border-color 0.2s;
-        }
+        .form-control { width: 100%; padding: 10px 12px; border: 1px solid #ddd; border-radius: 6px; font-size: 16px; box-sizing: border-box; transition: border-color 0.2s; }
         .form-control:focus { border-color: #3498db; outline: none; }
-
-        /* Стили для ошибки валидации */
-        .form-control.is-invalid {
-            border-color: #e74c3c;
-            background-color: #fdf2f2;
-        }
-        .error-message {
-            color: #e74c3c;
-            font-size: 13px;
-            margin-top: 5px;
-            display: block;
-        }
-
-        .btn-primary {
-            width: 100%;
-            padding: 12px;
-            background-color: #3498db;
-            color: white;
-            border: none;
-            border-radius: 6px;
-            font-size: 16px;
-            cursor: pointer;
-            transition: background 0.2s;
-        }
+        .error-message { color: #e74c3c; font-size: 13px; margin-top: 5px; display: block; }
+        .btn-primary { width: 100%; padding: 12px; background-color: #3498db; color: white; border: none; border-radius: 6px; font-size: 16px; cursor: pointer; transition: background 0.2s; }
         .btn-primary:hover { background-color: #2980b9; }
-
         .auth-footer { text-align: center; margin-top: 20px; font-size: 14px; color: #666; }
         .auth-link { color: #3498db; text-decoration: none; font-weight: 500; }
         .auth-link:hover { text-decoration: underline; }
@@ -72,7 +22,6 @@
 </head>
 <body>
 
-<!-- Шапка -->
 <div th:replace="~{fragments/header :: navbar}"></div>
 
 <div class="auth-wrapper">
@@ -81,7 +30,6 @@
 
         <form th:action="@{/register}" th:object="${user}" method="post">
 
-            <!-- Username -->
             <div class="form-group">
                 <label class="form-label">Имя пользователя</label>
                 <input type="text" th:field="*{username}"
@@ -91,7 +39,6 @@
                 <span th:if="${#fields.hasErrors('username')}" th:errors="*{username}" class="error-message"></span>
             </div>
 
-            <!-- Email -->
             <div class="form-group">
                 <label class="form-label">Email адрес</label>
                 <input type="email" th:field="*{email}"
@@ -101,7 +48,6 @@
                 <span th:if="${#fields.hasErrors('email')}" th:errors="*{email}" class="error-message"></span>
             </div>
 
-            <!-- Phone (с JS маской) -->
             <div class="form-group">
                 <label class="form-label">Телефон</label>
                 <input type="text" id="phoneInput" th:field="*{phoneNumber}"
@@ -110,8 +56,6 @@
                        placeholder="+7 999 000-00-00" maxlength="16">
                 <span th:if="${#fields.hasErrors('phoneNumber')}" th:errors="*{phoneNumber}" class="error-message"></span>
             </div>
-
-            <!-- Password -->
             <div class="form-group">
                 <label class="form-label">Пароль</label>
                 <input type="password" th:field="*{password}"
@@ -121,7 +65,6 @@
                 <span th:if="${#fields.hasErrors('password')}" th:errors="*{password}" class="error-message"></span>
             </div>
 
-            <!-- Confirm Password -->
             <div class="form-group">
                 <label class="form-label">Повторите пароль</label>
                 <input type="password" th:field="*{confirmPassword}"
@@ -140,7 +83,6 @@
     </div>
 </div>
 
-<!-- JS Маска для телефона (Та же, что и в админке) -->
 <script>
     document.addEventListener("DOMContentLoaded", function () {
         const input = document.getElementById("phoneInput");

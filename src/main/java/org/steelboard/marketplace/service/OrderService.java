@@ -27,7 +27,7 @@ public class OrderService {
     private final PickupPointRepository pickupPointRepository;
     private final PaymentService paymentService;
 
-    // 🔥 1. Внедряем ProductService
+    
     private final ProductService productService;
 
     public List<Order> findByUserId(Long userId) {
@@ -45,9 +45,9 @@ public class OrderService {
         Order order = orderRepository.findById(id)
                 .orElseThrow(() -> new OrderNotFoundException(id));
 
-        // 🔥 ПРОВЕРКА: "Свой-Чужой"
-        // Сравниваем email владельца заказа с тем, кто зашел
-        // (Предполагаю, что логин у тебя идет по email. Если нет - используй .getUsername())
+        
+        
+        
         if (!order.getUser().getUsername().equals(currentUsername)) {
             throw new AccessDeniedException("Вы не можете просматривать чужие заказы");
         }
@@ -89,10 +89,10 @@ public class OrderService {
                 .map(CartItem::getUnitPrice)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
-        // ==== ОПЛАТА ====
+        
         paymentService.pay(total);
 
-        // ==== СОЗДАНИЕ ЗАКАЗА ====
+        
         Order order = new Order();
         order.setUser(user);
         order.setPickupPoint(pickupPoint);
@@ -111,8 +111,8 @@ public class OrderService {
 
             orderItemRepository.save(oi);
 
-            // 🔥 2. Увеличиваем счетчик продаж
-            // Берем ID товара и кол-во из корзины
+            
+            
             productService.incrementProductSales(
                     ci.getProduct().getId(),
                     ci.getQuantity()

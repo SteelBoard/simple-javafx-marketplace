@@ -12,7 +12,7 @@
 
 <div class="container py-5">
     <div class="row">
-        <!-- Сайдбар (передаем activeTab='orders') -->
+        
         <div class="col-lg-3 mb-4">
             <div th:replace="~{fragments/sidebar :: profile-sidebar(activeTab='orders')}"></div>
         </div>
@@ -30,7 +30,7 @@
                         <strong>Заказ #<span th:text="${order.id}">123</span></strong>
                         <span class="text-muted ms-2" th:text="${#dates.format(order.createdAt, 'dd.MM.yyyy HH:mm')}">Date</span>
                     </div>
-                    <!-- Статус с цветом -->
+                    
                     <span class="badge rounded-pill"
                           th:classappend="${order.status.name() == 'COMPLETED'} ? 'bg-success' :
                                          (${order.status.name() == 'CANCELLED'} ? 'bg-danger' : 'bg-primary')"
@@ -39,7 +39,7 @@
                 <div class="card-body">
                     <div class="row align-items-center">
                         <div class="col-md-8">
-                            <!-- Список товаров (кратко) -->
+                            
                             <ul class="list-unstyled mb-0">
                                 <li th:each="item : ${order.orderItems}" class="mb-1">
                                     <span th:text="${item.product.name}">Product Name</span>

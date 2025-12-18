@@ -7,23 +7,19 @@
     <style>
         body { font-family: Arial, sans-serif; margin: 20px; }
 
-        /* Стили таблицы */
         table { width: 100%; border-collapse: collapse; }
         th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
         th { background: #f5f5f5; cursor: pointer; user-select: none; }
         th:hover { background: #e0e0e0; }
 
-        /* Интерактивность строк */
         tr:hover { background: #eef; }
         tr.clickable { cursor: pointer; }
 
-        /* Пагинация */
         .pagination { list-style: none; display: flex; gap: 5px; padding: 0; margin-top: 15px; }
         .pagination li a { padding: 6px 10px; border: 1px solid #aaa; text-decoration: none; color: black; }
         .pagination .active a { background: #333; color: white; border-color: #333; }
         .pagination .disabled a { color: #aaa; pointer-events: none; border-color: #ddd; }
 
-        /* Поиск и кнопки */
         .search-box { margin-bottom: 15px; }
         .search-box input[type="text"] { padding: 6px; width: 300px; margin-right: 10px; border: 1px solid #ccc; }
 
@@ -32,7 +28,7 @@
         .btn.reset { background: #999; border-color: #999; margin-left: 10px; }
         .btn.reset:hover { background: #777; }
 
-        .rating-star { color: #f5c518; } /* Цвет звезды */
+        .rating-star { color: #f5c518; }
         .sort-icon { font-size: 0.8em; margin-left: 5px; }
     </style>
 </head>
@@ -41,7 +37,6 @@
 
 <h2>Отзывы пользователей</h2>
 
-<!-- Поиск -->
 <div class="search-box">
     <form th:action="@{/admin/reviews}" method="get">
         <input type="text" name="search" placeholder="Email, товар или текст отзыва" th:value="${search}" />
@@ -50,76 +45,61 @@
     </form>
 </div>
 
-<!-- Таблица -->
 <table>
     <thead>
     <tr>
-        <!-- ID -->
         <th style="width: 50px;"
             th:onclick="|window.location='@{/admin/reviews(sort='id', dir=${sort=='id' and dir=='asc' ? 'desc' : 'asc'}, size=${size}, search=${search})}'|">
             ID <span th:if="${sort == 'id'}" th:text="${dir == 'asc' ? '▲' : '▼'}" class="sort-icon"></span>
         </th>
 
-        <!-- Дата (обычно важна для отзывов) -->
         <th style="width: 150px;"
             th:onclick="|window.location='@{/admin/reviews(sort='date', dir=${sort=='date' and dir=='asc' ? 'desc' : 'asc'}, size=${size}, search=${search})}'|">
             Дата <span th:if="${sort == 'date'}" th:text="${dir == 'asc' ? '▲' : '▼'}" class="sort-icon"></span>
         </th>
 
-        <!-- Пользователь -->
         <th th:onclick="|window.location='@{/admin/reviews(sort='user', dir=${sort=='user' and dir=='asc' ? 'desc' : 'asc'}, size=${size}, search=${search})}'|">
             Пользователь <span th:if="${sort == 'user'}" th:text="${dir == 'asc' ? '▲' : '▼'}" class="sort-icon"></span>
         </th>
 
-        <!-- Товар -->
         <th th:onclick="|window.location='@{/admin/reviews(sort='product', dir=${sort=='product' and dir=='asc' ? 'desc' : 'asc'}, size=${size}, search=${search})}'|">
             Товар <span th:if="${sort == 'product'}" th:text="${dir == 'asc' ? '▲' : '▼'}" class="sort-icon"></span>
         </th>
 
-        <!-- Рейтинг -->
         <th style="width: 100px;"
             th:onclick="|window.location='@{/admin/reviews(sort='rating', dir=${sort=='rating' and dir=='asc' ? 'desc' : 'asc'}, size=${size}, search=${search})}'|">
             Рейтинг <span th:if="${sort == 'rating'}" th:text="${dir == 'asc' ? '▲' : '▼'}" class="sort-icon"></span>
         </th>
 
-        <!-- Комментарий (без сортировки) -->
         <th>Комментарий</th>
     </tr>
     </thead>
 
     <tbody>
-    <!-- Пустой список -->
     <tr th:if="${page.empty}">
         <td colspan="6" style="text-align:center; padding: 20px; color: #777;">Отзывы не найдены</td>
     </tr>
 
-    <!-- Данные -->
     <tr th:each="review : ${page.content}" class="clickable"
         th:onclick="|window.location='@{/admin/reviews/{id}(id=${review.id})}'|">
 
         <td th:text="${review.id}"></td>
 
-        <!-- Форматирование даты -->
         <td th:text="${#dates.format(review.createdAt, 'yyyy-MM-dd HH:mm')}"></td>
 
-        <!-- Предполагаем, что у User есть email. Используем безопасную навигацию ?. -->
         <td th:text="${review.user?.email ?: 'Неизвестно'}"></td>
 
-        <!-- Предполагаем, что у Product есть title или name -->
         <td th:text="${review.product?.name ?: 'Товар удален'}"></td>
 
-        <!-- Рейтинг со звездой -->
         <td>
             <span class="rating-star">★</span> <span th:text="${review.rating}"></span>
         </td>
 
-        <!-- Обрезаем длинный текст -->
         <td th:text="${#strings.abbreviate(review.comment, 80)}"></td>
     </tr>
     </tbody>
 </table>
 
-<!-- Пагинация -->
 <ul class="pagination" th:if="${page.totalPages > 0}">
     <li th:classappend="${page.first} ? 'disabled'">
         <a th:href="${page.first} ? '#' : @{/admin/reviews(page=${page.number - 1}, size=${size}, sort=${sort}, dir=${dir}, search=${search})}">←</a>

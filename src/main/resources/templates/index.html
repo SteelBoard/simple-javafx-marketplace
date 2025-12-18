@@ -5,132 +5,35 @@
     <title>Главная — SteelBoard</title>
     <style>
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f6f8; margin: 0; }
-
-        /* Основной контейнер */
         .container { max-width: 1200px; margin: 30px auto; padding: 0 20px; }
-
-        /* Панель инструментов (Сортировка и инфо) */
-        .toolbar {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-            background: white;
-            padding: 15px;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-        }
-        .sort-links a {
-            text-decoration: none;
-            color: #555;
-            margin-left: 15px;
-            font-size: 14px;
-        }
+        .toolbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; background: white; padding: 15px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+        .sort-links a { text-decoration: none; color: #555; margin-left: 15px; font-size: 14px; }
         .sort-links a.active { color: #3498db; font-weight: bold; }
-
-        /* СЕТКА ТОВАРОВ */
-        .product-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-            gap: 20px;
-        }
-
-        /* Карточка товара */
-        .product-card {
-            background: white;
-            border-radius: 10px;
-            overflow: hidden;
-            transition: transform 0.2s, box-shadow 0.2s;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-            display: flex;
-            flex-direction: column;
-        }
-        .product-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
-        }
-
-        /* Изображение */
-        .card-img-wrapper {
-            height: 200px;
-            background: #eee;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            overflow: hidden;
-        }
-        .card-img-wrapper img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover; /* Чтобы картинка заполняла область красиво */
-        }
+        .product-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 20px; }
+        .product-card { background: white; border-radius: 10px; overflow: hidden; transition: transform 0.2s, box-shadow 0.2s; box-shadow: 0 2px 5px rgba(0,0,0,0.05); display: flex; flex-direction: column; }
+        .product-card:hover { transform: translateY(-5px); box-shadow: 0 10px 20px rgba(0,0,0,0.1); }
+        .card-img-wrapper { height: 200px; background: #eee; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+        .card-img-wrapper img { width: 100%; height: 100%; object-fit: cover; }
         .no-image { color: #aaa; font-size: 40px; }
-
-        /* Контент карточки */
         .card-body { padding: 15px; flex-grow: 1; display: flex; flex-direction: column; }
-
-        .card-price {
-            font-size: 20px;
-            font-weight: bold;
-            color: #333;
-            margin-bottom: 5px;
-        }
-        .card-title {
-            font-size: 16px;
-            color: #555;
-            text-decoration: none;
-            margin-bottom: 10px;
-            line-height: 1.4;
-            flex-grow: 1; /* Толкает кнопку вниз */
-        }
+        .card-price { font-size: 20px; font-weight: bold; color: #333; margin-bottom: 5px; }
+        .card-title { font-size: 16px; color: #555; text-decoration: none; margin-bottom: 10px; line-height: 1.4; flex-grow: 1; }
         .card-title:hover { color: #3498db; }
-
-        /* Кнопка "В корзину" */
-        .btn-cart {
-            display: block;
-            text-align: center;
-            background-color: #3498db;
-            color: white;
-            text-decoration: none;
-            padding: 10px;
-            border-radius: 6px;
-            font-weight: 500;
-            transition: background 0.2s;
-            margin-top: 10px;
-        }
+        .btn-cart { display: block; text-align: center; background-color: #3498db; color: white; text-decoration: none; padding: 10px; border-radius: 6px; font-weight: 500; transition: background 0.2s; margin-top: 10px; }
         .btn-cart:hover { background-color: #2980b9; }
-
-        /* Пагинация */
-        .pagination {
-            display: flex;
-            justify-content: center;
-            margin-top: 40px;
-            gap: 5px;
-        }
-        .pagination a {
-            padding: 8px 14px;
-            background: white;
-            border: 1px solid #ddd;
-            text-decoration: none;
-            color: #333;
-            border-radius: 4px;
-        }
-        .pagination a.active { background: #333; color: white; border-color: #333; }
-        .pagination a.disabled { color: #ccc; pointer-events: none; }
-        .pagination a:hover:not(.active) { background: #f0f0f0; }
-
-        /* Если список пуст */
+        .pagination { display: flex; justify-content: center; margin-top: 40px; gap: 5px; }
+        .pagination a { padding: 8px 14px; background: white; border: 1px solid #ddd; text-decoration: none; color: #333; border-radius: 4px; }
         .empty-state { text-align: center; padding: 50px; color: #777; width: 100%; grid-column: 1 / -1; }
     </style>
 </head>
 <body>
 
-<!-- Подключаем шапку -->
+
 <div th:replace="~{fragments/header :: navbar}"></div>
 
 <div class="container">
 
-    <!-- Верхняя панель -->
+    
     <div class="toolbar">
         <div>
             Найдено товаров: <b th:text="${productPage.totalElements}">0</b>
@@ -139,7 +42,7 @@
 
         <div class="sort-links">
             <span>Сортировка:</span>
-            <!-- Ссылки меняют параметр sortOrder, но сохраняют search и page -->
+            
             <a th:href="@{/(search=${search}, page=0, sortField='price', sortOrder='asc')}"
                th:classappend="${sortField == 'price' and sortOrder == 'asc'} ? 'active'">Сначала дешевые</a>
 
@@ -151,35 +54,35 @@
         </div>
     </div>
 
-    <!-- Сетка товаров -->
+    
     <div class="product-grid">
 
-        <!-- Сообщение, если пусто -->
+        
         <div th:if="${productPage.empty}" class="empty-state">
             <h3>Товары не найдены 😔</h3>
             <p>Попробуйте изменить параметры поиска</p>
             <a th:href="@{/}" class="btn-cart" style="display:inline-block; width: auto; margin-top: 10px;">Сбросить фильтры</a>
         </div>
 
-        <!-- Карточка -->
+        
         <div th:each="product : ${productPage.content}" class="product-card">
 
-            <!-- Картинка (Ссылка на детальную страницу) -->
+            
             <a th:href="@{/product/{id}(id=${product.id})}" class="card-img-wrapper">
                 <img th:if="${product.mainImageUrl != null}" th:src="${product.mainImageUrl}" alt="Фото товара">
                 <div th:if="${product.mainImageUrl == null}" class="no-image">📷</div>
             </a>
 
             <div class="card-body">
-                <!-- Цена -->
+                
                 <div class="card-price" th:text="|${product.price} ₽|">0 ₽</div>
 
-                <!-- Название -->
+                
                 <a th:href="@{/product/{id}(id=${product.id})}" class="card-title" th:text="${product.name}">Название</a>
 
-                <!-- Кнопка В корзину -->
-                <!-- Используем форму POST для безопасности, или ссылку GET, если у вас так настроено -->
-                <!-- Вариант со ссылкой (как у вас было): -->
+                
+                
+                
                 <a th:href="@{/cart/add/{id}(id=${product.id})}" class="btn-cart">
                     В корзину
                 </a>
@@ -187,21 +90,21 @@
         </div>
     </div>
 
-    <!-- Пагинация -->
+    
     <div class="pagination" th:if="${productPage.totalPages > 1}">
-        <!-- Назад -->
+        
         <a th:href="@{/(page=${currentPage - 1}, search=${search}, sortField=${sortField}, sortOrder=${sortOrder})}"
            th:classappend="${productPage.first} ? 'disabled'">←</a>
 
-        <!-- Номера страниц -->
-        <!-- Показываем не все страницы, если их много (простая логика: первые 5) -->
+        
+        
         <a th:each="i : ${#numbers.sequence(0, productPage.totalPages - 1)}"
            th:if="${i < 10}"
            th:href="@{/(page=${i}, search=${search}, sortField=${sortField}, sortOrder=${sortOrder})}"
            th:text="${i + 1}"
            th:classappend="${i == currentPage} ? 'active'">1</a>
 
-        <!-- Вперед -->
+        
         <a th:href="@{/(page=${currentPage + 1}, search=${search}, sortField=${sortField}, sortOrder=${sortOrder})}"
            th:classappend="${productPage.last} ? 'disabled'">→</a>
     </div>

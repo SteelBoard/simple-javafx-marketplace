@@ -18,8 +18,8 @@ public class PickupPoint {
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "address_id", nullable = false)
-    private Address address;          // нормализованный адрес
+    private Address address;
 
     @Column
-    private String phone;             // телефон ПВЗ
+    private String phone;
 }

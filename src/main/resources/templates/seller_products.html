@@ -12,7 +12,7 @@
 
 <div class="col-lg-9">
 
-    <!-- Дальше идет таблица с товарами... -->
+    
 </div>
 
 <div class="container py-5">
@@ -58,7 +58,7 @@
                             </td>
                             <td class="text-end pe-4">
                                 <a th:href="@{/product/edit/{id}(id=${product.id})}" class="btn btn-sm btn-outline-secondary me-1">✏️</a>
-                                <!-- Форма удаления (лучше делать через POST/DELETE) -->
+                                
                                 <form th:action="@{/product/delete/{id}(id=${product.id})}" method="post" style="display:inline;" onsubmit="return confirm('Удалить товар?');">
                                     <button type="submit" class="btn btn-sm btn-outline-danger">🗑</button>
                                 </form>

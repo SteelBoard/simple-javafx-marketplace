@@ -6,32 +6,19 @@
     <style>
         body { font-family: 'Segoe UI', sans-serif; background-color: #f4f6f8; margin: 0; }
         .container { max-width: 1100px; margin: 30px auto; padding: 0 20px; }
-
-        /* Сетка товара */
         .product-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; background: white; padding: 30px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
-
-        /* Галерея */
         .gallery-main { width: 100%; aspect-ratio: 1/1; object-fit: contain; border-radius: 8px; border: 1px solid #f0f0f0; margin-bottom: 10px; }
         .gallery-thumbs { display: flex; gap: 10px; overflow-x: auto; padding-bottom: 5px; }
         .thumb { width: 70px; height: 70px; object-fit: cover; border-radius: 4px; cursor: pointer; border: 2px solid transparent; opacity: 0.7; transition: 0.2s; }
         .thumb:hover, .thumb.active { border-color: #3498db; opacity: 1; }
-
-        /* Инфо */
         h1 { margin-top: 0; font-size: 28px; color: #333; line-height: 1.2; }
-
-        /* ЦЕНА В РУБЛЯХ */
         .price-tag { font-size: 32px; font-weight: bold; color: #333; margin: 15px 0; }
-
         .rating { color: #f5c518; font-size: 18px; margin-bottom: 20px; }
-
         .btn-add { display: inline-block; background-color: #3498db; color: white; padding: 15px 30px; text-decoration: none; border-radius: 6px; font-size: 18px; font-weight: 600; transition: 0.2s; }
         .btn-add:hover { background-color: #2980b9; transform: translateY(-2px); }
-
         .desc-block { margin-top: 30px; }
         .desc-title { font-size: 18px; font-weight: bold; margin-bottom: 10px; border-bottom: 2px solid #3498db; display: inline-block; padding-bottom: 5px; }
         .desc-text { color: #555; line-height: 1.6; }
-
-        /* Отзывы */
         .reviews-section { margin-top: 40px; background: white; padding: 30px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
         .review-card { border-bottom: 1px solid #eee; padding: 20px 0; }
         .review-card:last-child { border-bottom: none; }
@@ -39,7 +26,6 @@
         .user-name { font-weight: bold; color: #333; }
         .review-rating { color: #f5c518; }
         .review-text { color: #555; line-height: 1.5; }
-
         .form-review { background: #f9f9f9; padding: 20px; border-radius: 8px; margin-top: 20px; }
         .form-review textarea { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; margin-bottom: 10px; }
     </style>
@@ -50,7 +36,7 @@
 
 <div class="container">
     <div class="product-grid">
-        <!-- Левая часть: Фото -->
+        
         <div>
             <img id="mainImage" th:src="${product.mainImageUrl}" class="gallery-main" alt="Product">
             <div class="gallery-thumbs">
@@ -59,7 +45,7 @@
             </div>
         </div>
 
-        <!-- Правая часть: Инфо -->
+        
         <div>
             <h1 th:text="${product.name}">Название товара</h1>
 
@@ -68,7 +54,7 @@
                 <span style="color: #999; font-size: 14px; margin-left: 10px;">(Оценок: <span th:text="${#lists.size(reviews)}">10</span>)</span>
             </div>
 
-            <!-- ИСПРАВЛЕНО: Рубли вместо доллара -->
+            
             <div class="price-tag" th:text="${product.price} + ' ₽'">9 990 ₽</div>
 
             <a th:href="@{/cart/add/{id}(id=${product.id})}" class="btn-add">Добавить в корзину</a>
@@ -80,7 +66,7 @@
         </div>
     </div>
 
-    <!-- Блок отзывов -->
+    
     <div class="reviews-section">
         <div style="display:flex; justify-content:space-between; align-items:center;">
             <h2>Отзывы</h2>

@@ -53,7 +53,7 @@ public class ProductController {
     }
 
     @GetMapping("/{id}/reviews")
-    @ResponseBody  // Важный момент — возвращаем HTML прямо как строку
+    @ResponseBody  
     public String getProductReviews(
             @PathVariable Long id,
             @RequestParam(defaultValue = "best") String sort) {
@@ -127,10 +127,10 @@ public class ProductController {
                              @AuthenticationPrincipal User user) {
 
         if (bindingResult.hasErrors()) {
-            return "add_product"; // возвращаем форму с ошибками
+            return "add_product"; 
         }
 
-        // Логика сохранения картинок и продукта, как раньше
+        
         String mainImagePath =
                 fileStorageService.saveFile(productDto.getMainImage(), "products");
 

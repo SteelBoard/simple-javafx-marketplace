@@ -26,12 +26,12 @@ public class FileStorageService {
             String fileName = UUID.randomUUID() + extension;
 
             Path targetDir = UPLOAD_ROOT.resolve(subDir);
-            Files.createDirectories(targetDir); // 💥 обязательно
+            Files.createDirectories(targetDir); 
 
             Path targetFile = targetDir.resolve(fileName);
             file.transferTo(targetFile.toFile());
 
-            // путь для браузера / БД
+            
             return "/uploads/" + subDir + "/" + fileName;
 
         } catch (IOException e) {

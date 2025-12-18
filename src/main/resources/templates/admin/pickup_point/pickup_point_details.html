@@ -8,24 +8,17 @@
         table { width: 100%; border-collapse: collapse; }
         th, td { border: 1px solid #ccc; padding: 8px; }
         th { background: #f5f5f5; text-align: left; width: 200px; }
-
-        /* Стили для кнопок */
         .btn { padding: 6px 14px; border: 1px solid #333; background: #333; color: white; cursor: pointer; text-decoration: none; display: inline-block; font-size: 13.33px; }
         .btn:hover { background: #555; }
         .btn-back { background: #fff; color: #333; margin-left: 10px; }
         .btn-back:hover { background: #eee; }
-
-        /* Сообщения */
         .msg-box { padding: 10px; margin-bottom: 20px; border-radius: 4px; }
         .error { background-color: #fce4e4; border: 1px solid #fcc2c3; color: #cc0033; }
         .success { background-color: #e6ffe6; border: 1px solid #c3e6cb; color: #155724; }
-
         .links { margin-top: 30px; }
         .links a { margin-right: 15px; text-decoration: none; color: #0066cc; }
         .links a:hover { text-decoration: underline; }
-
         input[type="text"] { padding: 5px; width: 300px; border: 1px solid #ccc; font-size: 14px;}
-
         .readonly-text { color: #333; }
     </style>
 </head>
@@ -33,7 +26,6 @@
 
 <h2>Пункт выдачи (ПВЗ)</h2>
 
-<!-- Блок сообщений -->
 <div th:if="${error}" class="msg-box error" th:text="${error}"></div>
 <div th:if="${param.success}" class="msg-box success">Телефон успешно обновлен!</div>
 
@@ -44,7 +36,6 @@
             <td th:text="${pickupPoint.id}"></td>
         </tr>
 
-        <!-- Блок Адреса (Только чтение) -->
         <tr>
             <th>Страна</th>
             <td th:text="${pickupPoint.address.country}" class="readonly-text"></td>
@@ -76,11 +67,9 @@
             <td th:text="${pickupPoint.address.postalCode}" class="readonly-text"></td>
         </tr>
 
-        <!-- Редактируемое поле -->
         <tr>
             <th>Телефон</th>
             <td>
-                <!-- Добавили id, placeholder и maxlength -->
                 <input type="text" id="phoneInput" name="phone"
                        th:value="${pickupPoint.phone}"
                        placeholder="+7 999 000-00-00"
@@ -92,7 +81,6 @@
             </td>
         </tr>
 
-        <!-- Техническая информация -->
         <tr>
             <th>Дата создания</th>
             <td th:text="${#dates.format(pickupPoint.address.createdAt, 'yyyy-MM-dd HH:mm')}"
@@ -106,35 +94,26 @@
     </div>
 </form>
 
-<!-- Ссылки -->
 <div class="links">
     <a th:href="@{/admin/orders(search=${'pvz:' + pickupPoint.id})}">
         Посмотреть все заказы на этом ПВЗ
     </a>
 </div>
 
-<!-- JavaScript Маска для телефона -->
 <script>
     document.addEventListener("DOMContentLoaded", function () {
         const input = document.getElementById("phoneInput");
 
-        // Функция форматирования значения
         function formatPhone(value) {
-            // Удаляем всё, кроме цифр
             let digits = value.replace(/\D/g, "");
 
-            // Если ничего не введено, возвращаем пусто
             if (!digits) return "";
 
-            // Если первая цифра 8 (частая ошибка в РФ), меняем на 7
             if (digits[0] === "8") digits = "7" + digits.substring(1);
-            // Если первая не 7, принудительно ставим 7
             if (digits[0] !== "7") digits = "7" + digits;
 
-            // Обрезаем до 11 цифр (7 + 10 цифр номера)
             digits = digits.substring(0, 11);
 
-            // Формируем строку по кусочкам
             let res = "+7";
             if (digits.length > 1) res += " " + digits.substring(1, 4);
             if (digits.length > 4) res += " " + digits.substring(4, 7);
@@ -145,12 +124,10 @@
         }
 
         input.addEventListener("input", function (e) {
-            // Форматируем текущее значение
             const formatted = formatPhone(e.target.value);
             e.target.value = formatted;
         });
 
-        // При фокусе, если поле пустое, сразу ставим "+7 "
         input.addEventListener("focus", function () {
             if (this.value === "") {
                 this.value = "+7 ";

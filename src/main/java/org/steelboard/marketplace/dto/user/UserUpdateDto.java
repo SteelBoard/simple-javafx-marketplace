@@ -23,7 +23,6 @@ public class UserUpdateDto {
     private String password;
     private String confirmPassword;
 
-    // Хелпер, чтобы понять, меняет ли юзер пароль
     public boolean isPasswordBeingUpdated() {
         return password != null && !password.isBlank();
     }

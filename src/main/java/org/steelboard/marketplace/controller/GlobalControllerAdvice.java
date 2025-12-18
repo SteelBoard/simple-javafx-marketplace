@@ -19,18 +19,18 @@ public class GlobalControllerAdvice {
     public int populateCartItemCount() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
-        // Если пользователь не залогинен (аноним), корзина пуста (или 0)
+        
         if (authentication == null || authentication instanceof AnonymousAuthenticationToken) {
             return 0;
         }
 
         String username = authentication.getName();
-        // Находим юзера и его корзину
-        // Важно: в User.java у вас cart FetchType.LAZY (по дефолту для OneToOne),
-        // но Cart.java имеет cartItems EAGER, так что size() сработает.
+        
+        
+        
         return userRepository.findByUsername(username)
                 .map(User::getCart)
-                .map(cart -> cart.getCartItems().size()) // Считаем количество уникальных позиций
+                .map(cart -> cart.getCartItems().size()) 
                 .orElse(0);
     }
 
