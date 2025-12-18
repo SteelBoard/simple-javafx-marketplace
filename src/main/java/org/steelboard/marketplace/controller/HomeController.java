@@ -39,7 +39,7 @@ public class HomeController {
         if (search != null && !search.isEmpty()) {
             productPage = productService.searchProductsByName(search, pageable);
         } else {
-            productPage = productService.getProducts(pageable);
+            productPage = productService.getProductsActive(pageable);
         }
 
         model.addAttribute("productPage", productPage);

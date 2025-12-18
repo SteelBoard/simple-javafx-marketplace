@@ -47,7 +47,7 @@ public class AdminProductController {
         if (search != null && !search.isBlank()) {
             productsPage = productService.searchProductsByName(search, pageRequest);
         } else {
-            productsPage = productService.getProducts(pageRequest);
+            productsPage = productService.getAllProducts(pageRequest);
         }
 
         model.addAttribute("productsPage", productsPage);

@@ -20,6 +20,17 @@
         .btn-confirm { background-color: #27ae60; color: white; width: 100%; padding: 12px; border: none; border-radius: 6px; font-size: 16px; font-weight: bold; cursor: pointer; margin-top: 10px; }
         .checkbox-wrapper { display: flex; align-items: center; gap: 10px; }
         input[type="checkbox"] { width: 18px; height: 18px; cursor: pointer; }
+
+        /* !!! ДОБАВЛЕНЫ СТИЛИ ДЛЯ ОШИБКИ !!! */
+        .alert-error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+            padding: 15px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            font-weight: 500;
+        }
     </style>
 </head>
 <body>
@@ -29,17 +40,29 @@
 <div class="container">
     <h1>Оформление заказа</h1>
 
+    <!-- !!! БЛОК ВЫВОДА ОШИБКИ !!! -->
+    <div th:if="${error}" class="alert-error">
+        <span th:text="${error}">Текст ошибки</span>
+    </div>
+
     <div th:if="${#lists.isEmpty(cartItems)}">
         <p>Корзина пуста. <a th:href="@{/}">В каталог</a></p>
     </div>
 
+    <!--
+       У select удален required, чтобы проверку делал сервер (Spring)
+       и выводил красивую ошибку, а не браузерное стандартное сообщение.
+       Но можно и оставить required, тогда сработают обе защиты.
+    -->
     <form th:if="${!#lists.isEmpty(cartItems)}" id="checkout-form" method="post" th:action="@{/checkout}">
         <div class="checkout-grid">
+            <!-- (Остальной код формы без изменений) -->
 
             <div class="card">
                 <h2>1. Выберите товары для заказа</h2>
                 <div th:each="item : ${cartItems}" class="item-row">
                     <div class="checkbox-wrapper">
+                        <!-- ... контент товаров ... -->
                         <input type="checkbox" class="select-product" checked
                                th:data-id="${item.product.id}"
                                th:data-price="${item.product.price}"
@@ -52,7 +75,6 @@
                             </div>
                         </div>
                     </div>
-                    
                     <div th:text="${item.quantity * item.product.price} + ' ₽'" style="font-weight: 600;">000 ₽</div>
                 </div>
             </div>
@@ -65,8 +87,10 @@
                         <input type="text" id="city-filter" placeholder="Начните вводить город...">
                     </div>
                     <div class="form-group">
-                        <label>Выберите пункт выдачи</label>
-                        <select name="pickupPointId" id="pickup-point" required size="5" style="height: 120px;">
+                        <label>Выберите пункт выдачи <span style="color:red">*</span></label>
+
+                        <!-- select оставляем как есть, или убираем required если хотим тестировать серверную ошибку -->
+                        <select name="pickupPointId" id="pickup-point" size="5" style="height: 120px;">
                             <option value="" disabled selected>-- Выберите из списка --</option>
                             <option th:each="pp : ${pickupPoints}" th:value="${pp.id}" th:text="${pp.address.city + ', ' + pp.address.street + ' ' + pp.address.houseNumber}"></option>
                         </select>
@@ -96,8 +120,10 @@
     </form>
 </div>
 
+<!-- Скрипт оставляем как есть -->
 <script>
     document.addEventListener("DOMContentLoaded", () => {
+        // ... ваш JS код без изменений ...
         const checkboxes = document.querySelectorAll(".select-product");
         const totalLabel = document.getElementById("total-label");
         const subtotalLabel = document.getElementById("subtotal-label");
@@ -121,7 +147,6 @@
                 }
             });
 
-            // ИСПРАВЛЕНО: Добавлен символ рубля
             const formattedSum = sum.toFixed(2) + ' ₽';
             totalLabel.textContent = formattedSum;
             subtotalLabel.textContent = formattedSum;

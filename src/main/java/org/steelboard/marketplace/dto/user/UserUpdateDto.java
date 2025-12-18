@@ -17,10 +17,18 @@ public class UserUpdateDto {
     @Email(message = "Некорректный формат Email")
     private String email;
 
-    @Pattern(regexp = "^\\+?[0-9]{10,15}$", message = "Телефон должен содержать 10-15 цифр")
+    @NotBlank(message = "Телефон обязателен")
+    // Используем тот же строгий паттерн, что и при регистрации
+    @Pattern(regexp = "^\\+7 \\d{3} \\d{3}-\\d{2}-\\d{2}$", message = "Формат: +7 999 000-00-00")
     private String phoneNumber;
 
+    // Убрали @NotBlank, так как смена пароля опциональна.
+    // Но если пароль введен, он должен быть не менее 6 символов.
+    // Примечание: Стандартный @Size может сработать на пустую строку,
+    // поэтому логику длины пароля при обновлении часто выносят в кастомный валидатор или проверяют в контроллере.
+    // Однако, для телефона главное изменение выше.
     private String password;
+
     private String confirmPassword;
 
     public boolean isPasswordBeingUpdated() {

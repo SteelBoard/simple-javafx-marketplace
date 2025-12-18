@@ -39,7 +39,7 @@
                                 <span th:each="i : ${#numbers.sequence(1, review.rating)}">★</span><span th:if="${review.rating < 5}" th:each="i : ${#numbers.sequence(review.rating + 1, 5)}" class="text-muted">★</span>
                             </div>
 
-                            <p class="card-text text-secondary" th:text="${review.content}">Текст отзыва...</p>
+                            <p class="card-text text-secondary" th:text="${review.comment}">Текст отзыва...</p>
                         </div>
                     </div>
                 </div>

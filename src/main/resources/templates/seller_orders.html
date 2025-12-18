@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Входящие заказы</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style> body { background-color: #f8f9fa; } </style>
+</head>
+<body>
+
+<div th:replace="~{fragments/header :: navbar}"></div>
+
+<div class="container py-5">
+    <div class="row">
+
+        <!-- Сайдбар (активная вкладка 'incoming') -->
+        <div class="col-lg-3 mb-4">
+            <div th:replace="~{fragments/sidebar :: profile-sidebar(activeTab='incoming')}"></div>
+        </div>
+
+        <div class="col-lg-9">
+            <h3 class="mb-4">Входящие заказы (Продажи)</h3>
+
+            <!-- Блок уведомлений (успех/ошибка при смене статуса) -->
+            <div th:if="${successMessage}" class="alert alert-success alert-dismissible fade show border-0 shadow-sm mb-4">
+                <span th:text="${successMessage}">Статус обновлен</span>
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+            <div th:if="${errorMessage}" class="alert alert-danger alert-dismissible fade show border-0 shadow-sm mb-4">
+                <span th:text="${errorMessage}">Ошибка</span>
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+
+            <!-- Если заказов нет -->
+            <div th:if="${orders.isEmpty()}" class="alert alert-info border-0 shadow-sm">
+                У вас пока нет активных заказов на продажу.
+            </div>
+
+            <!-- Список заказов -->
+            <div th:each="order : ${orders}" class="card mb-3 shadow-sm" style="border: none; border-radius: 10px;">
+
+                <!-- Шапка карточки -->
+                <div class="card-header bg-white d-flex justify-content-between align-items-center py-3">
+                    <div>
+                        <strong>Заказ #<span th:text="${order.id}">123</span></strong>
+                        <span class="text-muted ms-2" th:text="${#dates.format(order.createdAt, 'dd.MM.yyyy HH:mm')}">Date</span>
+                    </div>
+
+                    <!-- Статусы: CONFIRMED(желтый), SHIPPED(синий), DELIVERED(зеленый) -->
+                    <span class="badge rounded-pill"
+                          th:classappend="${order.status.name() == 'DELIVERED'} ? 'bg-success' :
+                                         (${order.status.name() == 'SHIPPED'} ? 'bg-primary' : 'bg-warning text-dark')"
+                          th:text="${order.status}">STATUS</span>
+                </div>
+
+                <div class="card-body">
+
+                    <!-- Инфо о покупателе (видно только продавцу) -->
+                    <div class="row mb-3 pb-3 border-bottom">
+                        <div class="col-md-6">
+                            <small class="text-muted d-block">Покупатель:</small>
+                            <span class="fw-medium" th:text="${order.user.username}">Username</span>
+                            <span class="text-muted small" th:text="'(' + ${order.user.email} + ')'">email</span>
+                        </div>
+                        <div class="col-md-6 text-md-end mt-2 mt-md-0">
+                            <small class="text-muted d-block">Куда отправлять (ПВЗ):</small>
+                            <span th:if="${order.pickupPoint}">
+                                <span th:text="${order.pickupPoint.address.city}">City</span>,
+                                <span th:text="${order.pickupPoint.address.street}">Street</span>
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="row align-items-center">
+                        <div class="col-md-7">
+                            <!-- Список товаров -->
+                            <ul class="list-unstyled mb-0">
+                                <li th:each="item : ${order.orderItems}" class="mb-2 d-flex justify-content-between">
+                                    <span>
+                                        <span th:text="${item.product.name}">Product Name</span>
+                                        <span class="text-muted" style="font-size: 0.9em;"> x <span th:text="${item.quantity}">1</span></span>
+                                    </span>
+                                    <span class="fw-bold text-muted" style="font-size: 0.9em;" th:text="${item.unitPrice} + ' ₽'">1000 ₽</span>
+                                </li>
+                            </ul>
+                        </div>
+
+                        <!-- Правая часть с Итого и Кнопкой -->
+                        <div class="col-md-5 text-md-end mt-3 mt-md-0 border-start-md ps-md-4">
+                            <h5 class="mb-3 text-primary" th:text="${order.totalAmount} + ' ₽'">1000 ₽</h5>
+
+                            <!-- ЛОГИКА КНОПОК -->
+
+                            <!-- 1. Если заказ подтвержден -> Кнопка "Отправить" -->
+                            <form th:if="${order.status.name() == 'CONFIRMED'}" th:action="@{/orders/status}" method="post">
+                                <input type="hidden" name="orderId" th:value="${order.id}">
+                                <input type="hidden" name="newStatus" value="SHIPPED">
+                                <button type="submit" class="btn btn-primary btn-sm w-100 mb-2">
+                                    📦 Отправить заказ
+                                </button>
+                                <small class="text-muted d-block">Нажмите после передачи в доставку</small>
+                            </form>
+
+                            <!-- 2. Если уже отправлен -->
+                            <div th:if="${order.status.name() == 'SHIPPED'}">
+                                <button class="btn btn-outline-secondary btn-sm w-100 disabled" disabled>
+                                    ⏳ Ожидает получения
+                                </button>
+                                <small class="text-muted d-block mt-1">Покупатель еще не забрал заказ</small>
+                            </div>
+
+                            <!-- 3. Если завершен -->
+                            <div th:if="${order.status.name() == 'DELIVERED'}">
+                                <span class="text-success fw-bold">✅ Сделка закрыта</span>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

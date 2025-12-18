@@ -14,7 +14,6 @@ import org.steelboard.marketplace.repository.ProductRepository;
 
 import java.math.BigDecimal;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
 @AllArgsConstructor
@@ -26,17 +25,17 @@ public class ProductService {
     private final ProductImageRepository productImageRepository;
     private final FileStorageService fileStorageService;
 
-    public Page<Product> getProducts(Pageable pageable) {
+    public Page<Product> getProductsActive(Pageable pageable) {
+        return productRepository.findByActiveTrue(pageable);
+    }
+
+    public Page<Product> getAllProducts(Pageable pageable) {
         return productRepository.findAll(pageable);
     }
 
     public Product getProduct(Long id) {
         return productRepository.findProductById(id)
                 .orElseThrow(() -> new ProductNotFoundException(id));
-    }
-
-    public List<Product> findBySellerId(Long id) {
-        return productRepository.findBySeller_Id(id);
     }
 
     public Page<Product> findBySellerId(Long sellerId, String search, Pageable pageable) {
@@ -49,10 +48,6 @@ public class ProductService {
     public Product getProductBySku(String sku) {
         return productRepository.findBySku(sku)
                 .orElseThrow(() -> new ProductNotFoundException("Product with SKU " + sku + " not found"));
-    }
-
-    public Page<Product> searchProductsByName(String name, Pageable pageable) {
-        return productRepository.findByNameContainingIgnoreCase(name, pageable);
     }
 
     public ProductEditDto toEditDto(Product product) {
@@ -203,6 +198,47 @@ public class ProductService {
             }
         }
         productRepository.save(product);
+    }
+
+    // ... внутри ProductService
+
+    // 1. Обновляем поиск для каталога (чтобы скрытые товары не висели в поиске)
+    public Page<Product> searchProductsByName(String name, Pageable pageable) {
+        // Было: findByNameContainingIgnoreCase
+        // Стало: искать только среди активных
+        return productRepository.findByNameContainingIgnoreCaseAndActiveTrue(name, pageable);
+    }
+
+    public Page<Product> getActiveProducts(Pageable pageable) {
+        return productRepository.findByActiveTrue(pageable);
+    }
+
+    // 2. Метод "Мягкого удаления" (Деактивация)
+    @Transactional
+    public void softDeleteProduct(Long id, Long currentUserId) {
+        Product product = getProduct(id);
+
+        // Проверка: удаляет либо владелец, либо админ (если нужно)
+        if (!product.getSeller().getId().equals(currentUserId)) {
+            throw new SecurityException("Вы не являетесь владельцем этого товара");
+        }
+
+        // Вместо deleteById делаем деактивацию
+        product.setActive(false);
+        productRepository.save(product);
+    }
+
+    // 3. Проверка владения (чтобы не дублировать код)
+    public boolean isProductOwner(Long productId, Long userId) {
+        return getProduct(productId).getSeller().getId().equals(userId);
+    }
+
+    // 4. Метод для получения товаров продавца с пагинацией
+    public Page<Product> getSellerProducts(Long sellerId, String search, Pageable pageable) {
+        if (search != null && !search.isBlank()) {
+            return productRepository.findBySeller_IdAndNameContainingIgnoreCase(sellerId, search, pageable);
+        }
+        return productRepository.findBySeller_Id(sellerId, pageable);
     }
 
 

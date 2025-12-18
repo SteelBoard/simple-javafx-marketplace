@@ -9,6 +9,7 @@ import org.steelboard.marketplace.dto.PickupPointAddDto;
 import org.steelboard.marketplace.entity.Address;
 import org.steelboard.marketplace.entity.PickupPoint;
 import org.steelboard.marketplace.repository.AddressRepository;
+import org.steelboard.marketplace.repository.OrderRepository;
 import org.steelboard.marketplace.repository.PickupPointRepository;
 
 import java.util.List;
@@ -19,6 +20,7 @@ public class PickupPointService {
 
     private PickupPointRepository pickupPointRepository;
     private AddressRepository addressRepository;
+    private OrderRepository orderRepository;
 
     public Page<PickupPoint> findAll(Pageable pageable) {
         return pickupPointRepository.findAll(pageable);

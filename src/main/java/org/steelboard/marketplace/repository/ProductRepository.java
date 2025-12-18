@@ -32,4 +32,10 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
 
     @Query("SELECT p FROM Product p ORDER BY p.sales DESC LIMIT 5")
     List<Product> findTop5BestSellers();
+
+    // Поиск по названию (только активные)
+    Page<Product> findByNameContainingIgnoreCaseAndActiveTrue(String name, Pageable pageable);
+
+    // Каталог (только активные)
+    Page<Product> findByActiveTrue(Pageable pageable);
 }

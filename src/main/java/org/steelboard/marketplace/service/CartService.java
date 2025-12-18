@@ -29,6 +29,7 @@ public class CartService {
         Optional<CartItem> cartItemOptional = cartItemRepository.findByProduct_IdAndCart(productId, cart);
         CartItem item;
 
+
         if (cartItemOptional.isPresent()) {
 
             item = cartItemOptional.get();
@@ -37,6 +38,9 @@ public class CartService {
         }
         else {
             Product itemProduct = productService.getProduct(productId);
+            if (itemProduct.getSeller().getId().equals(user.getId())) {
+                throw new IllegalStateException("Вы не можете покупать свои собственные товары.");
+            }
             item = new CartItem(cart, itemProduct);
             item.setUnitPrice(item.getProduct().getPrice());
         }

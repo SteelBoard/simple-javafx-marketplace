@@ -35,10 +35,16 @@
             </a>
 
             
-            <a href="/seller/products"
+            <a href="/my/products"
                class="list-group-item list-group-item-action"
                th:classappend="${activeTab == 'products'} ? 'active'">
                 💼 Мои товары
+            </a>
+
+            <a href="/orders/incoming"
+               class="list-group-item list-group-item-action"
+               th:classappend="${activeTab == 'incoming'} ? 'active'">
+                📥 Входящие заказы (Продажи)
             </a>
 
             <form th:action="@{/logout}" method="post" class="mt-2 border-top">

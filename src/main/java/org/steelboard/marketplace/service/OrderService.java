@@ -165,4 +165,52 @@ public class OrderService {
     public Order findById(Long id) {
         return orderRepository.findById(id).orElseThrow(() -> new OrderNotFoundException(id));
     }
+
+    public List<Order> findOrdersBySellerId(Long sellerId) {
+        return orderRepository.findOrdersBySellerId(sellerId);
+    }
+
+    @Transactional
+    public void changeStatus(Long orderId, User currentUser, String newStatusStr) {
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new IllegalArgumentException("Заказ не найден"));
+
+        OrderStatus newStatus;
+        try {
+            newStatus = OrderStatus.valueOf(newStatusStr);
+        } catch (IllegalArgumentException e) {
+            throw new IllegalArgumentException("Неверный статус");
+        }
+
+        // Логика: КТО пытается сменить статус?
+        boolean isBuyer = order.getUser().getId().equals(currentUser.getId());
+
+        // Проверяем, является ли текущий юзер продавцом хотя бы одного товара в заказе
+        boolean isSeller = order.getOrderItems().stream()
+                .anyMatch(item -> item.getProduct().getSeller().getId().equals(currentUser.getId()));
+
+        // СЦЕНАРИЙ 1: Продавец отправляет заказ (CONFIRMED -> SHIPPED)
+        if (isSeller && newStatus == OrderStatus.SHIPPED) {
+            if (order.getStatus() == OrderStatus.CONFIRMED || order.getStatus() == OrderStatus.PROCESSING) {
+                order.setStatus(OrderStatus.SHIPPED);
+                orderRepository.save(order);
+                return;
+            } else {
+                throw new IllegalStateException("Нельзя отправить заказ с текущим статусом: " + order.getStatus());
+            }
+        }
+
+        // СЦЕНАРИЙ 2: Покупатель подтверждает получение (SHIPPED -> DELIVERED)
+        if (isBuyer && newStatus == OrderStatus.DELIVERED) {
+            if (order.getStatus() == OrderStatus.SHIPPED) {
+                order.setStatus(OrderStatus.DELIVERED);
+                orderRepository.save(order);
+                return;
+            } else {
+                throw new IllegalStateException("Можно подтвердить только отправленный заказ");
+            }
+        }
+
+        throw new SecurityException("У вас нет прав для смены этого статуса");
+    }
 }

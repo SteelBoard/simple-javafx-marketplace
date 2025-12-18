@@ -7,6 +7,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import org.steelboard.marketplace.entity.Cart;
 import org.steelboard.marketplace.entity.Order;
 import org.steelboard.marketplace.entity.User;
@@ -42,15 +43,26 @@ public class CheckoutController {
     public String submitCheckout(
             @AuthenticationPrincipal User userDetails,
             @RequestParam(required = false) List<Long> selectedProductIds,
-            @RequestParam Long pickupPointId
+            // 1. Делаем параметр необязательным, чтобы поймать null внутри метода
+            @RequestParam(required = false) Long pickupPointId,
+            // 2. Добавляем атрибуты для передачи ошибок
+            RedirectAttributes redirectAttributes
     ) {
+        // Проверка: выбраны ли товары
         if (selectedProductIds == null || selectedProductIds.isEmpty()) {
-            
-            return "redirect:/checkout?error=noProductsSelected";
+            redirectAttributes.addFlashAttribute("error", "Выберите хотя бы один товар для заказа!");
+            return "redirect:/checkout";
+        }
+
+        // Проверка: выбран ли ПВЗ
+        if (pickupPointId == null) {
+            redirectAttributes.addFlashAttribute("error", "Пожалуйста, выберите пункт выдачи заказа!");
+            return "redirect:/checkout";
         }
 
         User user = userService.findById(userDetails.getId());
         Order order = orderService.createOrder(user, selectedProductIds, pickupPointId);
+
         return "redirect:/order/" + order.getId();
     }
 

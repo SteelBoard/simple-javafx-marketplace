@@ -27,7 +27,29 @@
         .review-rating { color: #f5c518; }
         .review-text { color: #555; line-height: 1.5; }
         .form-review { background: #f9f9f9; padding: 20px; border-radius: 8px; margin-top: 20px; }
-        .form-review textarea { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; margin-bottom: 10px; }
+
+        /* !!! ИЗМЕНЕНИЯ ЗДЕСЬ !!! */
+        .form-review textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            margin-bottom: 10px;
+
+            /* Эти два свойства исправляют проблему: */
+            resize: none;            /* Запрещает растягивать поле */
+            box-sizing: border-box;  /* Учитывает padding в ширине, чтобы не вылезало за края */
+        }
+
+        /* Добавлены стили для алерта ошибки, которых не хватало */
+        .alert-error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 6px;
+        }
     </style>
 </head>
 <body>
@@ -35,6 +57,11 @@
 <div th:replace="~{fragments/header :: navbar}"></div>
 
 <div class="container">
+
+    <div th:if="${error}" class="alert alert-error">
+        <span th:text="${error}">Сообщение об ошибке</span>
+    </div>
+
     <div class="product-grid">
 
         <!-- БЛОК С ФОТОГРАФИЯМИ -->
@@ -43,10 +70,7 @@
             <img id="mainImage" th:src="@{${product.mainImageUrl}}" class="gallery-main" alt="Product">
 
             <div class="gallery-thumbs">
-                <!-- 1. Выводим главную картинку первой и активной -->
                 <img th:src="@{${product.mainImageUrl}}" class="thumb active" onclick="setMainImage(this)">
-
-                <!-- 2. Выводим остальные картинки, ИСКЛЮЧАЯ главную (чтобы не было дубля) -->
                 <img th:each="img : ${product.images}"
                      th:if="${img.type.name() != 'MAIN'}"
                      th:src="@{${img.filepath}}"
@@ -55,7 +79,6 @@
             </div>
         </div>
 
-
         <div>
             <h1 th:text="${product.name}">Название товара</h1>
 
@@ -63,7 +86,6 @@
                 <span th:text="'★ ' + ${product.rating}">★ 4.5</span>
                 <span style="color: #999; font-size: 14px; margin-left: 10px;">(Оценок: <span th:text="${#lists.size(reviews)}">10</span>)</span>
             </div>
-
 
             <div class="price-tag" th:text="${product.price} + ' ₽'">9 990 ₽</div>
 
@@ -75,7 +97,6 @@
             </div>
         </div>
     </div>
-
 
     <div class="reviews-section">
         <div style="display:flex; justify-content:space-between; align-items:center;">

@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Редактирование товара</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body { background-color: #f8f9fa; }
+        .img-preview { width: 100px; height: 100px; object-fit: cover; border-radius: 4px; }
+        .main-img-border { border: 3px solid #198754; } /* Зеленая рамка для главной */
+    </style>
+</head>
+<body>
+
+<div th:replace="~{fragments/header :: navbar}"></div>
+
+<div class="container py-5">
+    <div class="row">
+        <!-- Сайдбар -->
+        <div class="col-lg-3 mb-4">
+            <div th:replace="~{fragments/sidebar :: profile-sidebar(activeTab='products')}"></div>
+        </div>
+
+        <!-- Форма -->
+        <div class="col-lg-9">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h3>Редактирование: <span th:text="${product.name}" class="text-muted fs-5"></span></h3>
+                <a th:href="@{/my/products}" class="btn btn-outline-secondary">← Назад</a>
+            </div>
+
+            <div th:if="${param.success}" class="alert alert-success">Изменения сохранены!</div>
+
+            <div class="card border-0 shadow-sm p-4">
+                <form th:action="@{/my/products/{sku}/update(sku=${product.sku})}" th:object="${productDto}" method="post">
+
+                    <div class="row g-3">
+                        <!-- Артикул (только чтение) -->
+                        <div class="col-md-12">
+                            <label class="form-label text-muted">Артикул (SKU)</label>
+                            <input type="text" class="form-control" th:value="${product.sku}" disabled readonly>
+                        </div>
+
+                        <!-- Название -->
+                        <div class="col-md-12">
+                            <label class="form-label">Название товара</label>
+                            <input type="text" th:field="*{name}" class="form-control"
+                                   th:classappend="${#fields.hasErrors('name')} ? 'is-invalid' : ''" required>
+                            <div class="invalid-feedback" th:errors="*{name}"></div>
+                        </div>
+
+                        <!-- Цена -->
+                        <div class="col-md-6">
+                            <label class="form-label">Цена (₽)</label>
+                            <input type="number" step="0.01" th:field="*{price}" class="form-control" required>
+                        </div>
+
+                        <!-- Активность -->
+                        <div class="col-md-6 d-flex align-items-end">
+                            <div class="form-check form-switch mb-2">
+                                <input class="form-check-input" type="checkbox" role="switch" id="activeSwitch" th:field="*{active}">
+                                <label class="form-check-label" for="activeSwitch">Товар активен (виден покупателям)</label>
+                            </div>
+                        </div>
+
+                        <!-- Описание -->
+                        <div class="col-md-12" >
+                            <label class="form-label">Описание</label>
+                            <textarea style="resize: none" th:field="*{description}" class="form-control" rows="5"></textarea>
+                        </div>
+                    </div>
+
+                    <!-- Секция Фотографий -->
+                    <div class="mt-5">
+                        <h5 class="mb-3">Фотографии</h5>
+
+                        <!-- Сетка текущих фото -->
+                        <div class="d-flex flex-wrap gap-3 mb-3">
+                            <div th:each="img : ${product.images}" class="card p-1 position-relative" style="width: 110px;">
+                                <img th:src="@{${img.filepath}}"
+                                     th:classappend="${img.type.name() == 'MAIN'} ? 'main-img-border'"
+                                     class="img-preview card-img-top">
+
+                                <div class="card-body p-1 text-center">
+                                    <!-- Кнопка "Сделать главной" -->
+                                    <button th:if="${img.type.name() != 'MAIN'}" type="submit"
+                                            class="btn btn-sm btn-outline-success w-100 mb-1"
+                                            style="font-size: 10px;"
+                                            th:formaction="@{/my/products/{sku}/images/set-main(sku=${product.sku})}"
+                                            name="imageId" th:value="${img.id}" title="Сделать главной">
+                                        ★ Главная
+                                    </button>
+
+                                    <div th:if="${img.type.name() == 'MAIN'}" class="text-success fw-bold" style="font-size: 10px; margin-bottom: 5px;">
+                                        ГЛАВНАЯ
+                                    </div>
+
+                                    <!-- Кнопка "Удалить" -->
+                                    <button type="submit" class="btn btn-sm btn-outline-danger w-100"
+                                            style="font-size: 10px;"
+                                            th:formaction="@{/my/products/{sku}/images/delete(sku=${product.sku})}"
+                                            name="imageId" th:value="${img.id}" onclick="return confirm('Удалить фото?');">
+                                        Удалить
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Форма добавления фото -->
+                        <div class="bg-light p-3 rounded border" th:if="${product.images.size() < 10}">
+                            <label class="form-label small fw-bold">Добавить фото:</label>
+                            <div class="input-group">
+                                <input type="file" name="file" class="form-control" accept="image/*">
+                                <button class="btn btn-secondary" type="submit"
+                                        th:formaction="@{/my/products/{sku}/images/add(sku=${product.sku})}"
+                                        th:formenctype="'multipart/form-data'">Загрузить</button>
+                            </div>
+                        </div>
+                        <div th:if="${product.images.size() >= 10}" class="text-warning small mt-2">
+                            Достигнут лимит фото (10 шт). Удалите старые, чтобы добавить новые.
+                        </div>
+                    </div>
+
+                    <hr class="my-4">
+
+                    <!-- Кнопки сохранения -->
+                    <div class="d-flex justify-content-between">
+                        <button type="submit" class="btn btn-primary px-4">Сохранить изменения</button>
+
+                        <button type="submit" class="btn btn-danger"
+                                th:formaction="@{/my/products/{sku}/delete(sku=${product.sku})}"
+                                onclick="return confirm('Вы уверены? Товар будет скрыт из поиска.');">
+                            Архивировать товар
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

@@ -10,24 +10,29 @@
 
 <div th:replace="~{fragments/header :: navbar}"></div>
 
-<div class="col-lg-9">
-
-    
-</div>
-
 <div class="container py-5">
     <div class="row">
+        <!-- Сайдбар профиля -->
         <div class="col-lg-3 mb-4">
             <div th:replace="~{fragments/sidebar :: profile-sidebar(activeTab='products')}"></div>
         </div>
 
+        <!-- Контент -->
         <div class="col-lg-9">
+
+            <!-- Сообщения об успехе/ошибке -->
+            <div th:if="${param.success}" class="alert alert-success alert-dismissible fade show" role="alert">
+                Операция выполнена успешно!
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+
             <div class="d-flex justify-content-between align-items-center mb-4">
                 <h3 class="m-0">Мои товары</h3>
-                <a href="/product/new" class="btn btn-success">
+                <a th:href="@{/product/new}" class="btn btn-success">
                     + Добавить товар
                 </a>
             </div>
+
             <div class="card border-0 shadow-sm">
                 <div class="table-responsive">
                     <table class="table table-hover align-middle mb-0">
@@ -41,35 +46,84 @@
                         </tr>
                         </thead>
                         <tbody>
-                        <tr th:each="product : ${products}">
+                        <tr th:each="product : ${productsPage.content}"
+                            th:classappend="${!product.active} ? 'table-secondary' : ''">
+
                             <td class="ps-4">
                                 <div class="d-flex align-items-center">
-                                    <img th:src="${product.mainImageUrl}" alt="" style="width: 45px; height: 45px; object-fit: cover;" class="rounded me-3">
+                                    <!-- Картинка -->
+                                    <img th:src="@{${product.mainImageUrl}}" alt=""
+                                         style="width: 45px; height: 45px; object-fit: cover;"
+                                         class="rounded me-3 border">
+
+                                    <!-- Название и статус -->
                                     <div>
-                                        <a th:href="@{/product/{sku}(sku=${product.sku})}" class="fw-bold text-dark text-decoration-none" th:text="${product.name}">Name</a>
-                                        <div class="small text-muted" th:text="${product.active} ? 'Активен' : 'Скрыт'">Status</div>
+                                        <a th:href="@{/product/{sku}(sku=${product.sku})}"
+                                           class="fw-bold text-dark text-decoration-none"
+                                           th:text="${product.name}">Name</a>
+
+                                        <!-- Бейджик статуса -->
+                                        <div class="small">
+                                            <span th:if="${product.active}" class="text-success">● Активен</span>
+                                            <span th:unless="${product.active}" class="text-danger">● Скрыт (В архиве)</span>
+                                        </div>
                                     </div>
                                 </div>
                             </td>
+
                             <td th:text="${product.price} + ' ₽'">100 ₽</td>
                             <td th:text="${product.sales}">0</td>
                             <td>
                                 <span class="text-warning">★</span> <span th:text="${product.rating}">4.5</span>
                             </td>
+
+                            <!-- Кнопки действий -->
                             <td class="text-end pe-4">
-                                <a th:href="@{/product/edit/{sku}(sku=${product.sku})}" class="btn btn-sm btn-outline-secondary me-1">✏️</a>
-                                
-                                <form th:action="@{/product/delete/{sku}(sku=${product.sku})}" method="post" style="display:inline;" onsubmit="return confirm('Удалить товар?');">
-                                    <button type="submit" class="btn btn-sm btn-outline-danger">🗑</button>
+                                <!-- Редактировать -->
+                                <a th:href="@{/my/products/{sku}/edit(sku=${product.sku})}"
+                                   class="btn btn-sm btn-outline-primary me-1" title="Редактировать">
+                                    ✏️
+                                </a>
+
+                                <!-- Удалить (Архивировать) -->
+                                <form th:action="@{/my/products/{sku}/delete(sku=${product.sku})}" method="post" style="display:inline;"
+                                      onsubmit="return confirm('Скрыть этот товар из каталога? Он останется в истории заказов.');">
+                                    <button type="submit" class="btn btn-sm btn-outline-danger" title="В архив">
+                                        🗑
+                                    </button>
                                 </form>
                             </td>
                         </tr>
                         </tbody>
                     </table>
                 </div>
+
+                <!-- Если пусто -->
+                <div th:if="${productsPage.isEmpty()}" class="p-4 text-center text-muted">
+                    У вас пока нет товаров.
+                </div>
             </div>
+
+            <!-- Пагинация (Bootstrap style) -->
+            <nav th:if="${productsPage.totalPages > 1}" class="mt-4">
+                <ul class="pagination justify-content-center">
+                    <li class="page-item" th:classappend="${productsPage.first} ? 'disabled'">
+                        <a class="page-link" th:href="@{/my/products(page=${productsPage.number - 1})}">←</a>
+                    </li>
+                    <li class="page-item" th:each="i : ${#numbers.sequence(0, productsPage.totalPages - 1)}"
+                        th:classappend="${i == productsPage.number} ? 'active'">
+                        <a class="page-link" th:href="@{/my/products(page=${i})}" th:text="${i + 1}">1</a>
+                    </li>
+                    <li class="page-item" th:classappend="${productsPage.last} ? 'disabled'">
+                        <a class="page-link" th:href="@{/my/products(page=${productsPage.number + 1})}">→</a>
+                    </li>
+                </ul>
+            </nav>
+
         </div>
     </div>
 </div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
