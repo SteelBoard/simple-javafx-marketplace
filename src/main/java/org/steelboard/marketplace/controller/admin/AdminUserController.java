@@ -9,10 +9,8 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
-import org.steelboard.marketplace.entity.CartItem;
-import org.steelboard.marketplace.entity.Product;
-import org.steelboard.marketplace.entity.Review;
-import org.steelboard.marketplace.entity.User;
+import org.steelboard.marketplace.entity.*;
+import org.steelboard.marketplace.service.OrderService;
 import org.steelboard.marketplace.service.ProductService;
 import org.steelboard.marketplace.service.ReviewService;
 import org.steelboard.marketplace.service.UserService;
@@ -27,6 +25,7 @@ public class AdminUserController {
     private final ProductService productService;
     private final ReviewService reviewService;
     private final UserService userService;
+    private final OrderService orderService;
 
     @GetMapping
     public String users(
@@ -85,6 +84,33 @@ public class AdminUserController {
         model.addAttribute("user", user);
         model.addAttribute("cartItems", cartItems);
         return "admin/user/user_cart";
+    }
+
+    @GetMapping("/{id}/orders")
+    public String userOrders(
+            @PathVariable Long id,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "createdAt") String sort, // Сортировка по дате по умолчанию
+            @RequestParam(defaultValue = "desc") String dir,       // Сначала новые
+            @RequestParam(required = false) String search,
+            Model model
+    ) {
+        User user = userService.findById(id);
+
+        Sort.Direction direction = dir.equalsIgnoreCase("asc") ? Sort.Direction.ASC : Sort.Direction.DESC;
+        Pageable pageable = PageRequest.of(page, size, Sort.by(direction, sort));
+
+        Page<Order> ordersPage = orderService.getUserOrders(id, search, pageable);
+
+        model.addAttribute("user", user);
+        model.addAttribute("ordersPage", ordersPage);
+        model.addAttribute("sort", sort);
+        model.addAttribute("dir", dir);
+        model.addAttribute("size", size);
+        model.addAttribute("search", search);
+
+        return "admin/user/user_orders";
     }
 
     // --- ИСПРАВЛЕННЫЙ МЕТОД ТОВАРОВ ---

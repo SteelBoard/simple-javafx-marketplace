@@ -60,6 +60,14 @@ public class OrderService {
         return orderRepository.findBySearch(search, pageable);
     }
 
+    public Page<Order> getUserOrders(Long userId, String search, Pageable pageable) {
+        if (search != null && !search.isBlank()) {
+            // Ищем по частичному совпадению ID заказа
+            return orderRepository.findByUserIdAndSearch(userId, search.trim(), pageable);
+        }
+        return orderRepository.findByUser_Id(userId, pageable);
+    }
+
 
     @Transactional(readOnly = false)
     public Order createOrder(

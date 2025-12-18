@@ -36,5 +36,14 @@ public interface OrderRepository extends JpaRepository<Order, Integer> {
     @Query("SELECT SUM(o.totalAmount) FROM Order o")
     BigDecimal sumTotalRevenue();
 
+    // 1. Все заказы пользователя
+    Page<Order> findByUser_Id(Long userId, Pageable pageable);
+
+    // 2. Поиск заказов пользователя по ID заказа (преобразуем ID в строку для поиска LIKE)
+    @Query("SELECT o FROM Order o WHERE o.user.id = :userId AND CAST(o.id AS string) LIKE %:search%")
+    Page<Order> findByUserIdAndSearch(@Param("userId") Long userId,
+                                      @Param("search") String search,
+                                      Pageable pageable);
+
     Long countByCreatedAtAfter(Date date);
 }

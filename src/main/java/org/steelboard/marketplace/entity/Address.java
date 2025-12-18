@@ -45,4 +45,9 @@ public class Address {
     @UpdateTimestamp
     @Column(name = "updated_at")
     private Date updatedAt;
+
+    @Override
+    public String toString() {
+        return "г. " + city + " ул. " + street + ", " + houseNumber;
+    }
 }
