@@ -55,6 +55,7 @@ public class AdminProductController {
         model.addAttribute("dir", dir);
         model.addAttribute("size", size);
         model.addAttribute("search", search);
+        model.addAttribute("activeTab", "products");
 
         return "admin/product/products";
     }

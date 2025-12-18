@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org">
+<!-- Подключаем общую шапку -->
+<head th:replace="~{fragments/admin_layout :: head('Заказы на ПВЗ')}"></head>
+<body>
+
+<!-- Подключаем боковое меню -->
+<div th:replace="~{fragments/admin_layout :: sidebar}"></div>
+
+<div class="main-content">
+    <div class="card">
+
+        <!-- Заголовок и кнопка Назад -->
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <div>
+                <h2 style="margin-bottom: 5px; border: none;">Заказы на ПВЗ</h2>
+                <div style="color: #666; font-size: 0.95em;">
+                    Адрес: <strong th:text="${pvz.address.city} + ', ' + ${pvz.address.street} + ' ' + ${pvz.address.houseNumber}"></strong>
+                </div>
+            </div>
+            <a th:href="@{/admin/pickup-points/{id}(id=${pvz.id})}" class="btn">← Вернуться к ПВЗ</a>
+        </div>
+
+        <!-- Если заказов нет -->
+        <div th:if="${ordersPage.isEmpty()}" class="no-data">
+            На этом пункте выдачи заказов пока нет.
+        </div>
+
+        <!-- Таблица заказов -->
+        <table th:unless="${ordersPage.isEmpty()}">
+            <thead>
+            <tr>
+                <th th:data-href="@{/admin/orders/pickup-point/{pid}(pid=${pvz.id}, sort='id', dir=${sort=='id' and dir=='asc' ? 'desc' : 'asc'})}"
+                    onclick="window.location=this.getAttribute('data-href')">
+                    ID <span th:if="${sort == 'id'}" th:text="${dir == 'asc' ? '▲' : '▼'}"></span>
+                </th>
+
+                <th th:data-href="@{/admin/orders/pickup-point/{pid}(pid=${pvz.id}, sort='user.username', dir=${sort=='user.username' and dir=='asc' ? 'desc' : 'asc'})}"
+                    onclick="window.location=this.getAttribute('data-href')">
+                    Пользователь <span th:if="${sort == 'user.username'}" th:text="${dir == 'asc' ? '▲' : '▼'}"></span>
+                </th>
+
+                <th th:data-href="@{/admin/orders/pickup-point/{pid}(pid=${pvz.id}, sort='status', dir=${sort=='status' and dir=='asc' ? 'desc' : 'asc'})}"
+                    onclick="window.location=this.getAttribute('data-href')">
+                    Статус <span th:if="${sort == 'status'}" th:text="${dir == 'asc' ? '▲' : '▼'}"></span>
+                </th>
+
+                <th th:data-href="@{/admin/orders/pickup-point/{pid}(pid=${pvz.id}, sort='totalAmount', dir=${sort=='totalAmount' and dir=='asc' ? 'desc' : 'asc'})}"
+                    onclick="window.location=this.getAttribute('data-href')">
+                    Сумма <span th:if="${sort == 'totalAmount'}" th:text="${dir == 'asc' ? '▲' : '▼'}"></span>
+                </th>
+
+                <th th:data-href="@{/admin/orders/pickup-point/{pid}(pid=${pvz.id}, sort='createdAt', dir=${sort=='createdAt' and dir=='asc' ? 'desc' : 'asc'})}"
+                    onclick="window.location=this.getAttribute('data-href')">
+                    Дата <span th:if="${sort == 'createdAt'}" th:text="${dir == 'asc' ? '▲' : '▼'}"></span>
+                </th>
+            </tr>
+            </thead>
+            <tbody>
+            <!-- Клик по строке ведет в детали заказа -->
+            <tr th:each="order : ${ordersPage.content}"
+                th:onclick="|window.location='@{/admin/orders/{id}(id=${order.id})}'|"
+                style="cursor: pointer;">
+
+                <td th:text="'#' + ${order.id}"></td>
+
+                <td onclick="event.stopPropagation()">
+                    <a th:href="@{/admin/users/{id}(id=${order.user.id})}"
+                       th:text="${order.user.username}"
+                       style="color: #0066cc; text-decoration: none; font-weight: bold;"></a>
+                </td>
+
+                <td>
+                    <span th:class="'badge ' + (${order.status.name() == 'COMPLETED'} ? 'badge-success' : (${order.status.name() == 'CANCELLED'} ? 'badge-danger' : 'badge-warning'))"
+                          th:text="${order.status}"></span>
+                </td>
+
+                <td th:text="${order.totalAmount} + ' ₽'"></td>
+
+                <td th:text="${#dates.format(order.createdAt, 'yyyy-MM-dd HH:mm')}"></td>
+            </tr>
+            </tbody>
+        </table>
+
+        <!-- Пагинация -->
+        <ul class="pagination" th:if="${ordersPage.totalPages > 1}">
+            <li th:classappend="${ordersPage.first} ? 'disabled'">
+                <a th:href="@{/admin/orders/pickup-point/{pid}(pid=${pvz.id}, page=${ordersPage.number - 1}, sort=${sort}, dir=${dir})}">←</a>
+            </li>
+            <li th:each="i : ${#numbers.sequence(0, ordersPage.totalPages - 1)}"
+                th:classappend="${i == ordersPage.number} ? 'active'">
+                <a th:href="@{/admin/orders/pickup-point/{pid}(pid=${pvz.id}, page=${i}, sort=${sort}, dir=${dir})}" th:text="${i + 1}"></a>
+            </li>
+            <li th:classappend="${ordersPage.last} ? 'disabled'">
+                <a th:href="@{/admin/orders/pickup-point/{pid}(pid=${pvz.id}, page=${ordersPage.number + 1}, sort=${sort}, dir=${dir})}">→</a>
+            </li>
+        </ul>
+
+    </div>
+</div>
+
+</body>
+</html>

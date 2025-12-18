@@ -1,57 +1,49 @@
 <!DOCTYPE html>
 <html lang="ru" xmlns:th="http://www.thymeleaf.org">
-<head>
-    <meta charset="UTF-8">
-    <title>Корзина пользователя</title>
-    <style>
-        body { font-family: Arial, sans-serif; margin: 20px; }
-        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-        table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
-        th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
-        th { background: #f5f5f5; }
-        tr:hover { background: #f9f9f9; }
-        .btn { padding: 6px 12px; background: #fff; color: #333; border: 1px solid #ccc; text-decoration: none; font-size: 14px; }
-        .btn:hover { background: #eee; }
-        .empty { padding: 30px; background: #f9f9f9; border: 1px dashed #ccc; text-align: center; color: #777; }
-    </style>
-</head>
+<head th:replace="~{fragments/admin_layout :: head('Корзина пользователя')}"></head>
 <body>
 
-<div class="header">
-    <h2>Корзина пользователя: <span th:text="${user.username}" style="color: #0066cc;"></span></h2>
-    <a th:href="@{/admin/users/{id}(id=${user.id})}" class="btn">← Назад к пользователю</a>
+<div th:replace="~{fragments/admin_layout :: sidebar}"></div>
+
+<div class="main-content">
+    <div class="card">
+        <div class="header">
+            <h2>Корзина пользователя: <span th:text="${user.username}" style="color: #0066cc;"></span></h2>
+            <a th:href="@{/admin/users/{id}(id=${user.id})}" class="btn">← Назад к пользователю</a>
+        </div>
+        <div class="empty" th:if="${#lists.isEmpty(cartItems)}">
+            Корзина пуста.
+        </div>
+
+        <table th:unless="${#lists.isEmpty(cartItems)}">
+            <thead>
+            <tr>
+                <th>Артикул</th>
+                <th>Название товара</th>
+                <th>Цена ед.</th>
+                <th>Кол-во</th>
+                <th>Сумма</th>
+                <th>Добавлено</th>
+            </tr>
+            </thead>
+            <tbody>
+            <!-- Клик по строке ведет на страницу товара -->
+            <tr th:each="item : ${cartItems}"
+                th:onclick="|window.location='@{/admin/products/{sku}(sku=${item.product.sku})}'|"
+                style="cursor: pointer;">
+
+                <td th:text="${item.product.sku}"></td>
+                <td th:text="${item.product.name}"></td>
+                <td th:text="${item.unitPrice}"></td>
+                <td th:text="${item.quantity}"></td>
+                <td th:text="${item.unitPrice * item.quantity}" style="font-weight: bold;"></td>
+                <td th:text="${#dates.format(item.createdAt, 'yyyy-MM-dd HH:mm')}"></td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
 </div>
 
-<div class="empty" th:if="${#lists.isEmpty(cartItems)}">
-    Корзина пуста.
-</div>
-
-<table th:unless="${#lists.isEmpty(cartItems)}">
-    <thead>
-    <tr>
-        <th>Артикул</th>
-        <th>Название товара</th>
-        <th>Цена ед.</th>
-        <th>Кол-во</th>
-        <th>Сумма</th>
-        <th>Добавлено</th>
-    </tr>
-    </thead>
-    <tbody>
-    <!-- Клик по строке ведет на страницу товара -->
-    <tr th:each="item : ${cartItems}"
-        th:onclick="|window.location='@{/admin/products/{sku}(sku=${item.product.sku})}'|"
-        style="cursor: pointer;">
-
-        <td th:text="${item.product.sku}"></td>
-        <td th:text="${item.product.name}"></td>
-        <td th:text="${item.unitPrice}"></td>
-        <td th:text="${item.quantity}"></td>
-        <td th:text="${item.unitPrice * item.quantity}" style="font-weight: bold;"></td>
-        <td th:text="${#dates.format(item.createdAt, 'yyyy-MM-dd HH:mm')}"></td>
-    </tr>
-    </tbody>
-</table>
 
 </body>
 </html>

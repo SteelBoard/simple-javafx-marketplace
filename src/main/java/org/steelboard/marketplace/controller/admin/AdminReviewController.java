@@ -43,6 +43,8 @@ public class AdminReviewController {
         model.addAttribute("sort", sort);
         model.addAttribute("dir", dir);
         model.addAttribute("size", size);
+        model.addAttribute("activeTab", "reviews");
+        model.addAttribute("activeTab", "reviews");
 
         return "admin/review/reviews";
     }

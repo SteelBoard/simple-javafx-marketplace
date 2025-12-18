@@ -1,105 +1,86 @@
 <!DOCTYPE html>
 <html lang="ru" xmlns:th="http://www.thymeleaf.org">
-<head>
-    <meta charset="UTF-8">
-    <title>ПВЗ — Редактирование</title>
-    <style>
-        body { font-family: Arial, sans-serif; margin: 20px; }
-
-        table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
-        th, td { border: 1px solid #ccc; padding: 10px; text-align: left; vertical-align: middle; }
-        th { background: #f5f5f5; width: 250px; }
-
-        .btn { padding: 8px 16px; background: #fff; color: #333; border: 1px solid #ccc; text-decoration: none; cursor: pointer; display: inline-block; font-size: 14px; }
-        .btn:hover { background: #eee; }
-        .btn-dark { background: #333; color: white; border-color: #333; }
-        .btn-dark:hover { background: #555; border-color: #555; }
-
-        .msg-box { padding: 10px; margin-bottom: 20px; border-radius: 4px; }
-        .error { background-color: #fce4e4; border: 1px solid #fcc2c3; color: #cc0033; }
-        .success { background-color: #e6ffe6; border: 1px solid #c3e6cb; color: #155724; }
-
-        input[type="text"] { padding: 6px; width: 100%; max-width: 400px; border: 1px solid #ccc; font-size: 14px; box-sizing: border-box; }
-
-        .links-block { margin: 20px 0; padding: 15px; background: #f9f9f9; border: 1px solid #eee; }
-        .links-block a { margin-right: 20px; text-decoration: none; color: #0066cc; font-weight: bold; }
-        .links-block a:hover { text-decoration: underline; }
-    </style>
-</head>
+<head th:replace="~{fragments/admin_layout :: head('Детали ПВЗ')}"></head>
 <body>
 
-<h2>Пункт выдачи #<span th:text="${pickupPoint.id}"></span></h2>
+<div th:replace="~{fragments/admin_layout :: sidebar}"></div>
 
-<div th:if="${error}" class="msg-box error" th:text="${error}"></div>
-<div th:if="${param.success}" class="msg-box success">Телефон успешно обновлен!</div>
+<div class="main-content">
+    <div class="card">
+        <h2>Пункт выдачи #<span th:text="${pickupPoint.id}"></span></h2>
 
-<div class="links-block">
-    <span style="color:#666; margin-right:10px;">Действия:</span>
-    <a th:href="@{/admin/orders(search=${'pvz:' + pickupPoint.id})}">📦 Заказы на этом ПВЗ</a>
-</div>
+        <div th:if="${error}" class="msg-box error" th:text="${error}"></div>
+        <div th:if="${param.success}" class="msg-box success">Телефон успешно обновлен!</div>
 
-<form th:action="@{/admin/pickup-points/{id}/update(id=${pickupPoint.id})}" method="post">
-    <table>
-        <tr>
-            <th>ID</th>
-            <td th:text="${pickupPoint.id}"></td>
-        </tr>
+        <div class="links-block">
+            <span style="color:#666; margin-right:10px;">Действия:</span>
+            <a th:href="@{/admin/orders/pickup-point/{id}(id=${pickupPoint.id})}">📦 Заказы на этом ПВЗ</a>
+        </div>
 
-        <tr>
-            <th>Страна</th>
-            <td th:text="${pickupPoint.address.country}"></td>
-        </tr>
+        <form th:action="@{/admin/pickup-points/{id}/update(id=${pickupPoint.id})}" method="post">
+            <table>
+                <tr>
+                    <th>ID</th>
+                    <td th:text="${pickupPoint.id}"></td>
+                </tr>
 
-        <tr>
-            <th>Город</th>
-            <td th:text="${pickupPoint.address.city}" style="font-weight: bold;"></td>
-        </tr>
+                <tr>
+                    <th>Страна</th>
+                    <td th:text="${pickupPoint.address.country}"></td>
+                </tr>
 
-        <tr>
-            <th>Улица</th>
-            <td th:text="${pickupPoint.address.street}"></td>
-        </tr>
+                <tr>
+                    <th>Город</th>
+                    <td th:text="${pickupPoint.address.city}" style="font-weight: bold;"></td>
+                </tr>
 
-        <tr>
-            <th>Дом / Корпус</th>
-            <td th:text="${pickupPoint.address.houseNumber}"></td>
-        </tr>
+                <tr>
+                    <th>Улица</th>
+                    <td th:text="${pickupPoint.address.street}"></td>
+                </tr>
 
-        <tr>
-            <th>Квартира / Офис</th>
-            <td th:text="${pickupPoint.address.apartmentNumber != null ? pickupPoint.address.apartmentNumber : '-'}"></td>
-        </tr>
+                <tr>
+                    <th>Дом / Корпус</th>
+                    <td th:text="${pickupPoint.address.houseNumber}"></td>
+                </tr>
 
-        <tr>
-            <th>Индекс</th>
-            <td th:text="${pickupPoint.address.postalCode}"></td>
-        </tr>
+                <tr>
+                    <th>Квартира / Офис</th>
+                    <td th:text="${pickupPoint.address.apartmentNumber != null ? pickupPoint.address.apartmentNumber : '-'}"></td>
+                </tr>
 
-        <tr>
-            <th>Телефон</th>
-            <td>
-                <input type="text" id="phoneInput" name="phone"
-                       th:value="${pickupPoint.phone}"
-                       placeholder="+7 999 000-00-00"
-                       maxlength="16"
-                       required />
-                <div style="font-size: 0.85em; color: #777; margin-top: 5px;">
-                    * Формат: +7 XXX XXX-XX-XX
-                </div>
-            </td>
-        </tr>
+                <tr>
+                    <th>Индекс</th>
+                    <td th:text="${pickupPoint.address.postalCode}"></td>
+                </tr>
 
-        <tr>
-            <th>Дата создания</th>
-            <td th:text="${#dates.format(pickupPoint.address.createdAt, 'yyyy-MM-dd HH:mm')}"></td>
-        </tr>
-    </table>
+                <tr>
+                    <th>Телефон</th>
+                    <td>
+                        <input type="text" id="phoneInput" name="phone"
+                               th:value="${pickupPoint.phone}"
+                               placeholder="+7 999 000-00-00"
+                               maxlength="16"
+                               required />
+                        <div style="font-size: 0.85em; color: #777; margin-top: 5px;">
+                            * Формат: +7 XXX XXX-XX-XX
+                        </div>
+                    </td>
+                </tr>
 
-    <div style="margin-top: 20px;">
-        <button type="submit" class="btn btn-dark">Сохранить</button>
-        <a th:href="@{/admin/pickup-points}" class="btn">← Назад к списку</a>
+                <tr>
+                    <th>Дата создания</th>
+                    <td th:text="${#dates.format(pickupPoint.address.createdAt, 'yyyy-MM-dd HH:mm')}"></td>
+                </tr>
+            </table>
+
+            <div style="margin-top: 20px;">
+                <button type="submit" class="btn btn-dark">Сохранить</button>
+                <a th:href="@{/admin/pickup-points}" class="btn">← Назад к списку</a>
+            </div>
+        </form>
     </div>
-</form>
+</div>
 
 <script>
     document.addEventListener("DOMContentLoaded", function () {

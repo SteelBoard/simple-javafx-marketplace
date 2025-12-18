@@ -1,129 +1,115 @@
 <!DOCTYPE html>
 <html lang="ru" xmlns:th="http://www.thymeleaf.org">
-<head>
-    <meta charset="UTF-8">
-    <title>Заказы пользователя</title>
-    <style>
-        body { font-family: Arial, sans-serif; margin: 20px; }
-        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-        .search-container { margin-bottom: 20px; display: flex; gap: 10px; }
-        table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
-        th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
-        th { background: #f5f5f5; cursor: pointer; user-select: none; }
-        th:hover { background: #e0e0e0; }
-        tr:hover { background: #f9f9f9; cursor: pointer; }
-        .pagination { list-style: none; display: flex; gap: 5px; padding: 0; }
-        .pagination li a { padding: 6px 10px; border: 1px solid #ccc; text-decoration: none; color: black; }
-        .pagination .active a { background: #333; color: white; border-color: #333; }
-        .pagination .disabled a { color: #aaa; pointer-events: none; border-color: #eee;}
-        .btn { padding: 6px 12px; background: #fff; color: #333; border: 1px solid #ccc; text-decoration: none; }
-        .no-data { color: #666; font-style: italic; margin: 20px 0; }
-        /* Статусы заказов для красоты */
-        .status-badge { padding: 3px 6px; border-radius: 4px; font-size: 0.9em; font-weight: bold; }
-    </style>
-</head>
+<head th:replace="~{fragments/admin_layout :: head('Заказы пользователя')}"></head>
 <body>
 
-<div class="header">
-    <h2>Заказы пользователя: <span th:text="${user.username}" style="color: #0066cc;"></span></h2>
-    <a th:href="@{/admin/users/{id}(id=${user.id})}" class="btn">← Назад к пользователю</a>
-</div>
+<div th:replace="~{fragments/admin_layout :: sidebar}"></div>
 
-<!-- Поиск (ищем по ID заказа) -->
-<form class="search-container" th:action="@{/admin/users/{id}/orders(id=${user.id})}" method="get">
-    <input type="text" name="search" th:value="${search}" placeholder="Поиск по ID заказа..." style="padding: 5px; width: 300px;"/>
-    <input type="hidden" name="sort" th:value="${sort}" />
-    <input type="hidden" name="dir" th:value="${dir}" />
-    <input type="hidden" name="size" th:value="${size}" />
+<div class="main-content">
+    <div class="card">
+        <div class="header">
+            <h2>Заказы пользователя: <span th:text="${user.username}" style="color: #0066cc;"></span></h2>
+            <a th:href="@{/admin/users/{id}(id=${user.id})}" class="btn">← Назад к пользователю</a>
+        </div>
+        <form class="search-container" th:action="@{/admin/users/{id}/orders(id=${user.id})}" method="get">
+            <input type="text" name="search" th:value="${search}" placeholder="Поиск по ID заказа..." style="padding: 5px; width: 300px;"/>
+            <input type="hidden" name="sort" th:value="${sort}" />
+            <input type="hidden" name="dir" th:value="${dir}" />
+            <input type="hidden" name="size" th:value="${size}" />
 
-    <button type="submit" style="padding: 6px;">Найти</button>
-    <a th:href="@{/admin/users/{id}/orders(id=${user.id})}" style="padding: 6px; text-decoration: none; color: black; border: 1px solid #ccc;">Сброс</a>
-</form>
+            <button type="submit" style="padding: 6px;">Найти</button>
+            <a th:href="@{/admin/users/{id}/orders(id=${user.id})}" style="padding: 6px; text-decoration: none; color: black; border: 1px solid #ccc;">Сброс</a>
+        </form>
 
-<div th:if="${ordersPage.isEmpty()}" class="no-data">
-    Заказы не найдены.
-</div>
+        <div th:if="${ordersPage.isEmpty()}" class="no-data">
+            Заказы не найдены.
+        </div>
 
-<table th:unless="${ordersPage.isEmpty()}">
-    <thead>
-    <tr>
-        <!-- Сортировка по ID -->
-        <th th:data-href="@{/admin/users/{id}/orders(id=${user.id}, sort='id', dir=${sort=='id' and dir=='asc' ? 'desc' : 'asc'}, size=${size}, search=${search})}"
-            onclick="window.location=this.getAttribute('data-href')">
-            ID Заказа <span th:if="${sort == 'id'}" th:text="${dir == 'asc' ? '▲' : '▼'}"></span>
-        </th>
+        <table th:unless="${ordersPage.isEmpty()}">
+            <thead>
+            <tr>
+                <!-- Сортировка по ID -->
+                <th th:data-href="@{/admin/users/{id}/orders(id=${user.id}, sort='id', dir=${sort=='id' and dir=='asc' ? 'desc' : 'asc'}, size=${size}, search=${search})}"
+                    onclick="window.location=this.getAttribute('data-href')">
+                    ID Заказа <span th:if="${sort == 'id'}" th:text="${dir == 'asc' ? '▲' : '▼'}"></span>
+                </th>
 
-        <!-- Сортировка по Статусу -->
-        <th th:data-href="@{/admin/users/{id}/orders(id=${user.id}, sort='status', dir=${sort=='status' and dir=='asc' ? 'desc' : 'asc'}, size=${size}, search=${search})}"
-            onclick="window.location=this.getAttribute('data-href')">
-            Статус <span th:if="${sort == 'status'}" th:text="${dir == 'asc' ? '▲' : '▼'}"></span>
-        </th>
+                <!-- Сортировка по Статусу -->
+                <th th:data-href="@{/admin/users/{id}/orders(id=${user.id}, sort='status', dir=${sort=='status' and dir=='asc' ? 'desc' : 'asc'}, size=${size}, search=${search})}"
+                    onclick="window.location=this.getAttribute('data-href')">
+                    Статус <span th:if="${sort == 'status'}" th:text="${dir == 'asc' ? '▲' : '▼'}"></span>
+                </th>
 
-        <!-- Сортировка по Сумме -->
-        <th th:data-href="@{/admin/users/{id}/orders(id=${user.id}, sort='totalAmount', dir=${sort=='totalAmount' and dir=='asc' ? 'desc' : 'asc'}, size=${size}, search=${search})}"
-            onclick="window.location=this.getAttribute('data-href')">
-            Сумма <span th:if="${sort == 'totalAmount'}" th:text="${dir == 'asc' ? '▲' : '▼'}"></span>
-        </th>
+                <!-- Сортировка по Сумме -->
+                <th th:data-href="@{/admin/users/{id}/orders(id=${user.id}, sort='totalAmount', dir=${sort=='totalAmount' and dir=='asc' ? 'desc' : 'asc'}, size=${size}, search=${search})}"
+                    onclick="window.location=this.getAttribute('data-href')">
+                    Сумма <span th:if="${sort == 'totalAmount'}" th:text="${dir == 'asc' ? '▲' : '▼'}"></span>
+                </th>
 
-        <!-- Без сортировки (кол-во позиций) -->
-        <th>Позиций</th>
+                <!-- Без сортировки (кол-во позиций) -->
+                <th>Позиций</th>
 
-        <!-- Пункт выдачи (если нужно сортировать по ID пункта, можно добавить sort='pickupPoint.id') -->
-        <th>Пункт выдачи</th>
+                <!-- Пункт выдачи (если нужно сортировать по ID пункта, можно добавить sort='pickupPoint.id') -->
+                <th>Пункт выдачи</th>
 
-        <!-- Сортировка по Дате -->
-        <th th:data-href="@{/admin/users/{id}/orders(id=${user.id}, sort='createdAt', dir=${sort=='createdAt' and dir=='asc' ? 'desc' : 'asc'}, size=${size}, search=${search})}"
-            onclick="window.location=this.getAttribute('data-href')">
-            Дата создания <span th:if="${sort == 'createdAt'}" th:text="${dir == 'asc' ? '▲' : '▼'}"></span>
-        </th>
-    </tr>
-    </thead>
-    <tbody>
-    <!-- Клик по строке (можно сделать переход на детальную страницу заказа, если она есть) -->
-    <!-- Пока просто заглушка или переход на страницу заказа, если она существует -->
-    <tr th:each="order : ${ordersPage.content}"
-        style="cursor: default;" th:onclick="|window.location='@{/admin/orders/{id}(id=${order.id})}'|"> <!-- Если есть страница заказа: th:onclick="|window.location='@{/admin/orders/{id}(id=${order.id})}'|" -->
+                <!-- Сортировка по Дате -->
+                <th th:data-href="@{/admin/users/{id}/orders(id=${user.id}, sort='createdAt', dir=${sort=='createdAt' and dir=='asc' ? 'desc' : 'asc'}, size=${size}, search=${search})}"
+                    onclick="window.location=this.getAttribute('data-href')">
+                    Дата создания <span th:if="${sort == 'createdAt'}" th:text="${dir == 'asc' ? '▲' : '▼'}"></span>
+                </th>
+            </tr>
+            </thead>
+            <tbody>
+            <!-- Клик по строке (можно сделать переход на детальную страницу заказа, если она есть) -->
+            <!-- Пока просто заглушка или переход на страницу заказа, если она существует -->
+            <tr th:each="order : ${ordersPage.content}"
+                style="cursor: default;" th:onclick="|window.location='@{/admin/orders/{id}(id=${order.id})}'|"> <!-- Если есть страница заказа: th:onclick="|window.location='@{/admin/orders/{id}(id=${order.id})}'|" -->
 
-        <td th:text="'#' + ${order.id}"></td>
+                <td th:text="'#' + ${order.id}"></td>
 
-        <td>
+                <td>
             <span th:text="${order.status}" class="status-badge"
                   th:onclick="|window.location='@{/admin/orders/{id}(id=${order.id})}'|"
                   th:style="${order.status.name() == 'COMPLETED'} ? 'background:#d4edda; color:#155724;' :
                             (${order.status.name() == 'CANCELLED'} ? 'background:#f8d7da; color:#721c24;' : 'background:#fff3cd; color:#856404;')">
             </span>
-        </td>
+                </td>
 
-        <td th:text="${order.totalAmount} + ' ₽'" style="font-weight: bold;"></td>
+                <td th:text="${order.totalAmount} + ' ₽'" style="font-weight: bold;"></td>
 
-        <td th:text="${order.orderItems != null ? order.orderItems.size() : 0}"></td>
+                <td th:text="${order.orderItems != null ? order.orderItems.size() : 0}"></td>
 
-        <td th:text="${order.pickupPoint != null ? order.pickupPoint.address : 'Не указан'}"></td>
+                <td th:text="${order.pickupPoint != null ? order.pickupPoint.address : 'Не указан'}"></td>
 
-        <td th:text="${#dates.format(order.createdAt, 'yyyy-MM-dd HH:mm')}"></td>
-    </tr>
-    </tbody>
-</table>
+                <td th:text="${#dates.format(order.createdAt, 'yyyy-MM-dd HH:mm')}"></td>
+            </tr>
+            </tbody>
+        </table>
 
-<!-- Пагинация -->
-<ul class="pagination" th:if="${ordersPage.totalPages > 1}">
-    <!-- Назад -->
-    <li th:classappend="${ordersPage.first} ? 'disabled'">
-        <a th:href="@{/admin/users/{id}/orders(id=${user.id}, page=${ordersPage.number - 1}, size=${size}, sort=${sort}, dir=${dir}, search=${search})}">←</a>
-    </li>
+        <!-- Пагинация -->
+        <ul class="pagination" th:if="${ordersPage.totalPages > 1}">
+            <!-- Назад -->
+            <li th:classappend="${ordersPage.first} ? 'disabled'">
+                <a th:href="@{/admin/users/{id}/orders(id=${user.id}, page=${ordersPage.number - 1}, size=${size}, sort=${sort}, dir=${dir}, search=${search})}">←</a>
+            </li>
 
-    <!-- Номера страниц -->
-    <li th:each="i : ${#numbers.sequence(0, ordersPage.totalPages - 1)}"
-        th:classappend="${i == ordersPage.number} ? 'active'">
-        <a th:href="@{/admin/users/{id}/orders(id=${user.id}, page=${i}, size=${size}, sort=${sort}, dir=${dir}, search=${search})}"
-           th:text="${i + 1}"></a>
-    </li>
+            <!-- Номера страниц -->
+            <li th:each="i : ${#numbers.sequence(0, ordersPage.totalPages - 1)}"
+                th:classappend="${i == ordersPage.number} ? 'active'">
+                <a th:href="@{/admin/users/{id}/orders(id=${user.id}, page=${i}, size=${size}, sort=${sort}, dir=${dir}, search=${search})}"
+                   th:text="${i + 1}"></a>
+            </li>
 
-    <!-- Вперед -->
-    <li th:classappend="${ordersPage.last} ? 'disabled'">
-        <a th:href="@{/admin/users/{id}/orders(id=${user.id}, page=${ordersPage.number + 1}, size=${size}, sort=${sort}, dir=${dir}, search=${search})}">→</a>
-    </li>
-</ul>
+            <!-- Вперед -->
+            <li th:classappend="${ordersPage.last} ? 'disabled'">
+                <a th:href="@{/admin/users/{id}/orders(id=${user.id}, page=${ordersPage.number + 1}, size=${size}, sort=${sort}, dir=${dir}, search=${search})}">→</a>
+            </li>
+        </ul>
+    </div>
+</div>
+
+
+<!-- Поиск (ищем по ID заказа) -->
 
 </body>
 </html>

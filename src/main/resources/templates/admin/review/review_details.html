@@ -1,111 +1,79 @@
 <!DOCTYPE html>
 <html lang="ru" xmlns:th="http://www.thymeleaf.org">
-<head>
-    <meta charset="UTF-8">
-    <title>Модерация отзыва</title>
-    <style>
-        body { font-family: Arial, sans-serif; margin: 20px; }
-
-        table { width: 100%; border-collapse: collapse; margin-bottom: 20px; max-width: 800px; }
-        th, td { border: 1px solid #ccc; padding: 10px; vertical-align: top; }
-        th { background: #f5f5f5; width: 200px; text-align: left; }
-
-        .btn { padding: 8px 16px; background: #fff; color: #333; border: 1px solid #ccc; text-decoration: none; cursor: pointer; display: inline-block; font-size: 14px; }
-        .btn:hover { background: #eee; }
-        .btn-dark { background: #333; color: white; border-color: #333; }
-        .btn-dark:hover { background: #555; border-color: #555; }
-        .btn-danger { background: #dc3545; color: white; border-color: #dc3545; float: right;}
-        .btn-danger:hover { background: #bb2d3b; border-color: #bb2d3b; }
-
-        .msg-box { padding: 10px; margin-bottom: 20px; border-radius: 4px; max-width: 800px; }
-        .error { background-color: #fce4e4; border: 1px solid #fcc2c3; color: #cc0033; }
-        .success { background-color: #e6ffe6; border: 1px solid #c3e6cb; color: #155724; }
-
-        /* Фиксированные поля */
-        input[type="number"] { padding: 5px; width: 60px; font-size: 16px; border: 1px solid #ccc; }
-        textarea {
-            width: 100%;
-            height: 150px;
-            padding: 8px;
-            font-family: inherit;
-            font-size: 14px;
-            border: 1px solid #ccc;
-            box-sizing: border-box;
-            resize: none; /* ЗАПРЕТ РАСТЯГИВАНИЯ */
-        }
-
-        .link-item { color: #0066cc; text-decoration: none; font-weight: bold; }
-        .link-item:hover { text-decoration: underline; }
-    </style>
-</head>
+<head th:replace="~{fragments/admin_layout :: head('Детали отзыва')}"></head>
 <body>
 
-<h2>Модерация отзыва #<span th:text="${review.id}"></span></h2>
+<div th:replace="~{fragments/admin_layout :: sidebar}"></div>
 
-<div th:if="${error}" class="msg-box error" th:text="${error}"></div>
-<div th:if="${param.success}" class="msg-box success">Отзыв успешно обновлен!</div>
+<div class="main-content">
+    <div class="card">
+        <h2>Модерация отзыва #<span th:text="${review.id}"></span></h2>
+        <div th:if="${error}" class="msg-box error" th:text="${error}"></div>
+        <div th:if="${param.success}" class="msg-box success">Отзыв успешно обновлен!</div>
 
-<form th:action="@{/admin/reviews/{id}/update(id=${review.id})}" method="post">
-    <table>
-        <tr>
-            <th>ID</th>
-            <td th:text="${review.id}"></td>
-        </tr>
+        <form th:action="@{/admin/reviews/{id}/update(id=${review.id})}" method="post">
+            <table>
+                <tr>
+                    <th>ID</th>
+                    <td th:text="${review.id}"></td>
+                </tr>
 
-        <tr>
-            <th>Пользователь</th>
-            <td>
-                <!-- Здесь Username -->
-                <a th:href="@{/admin/users/{uid}(uid=${review.user.id})}" class="link-item"
-                   th:text="${review.user.username}">Username</a>
-                <div style="font-size: 0.85em; color: #777; margin-top: 5px;"
-                     th:text="|Email: ${review.user.email}|"></div>
-            </td>
-        </tr>
+                <tr>
+                    <th>Пользователь</th>
+                    <td>
+                        <!-- Здесь Username -->
+                        <a th:href="@{/admin/users/{uid}(uid=${review.user.id})}" class="link-item"
+                           th:text="${review.user.username}">Username</a>
+                        <div style="font-size: 0.85em; color: #777; margin-top: 5px;"
+                             th:text="|Email: ${review.user.email}|"></div>
+                    </td>
+                </tr>
 
-        <tr>
-            <th>Товар</th>
-            <td>
-                <a th:href="@{/admin/products/{sku}(sku=${review.product.sku})}" class="link-item"
-                   th:text="${review.product.name}">Название товара</a>
-                <div style="font-size: 0.85em; color: #777; margin-top: 5px;"
-                     th:text="|Артикул: ${review.product.sku}|"></div>
-            </td>
-        </tr>
+                <tr>
+                    <th>Товар</th>
+                    <td>
+                        <a th:href="@{/admin/products/{sku}(sku=${review.product.sku})}" class="link-item"
+                           th:text="${review.product.name}">Название товара</a>
+                        <div style="font-size: 0.85em; color: #777; margin-top: 5px;"
+                             th:text="|Артикул: ${review.product.sku}|"></div>
+                    </td>
+                </tr>
 
-        <tr>
-            <th>Дата создания</th>
-            <td th:text="${#dates.format(review.createdAt, 'dd MMMM yyyy, HH:mm')}"></td>
-        </tr>
+                <tr>
+                    <th>Дата создания</th>
+                    <td th:text="${#dates.format(review.createdAt, 'dd MMMM yyyy, HH:mm')}"></td>
+                </tr>
 
-        <tr>
-            <th>Рейтинг (1-5)</th>
-            <td>
-                <input type="number" name="rating" min="1" max="5" th:value="${review.rating}" required />
-                <span style="color: #f5c518; font-size: 1.2em;">★</span>
-            </td>
-        </tr>
+                <tr>
+                    <th>Рейтинг (1-5)</th>
+                    <td>
+                        <input type="number" name="rating" min="1" max="5" th:value="${review.rating}" required />
+                        <span style="color: #f5c518; font-size: 1.2em;">★</span>
+                    </td>
+                </tr>
 
-        <tr>
-            <th>Текст отзыва</th>
-            <td>
-                <textarea name="comment" th:text="${review.comment}" placeholder="Текст отзыва..."></textarea>
-            </td>
-        </tr>
-    </table>
+                <tr>
+                    <th>Текст отзыва</th>
+                    <td>
+                        <textarea name="comment" th:text="${review.comment}" placeholder="Текст отзыва..."></textarea>
+                    </td>
+                </tr>
+            </table>
 
-    <div style="margin-top: 20px; max-width: 800px;">
-        <button type="submit" class="btn btn-dark">Сохранить изменения</button>
-        <a th:href="@{/admin/reviews}" class="btn">← Назад</a>
+            <div style="margin-top: 20px; max-width: 800px;">
+                <button type="submit" class="btn btn-dark">Сохранить изменения</button>
+                <a th:href="@{/admin/reviews}" class="btn">← Назад</a>
 
-        <button type="button" class="btn btn-danger"
-                th:onclick="|if(confirm('Удалить отзыв навсегда?')) { document.getElementById('deleteForm').submit(); }|">
-            Удалить отзыв
-        </button>
+                <button type="button" class="btn btn-danger"
+                        th:onclick="|if(confirm('Удалить отзыв навсегда?')) { document.getElementById('deleteForm').submit(); }|">
+                    Удалить отзыв
+                </button>
+            </div>
+        </form>
+
+        <form id="deleteForm" th:action="@{/admin/reviews/{id}/delete(id=${review.id})}" method="post" style="display:none;"></form>
+
     </div>
-</form>
-
-<form id="deleteForm" th:action="@{/admin/reviews/{id}/delete(id=${review.id})}" method="post" style="display:none;"></form>
-
+</div>
 </body>
 </html>

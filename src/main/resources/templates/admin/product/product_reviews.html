@@ -1,34 +1,31 @@
 <!DOCTYPE html>
 <html lang="ru" xmlns:th="http://www.thymeleaf.org">
-<head>
-    <meta charset="UTF-8">
-    <title>Отзывы</title>
-    <style>
-        body { font-family: Arial, sans-serif; margin: 20px; }
-        table { width: 100%; border-collapse: collapse; }
-        th, td { border: 1px solid #ccc; padding: 10px; text-align: left; }
-        th { background: #f5f5f5; }
-        .btn { padding: 4px 10px; background: #dc3545; color: white; border: none; cursor: pointer; }
-    </style>
-</head>
+<head th:replace="~{fragments/admin_layout :: head('Отзывы о товаре')}"></head>
 <body>
-<h2 th:text="'Отзывы: ' + ${product.name}"></h2>
-<a th:href="@{/admin/products/{sku}(id=${product.sku})}">← Вернуться к товару</a><br><br>
 
-<table th:if="${not #lists.isEmpty(reviews)}">
-    <tr><th>User</th><th>Оценка</th><th>Комментарий</th><th>Дата</th><th>Действие</th></tr>
-    <tr th:each="r : ${reviews}">
-        <td th:text="${r.user.username}"></td>
-        <td th:text="${r.rating}"></td>
-        <td th:text="${r.comment}"></td>
-        <td th:text="${#dates.format(r.createdAt, 'dd.MM.yyyy')}"></td>
-        <td>
-            <form th:action="@{/admin/products/{sku}/reviews/{rid}/delete(sku=${product.sku}, rid=${r.id})}" method="post">
-                <button type="submit" class="btn" onclick="return confirm('Удалить?');">Удалить</button>
-            </form>
-        </td>
-    </tr>
-</table>
-<div th:if="${#lists.isEmpty(reviews)}">Нет отзывов.</div>
+<div th:replace="~{fragments/admin_layout :: sidebar}"></div>
+
+<div class="main-content">
+    <div class="card">
+        <h2 th:text="'Отзывы: ' + ${product.name}"></h2>
+        <a th:href="@{/admin/products/{sku}(id=${product.sku})}">← Вернуться к товару</a><br><br>
+
+        <table th:if="${not #lists.isEmpty(reviews)}">
+            <tr><th>User</th><th>Оценка</th><th>Комментарий</th><th>Дата</th><th>Действие</th></tr>
+            <tr th:each="r : ${reviews}">
+                <td th:text="${r.user.username}"></td>
+                <td th:text="${r.rating}"></td>
+                <td th:text="${r.comment}"></td>
+                <td th:text="${#dates.format(r.createdAt, 'dd.MM.yyyy')}"></td>
+                <td>
+                    <form th:action="@{/admin/products/{sku}/reviews/{rid}/delete(sku=${product.sku}, rid=${r.id})}" method="post">
+                        <button type="submit" class="btn" onclick="return confirm('Удалить?');">Удалить</button>
+                    </form>
+                </td>
+            </tr>
+        </table>
+        <div th:if="${#lists.isEmpty(reviews)}">Нет отзывов.</div>
+    </div>
+</div>
 </body>
 </html>

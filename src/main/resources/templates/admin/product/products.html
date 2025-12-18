@@ -1,107 +1,80 @@
 <!DOCTYPE html>
 <html lang="ru" xmlns:th="http://www.thymeleaf.org">
-<head>
-    <meta charset="UTF-8">
-    <title>Админка — Товары</title>
-    <style>
-        body { font-family: Arial, sans-serif; margin: 20px; }
-        .search-container { margin-bottom: 20px; display: flex; gap: 10px; align-items: center; }
-        table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
-        th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
-        th { background: #f5f5f5; cursor: pointer; user-select: none; }
-        th:hover { background: #e0e0e0; }
-        tr:hover { background: #f9f9f9; cursor: pointer; }
-        .pagination { list-style: none; display: flex; gap: 5px; padding: 0; }
-        .pagination li a { padding: 6px 10px; border: 1px solid #ccc; text-decoration: none; color: black; }
-        .pagination .active a { background: #333; color: white; border-color: #333; }
-        .pagination .disabled a { color: #aaa; pointer-events: none; border-color: #eee; }
-        .no-data { color: #666; font-style: italic; margin: 20px 0; }
-        .btn { padding: 6px 12px; background: #fff; color: #333; border: 1px solid #ccc; text-decoration: none; }
-    </style>
-</head>
+<head th:replace="~{fragments/admin_layout :: head('Товары')}"></head>
 <body>
 
-<h2>Товары</h2>
+<div th:replace="~{fragments/admin_layout :: sidebar}"></div>
 
-<form class="search-container" th:action="@{/admin/products}" method="get">
-    <input type="text" name="search" th:value="${search}" placeholder="Поиск по названию..." style="padding: 6px; width: 300px;"/>
-    <input type="hidden" name="sort" th:value="${sort}" />
-    <input type="hidden" name="dir" th:value="${dir}" />
-    <input type="hidden" name="size" th:value="${size}" />
+<div class="main-content">
+    <div class="card">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <h2>Товары</h2>
+            <a th:href="@{/product/new}" class="btn btn-primary">+ Добавить товар</a>
+        </div>
 
-    <button type="submit" style="padding: 6px 12px; cursor: pointer;">Найти</button>
-    <a th:href="@{/admin/products}" class="btn" style="background: #f5f5f5;">Сброс</a>
+        <form class="search-container" th:action="@{/admin/products}" method="get">
+            <input type="text" name="search" th:value="${search}" placeholder="Поиск по названию..." style="width: 300px;"/>
+            <input type="hidden" name="sort" th:value="${sort}" />
+            <input type="hidden" name="dir" th:value="${dir}" />
+            <input type="hidden" name="size" th:value="${size}" />
 
-    <!-- Кнопка добавления нового товара -->
-    <a th:href="@{/product/new}" class="btn" style="background: #28a745; color: white; border-color: #28a745; margin-left: auto;">+ Добавить товар</a>
-</form>
+            <button type="submit" class="btn btn-dark">Найти</button>
+            <a th:href="@{/admin/products}" class="btn">Сброс</a>
+        </form>
 
-<div th:if="${productsPage.isEmpty()}" class="no-data">
-    Товары не найдены.
+        <div th:if="${productsPage.isEmpty()}" class="no-data">Товары не найдены.</div>
+
+        <table th:unless="${productsPage.isEmpty()}">
+            <thead>
+            <tr>
+                <th th:data-href="@{/admin/products(sort='sku', dir=${sort=='sku' and dir=='asc' ? 'desc' : 'asc'}, size=${size}, search=${search})}" onclick="window.location=this.getAttribute('data-href')">
+                    Артикул <span th:if="${sort == 'sku'}" th:text="${dir == 'asc' ? '▲' : '▼'}"></span>
+                </th>
+                <th th:data-href="@{/admin/products(sort='name', dir=${sort=='name' and dir=='asc' ? 'desc' : 'asc'}, size=${size}, search=${search})}" onclick="window.location=this.getAttribute('data-href')">
+                    Название <span th:if="${sort == 'name'}" th:text="${dir == 'asc' ? '▲' : '▼'}"></span>
+                </th>
+                <th th:data-href="@{/admin/products(sort='price', dir=${sort=='price' and dir=='asc' ? 'desc' : 'asc'}, size=${size}, search=${search})}" onclick="window.location=this.getAttribute('data-href')">
+                    Цена <span th:if="${sort == 'price'}" th:text="${dir == 'asc' ? '▲' : '▼'}"></span>
+                </th>
+                <th th:data-href="@{/admin/products(sort='sales', dir=${sort=='sales' and dir=='asc' ? 'desc' : 'asc'}, size=${size}, search=${search})}" onclick="window.location=this.getAttribute('data-href')">
+                    Продажи <span th:if="${sort == 'sales'}" th:text="${dir == 'asc' ? '▲' : '▼'}"></span>
+                </th>
+                <th th:data-href="@{/admin/products(sort='active', dir=${sort=='active' and dir=='asc' ? 'desc' : 'asc'}, size=${size}, search=${search})}" onclick="window.location=this.getAttribute('data-href')">
+                    Активен <span th:if="${sort == 'active'}" th:text="${dir == 'asc' ? '▲' : '▼'}"></span>
+                </th>
+                <th th:data-href="@{/admin/products(sort='createdAt', dir=${sort=='createdAt' and dir=='asc' ? 'desc' : 'asc'}, size=${size}, search=${search})}" onclick="window.location=this.getAttribute('data-href')">
+                    Создан <span th:if="${sort == 'createdAt'}" th:text="${dir == 'asc' ? '▲' : '▼'}"></span>
+                </th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="p : ${productsPage.content}" th:onclick="|window.location='@{/admin/products/{sku}(sku=${p.sku})}'|" style="cursor: pointer;">
+                <td th:text="${p.sku}"></td>
+                <td th:text="${p.name}"></td>
+                <td th:text="${p.price}"></td>
+                <td th:text="${p.sales}"></td>
+                <td>
+                    <span th:class="'badge ' + (${p.active} ? 'badge-success' : 'badge-danger')"
+                          th:text="${p.active ? 'Да' : 'Нет'}"></span>
+                </td>
+                <td th:text="${#dates.format(p.createdAt, 'yyyy-MM-dd HH:mm')}"></td>
+            </tr>
+            </tbody>
+        </table>
+
+        <!-- Пагинация -->
+        <ul class="pagination" th:if="${productsPage.totalPages > 1}">
+            <li th:classappend="${productsPage.first} ? 'disabled'">
+                <a th:href="@{/admin/products(page=${productsPage.number - 1}, size=${size}, sort=${sort}, dir=${dir}, search=${search})}">←</a>
+            </li>
+            <li th:each="i : ${#numbers.sequence(0, productsPage.totalPages - 1)}" th:classappend="${i == productsPage.number} ? 'active'">
+                <a th:href="@{/admin/products(page=${i}, size=${size}, sort=${sort}, dir=${dir}, search=${search})}" th:text="${i + 1}"></a>
+            </li>
+            <li th:classappend="${productsPage.last} ? 'disabled'">
+                <a th:href="@{/admin/products(page=${productsPage.number + 1}, size=${size}, sort=${sort}, dir=${dir}, search=${search})}">→</a>
+            </li>
+        </ul>
+    </div>
 </div>
-
-<table th:unless="${productsPage.isEmpty()}">
-    <thead>
-    <tr>
-        <th th:data-href="@{/admin/products(sort='sku', dir=${sort=='sku' and dir=='asc' ? 'desc' : 'asc'}, size=${size}, search=${search})}"
-            onclick="window.location=this.getAttribute('data-href')">
-            Артикул <span th:if="${sort == 'sku'}" th:text="${dir == 'asc' ? '▲' : '▼'}"></span>
-        </th>
-
-        <th th:data-href="@{/admin/products(sort='name', dir=${sort=='name' and dir=='asc' ? 'desc' : 'asc'}, size=${size}, search=${search})}"
-            onclick="window.location=this.getAttribute('data-href')">
-            Название <span th:if="${sort == 'name'}" th:text="${dir == 'asc' ? '▲' : '▼'}"></span>
-        </th>
-
-        <th th:data-href="@{/admin/products(sort='price', dir=${sort=='price' and dir=='asc' ? 'desc' : 'asc'}, size=${size}, search=${search})}"
-            onclick="window.location=this.getAttribute('data-href')">
-            Цена <span th:if="${sort == 'price'}" th:text="${dir == 'asc' ? '▲' : '▼'}"></span>
-        </th>
-
-        <th th:data-href="@{/admin/products(sort='sales', dir=${sort=='sales' and dir=='asc' ? 'desc' : 'asc'}, size=${size}, search=${search})}"
-            onclick="window.location=this.getAttribute('data-href')">
-            Продажи <span th:if="${sort == 'sales'}" th:text="${dir == 'asc' ? '▲' : '▼'}"></span>
-        </th>
-
-        <th th:data-href="@{/admin/products(sort='active', dir=${sort=='active' and dir=='asc' ? 'desc' : 'asc'}, size=${size}, search=${search})}"
-            onclick="window.location=this.getAttribute('data-href')">
-            Активен <span th:if="${sort == 'active'}" th:text="${dir == 'asc' ? '▲' : '▼'}"></span>
-        </th>
-
-        <th th:data-href="@{/admin/products(sort='createdAt', dir=${sort=='createdAt' and dir=='asc' ? 'desc' : 'asc'}, size=${size}, search=${search})}"
-            onclick="window.location=this.getAttribute('data-href')">
-            Создан <span th:if="${sort == 'createdAt'}" th:text="${dir == 'asc' ? '▲' : '▼'}"></span>
-        </th>
-    </tr>
-    </thead>
-    <tbody>
-    <tr th:each="p : ${productsPage.content}" th:onclick="|window.location='@{/admin/products/{sku}(sku=${p.sku})}'|">
-        <td th:text="${p.sku}"></td>
-        <td th:text="${p.name}"></td>
-        <td th:text="${p.price}"></td>
-        <td th:text="${p.sales}"></td>
-        <td th:text="${p.active ? 'Да' : 'Нет'}"
-            th:style="${p.active ? 'color:green; font-weight:bold' : 'color:red; font-weight:bold'}"></td>
-        <td th:text="${#dates.format(p.createdAt, 'yyyy-MM-dd HH:mm')}"></td>
-    </tr>
-    </tbody>
-</table>
-
-<ul class="pagination" th:if="${productsPage.totalPages > 1}">
-    <li th:classappend="${productsPage.first} ? 'disabled'">
-        <a th:href="@{/admin/products(page=${productsPage.number - 1}, size=${size}, sort=${sort}, dir=${dir}, search=${search})}">←</a>
-    </li>
-
-    <li th:each="i : ${#numbers.sequence(0, productsPage.totalPages - 1)}"
-        th:classappend="${i == productsPage.number} ? 'active'">
-        <a th:href="@{/admin/products(page=${i}, size=${size}, sort=${sort}, dir=${dir}, search=${search})}"
-           th:text="${i + 1}"></a>
-    </li>
-
-    <li th:classappend="${productsPage.last} ? 'disabled'">
-        <a th:href="@{/admin/products(page=${productsPage.number + 1}, size=${size}, sort=${sort}, dir=${dir}, search=${search})}">→</a>
-    </li>
-</ul>
-
 </body>
 </html>

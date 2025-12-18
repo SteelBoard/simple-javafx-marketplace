@@ -45,6 +45,7 @@ public class AdminPickupPointController {
         model.addAttribute("sort", sort);
         model.addAttribute("dir", dir);
         model.addAttribute("size", size);
+        model.addAttribute("activeTab", "pvz");
 
         return "admin/pickup_point/pickup_points";
     }

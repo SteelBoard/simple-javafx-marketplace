@@ -1,104 +1,90 @@
 <!DOCTYPE html>
 <html lang="ru" xmlns:th="http://www.thymeleaf.org">
-<head>
-    <meta charset="UTF-8">
-    <title>Отзывы пользователя</title>
-    <style>
-        body { font-family: Arial, sans-serif; margin: 20px; }
-        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-        .search-container { margin-bottom: 20px; display: flex; gap: 10px; }
-        table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
-        th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
-        th { background: #f5f5f5; cursor: pointer; user-select: none; }
-        th:hover { background: #e0e0e0; }
-        tr:hover { background: #f9f9f9; cursor: pointer; }
-        .pagination { list-style: none; display: flex; gap: 5px; padding: 0; }
-        .pagination li a { padding: 6px 10px; border: 1px solid #ccc; text-decoration: none; color: black; }
-        .pagination .active a { background: #333; color: white; border-color: #333; }
-        .pagination .disabled a { color: #aaa; pointer-events: none; border-color: #eee;}
-        .btn { padding: 6px 12px; background: #fff; color: #333; border: 1px solid #ccc; text-decoration: none; }
-        .no-data { color: #666; font-style: italic; margin: 20px 0; }
-    </style>
-</head>
+<head th:replace="~{fragments/admin_layout :: head('Отзывы пользователя')}"></head>
 
 <body>
 
-<div class="header">
-    <h2>Отзывы пользователя: <span th:text="${user.username}" style="color: #0066cc;"></span></h2>
-    <a th:href="@{/admin/users/{id}(id=${user.id})}" class="btn">← Назад к пользователю</a>
-</div>
+<div th:replace="~{fragments/admin_layout :: sidebar}"></div>
 
+<div class="main-content">
+    <div class="card">
+        <div class="header">
+            <h2>Отзывы пользователя: <span th:text="${user.username}" style="color: #0066cc;"></span></h2>
+            <a th:href="@{/admin/users/{id}(id=${user.id})}" class="btn">← Назад к пользователю</a>
+        </div>
+        <form class="search-container" th:action="@{/admin/users/{id}/reviews(id=${user.id})}" method="get">
+            <input type="text" name="search" th:value="${search}" placeholder="Поиск по тексту..." style="padding: 6px; width: 300px;"/>
+            <input type="hidden" name="sort" th:value="${sort}" />
+            <input type="hidden" name="dir" th:value="${dir}" />
+            <input type="hidden" name="size" th:value="${size}" />
+
+            <button type="submit" style="padding: 6px 12px; cursor: pointer;">Найти</button>
+            <a th:href="@{/admin/users/{id}/reviews(id=${user.id})}" class="btn" style="background:#f5f5f5;">Сброс</a>
+        </form>
+
+        <div th:if="${reviewsPage.isEmpty()}" class="no-data">
+            Отзывы не найдены.
+        </div>
+
+        <table th:unless="${reviewsPage.isEmpty()}">
+            <thead>
+            <tr>
+                <th th:data-href="@{/admin/users/{id}/reviews(id=${user.id}, sort='id', dir=${sort=='id' and dir=='asc' ? 'desc' : 'asc'}, search=${search})}"
+                    onclick="window.location=this.getAttribute('data-href')">
+                    ID <span th:if="${sort == 'id'}" th:text="${dir == 'asc' ? '▲' : '▼'}"></span>
+                </th>
+
+                <th th:data-href="@{/admin/users/{id}/reviews(id=${user.id}, sort='product.name', dir=${sort=='product.name' and dir=='asc' ? 'desc' : 'asc'}, search=${search})}"
+                    onclick="window.location=this.getAttribute('data-href')">
+                    Товар <span th:if="${sort == 'product.name'}" th:text="${dir == 'asc' ? '▲' : '▼'}"></span>
+                </th>
+
+                <th th:data-href="@{/admin/users/{id}/reviews(id=${user.id}, sort='rating', dir=${sort=='rating' and dir=='asc' ? 'desc' : 'asc'}, search=${search})}"
+                    onclick="window.location=this.getAttribute('data-href')">
+                    Оценка <span th:if="${sort == 'rating'}" th:text="${dir == 'asc' ? '▲' : '▼'}"></span>
+                </th>
+
+                <th>Комментарий</th>
+
+                <th th:data-href="@{/admin/users/{id}/reviews(id=${user.id}, sort='createdAt', dir=${sort=='createdAt' and dir=='asc' ? 'desc' : 'asc'}, search=${search})}"
+                    onclick="window.location=this.getAttribute('data-href')">
+                    Дата <span th:if="${sort == 'createdAt'}" th:text="${dir == 'asc' ? '▲' : '▼'}"></span>
+                </th>
+            </tr>
+            </thead>
+
+            <tbody>
+            <!-- Клик по строке ведет на товар, на который оставлен отзыв -->
+            <tr th:each="r : ${reviewsPage.content}"
+                th:onclick="|window.location='@{/admin/products/{sku}(sku=${r.product.sku})}'|">
+                <td th:text="${r.id}"></td>
+                <td th:text="${r.product.name}"></td>
+                <td th:text="${r.rating} + ' ⭐'" style="color: #f5c518; font-weight: bold;"></td>
+                <td th:text="${r.comment}"></td>
+                <td th:text="${#dates.format(r.createdAt, 'yyyy-MM-dd HH:mm')}"></td>
+            </tr>
+            </tbody>
+        </table>
+
+        <!-- Пагинация -->
+        <ul class="pagination" th:if="${reviewsPage.totalPages > 1}">
+            <li th:classappend="${reviewsPage.first} ? 'disabled'">
+                <a th:href="@{/admin/users/{id}/reviews(id=${user.id}, page=${reviewsPage.number - 1}, sort=${sort}, dir=${dir}, search=${search})}">←</a>
+            </li>
+
+            <li th:each="i : ${#numbers.sequence(0, reviewsPage.totalPages - 1)}"
+                th:classappend="${i == reviewsPage.number} ? 'active'">
+                <a th:href="@{/admin/users/{id}/reviews(id=${user.id}, page=${i}, sort=${sort}, dir=${dir}, search=${search})}"
+                   th:text="${i + 1}"></a>
+            </li>
+
+            <li th:classappend="${reviewsPage.last} ? 'disabled'">
+                <a th:href="@{/admin/users/{id}/reviews(id=${user.id}, page=${reviewsPage.number + 1}, sort=${sort}, dir=${dir}, search=${search})}">→</a>
+            </li>
+        </ul>
+    </div>
+</div>
 <!-- Поиск -->
-<form class="search-container" th:action="@{/admin/users/{id}/reviews(id=${user.id})}" method="get">
-    <input type="text" name="search" th:value="${search}" placeholder="Поиск по тексту..." style="padding: 6px; width: 300px;"/>
-    <input type="hidden" name="sort" th:value="${sort}" />
-    <input type="hidden" name="dir" th:value="${dir}" />
-    <input type="hidden" name="size" th:value="${size}" />
-
-    <button type="submit" style="padding: 6px 12px; cursor: pointer;">Найти</button>
-    <a th:href="@{/admin/users/{id}/reviews(id=${user.id})}" class="btn" style="background:#f5f5f5;">Сброс</a>
-</form>
-
-<div th:if="${reviewsPage.isEmpty()}" class="no-data">
-    Отзывы не найдены.
-</div>
-
-<table th:unless="${reviewsPage.isEmpty()}">
-    <thead>
-    <tr>
-        <th th:data-href="@{/admin/users/{id}/reviews(id=${user.id}, sort='id', dir=${sort=='id' and dir=='asc' ? 'desc' : 'asc'}, search=${search})}"
-            onclick="window.location=this.getAttribute('data-href')">
-            ID <span th:if="${sort == 'id'}" th:text="${dir == 'asc' ? '▲' : '▼'}"></span>
-        </th>
-
-        <th th:data-href="@{/admin/users/{id}/reviews(id=${user.id}, sort='product.name', dir=${sort=='product.name' and dir=='asc' ? 'desc' : 'asc'}, search=${search})}"
-            onclick="window.location=this.getAttribute('data-href')">
-            Товар <span th:if="${sort == 'product.name'}" th:text="${dir == 'asc' ? '▲' : '▼'}"></span>
-        </th>
-
-        <th th:data-href="@{/admin/users/{id}/reviews(id=${user.id}, sort='rating', dir=${sort=='rating' and dir=='asc' ? 'desc' : 'asc'}, search=${search})}"
-            onclick="window.location=this.getAttribute('data-href')">
-            Оценка <span th:if="${sort == 'rating'}" th:text="${dir == 'asc' ? '▲' : '▼'}"></span>
-        </th>
-
-        <th>Комментарий</th>
-
-        <th th:data-href="@{/admin/users/{id}/reviews(id=${user.id}, sort='createdAt', dir=${sort=='createdAt' and dir=='asc' ? 'desc' : 'asc'}, search=${search})}"
-            onclick="window.location=this.getAttribute('data-href')">
-            Дата <span th:if="${sort == 'createdAt'}" th:text="${dir == 'asc' ? '▲' : '▼'}"></span>
-        </th>
-    </tr>
-    </thead>
-
-    <tbody>
-    <!-- Клик по строке ведет на товар, на который оставлен отзыв -->
-    <tr th:each="r : ${reviewsPage.content}"
-        th:onclick="|window.location='@{/admin/products/{sku}(sku=${r.product.sku})}'|">
-        <td th:text="${r.id}"></td>
-        <td th:text="${r.product.name}"></td>
-        <td th:text="${r.rating} + ' ⭐'" style="color: #f5c518; font-weight: bold;"></td>
-        <td th:text="${r.comment}"></td>
-        <td th:text="${#dates.format(r.createdAt, 'yyyy-MM-dd HH:mm')}"></td>
-    </tr>
-    </tbody>
-</table>
-
-<!-- Пагинация -->
-<ul class="pagination" th:if="${reviewsPage.totalPages > 1}">
-    <li th:classappend="${reviewsPage.first} ? 'disabled'">
-        <a th:href="@{/admin/users/{id}/reviews(id=${user.id}, page=${reviewsPage.number - 1}, sort=${sort}, dir=${dir}, search=${search})}">←</a>
-    </li>
-
-    <li th:each="i : ${#numbers.sequence(0, reviewsPage.totalPages - 1)}"
-        th:classappend="${i == reviewsPage.number} ? 'active'">
-        <a th:href="@{/admin/users/{id}/reviews(id=${user.id}, page=${i}, sort=${sort}, dir=${dir}, search=${search})}"
-           th:text="${i + 1}"></a>
-    </li>
-
-    <li th:classappend="${reviewsPage.last} ? 'disabled'">
-        <a th:href="@{/admin/users/{id}/reviews(id=${user.id}, page=${reviewsPage.number + 1}, sort=${sort}, dir=${dir}, search=${search})}">→</a>
-    </li>
-</ul>
 
 </body>
 </html>

@@ -1,120 +1,98 @@
 <!DOCTYPE html>
 <html lang="ru" xmlns:th="http://www.thymeleaf.org">
-<head>
-    <meta charset="UTF-8">
-    <title>Админка — Отзывы</title>
-    <style>
-        body { font-family: Arial, sans-serif; margin: 20px; }
-
-        .search-container { margin-bottom: 20px; display: flex; gap: 10px; align-items: center; }
-
-        table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
-        th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
-        th { background: #f5f5f5; cursor: pointer; user-select: none; }
-        th:hover { background: #e0e0e0; }
-        tr:hover { background: #f9f9f9; cursor: pointer; }
-
-        .pagination { list-style: none; display: flex; gap: 5px; padding: 0; }
-        .pagination li a { padding: 6px 10px; border: 1px solid #ccc; text-decoration: none; color: black; }
-        .pagination .active a { background: #333; color: white; border-color: #333; }
-        .pagination .disabled a { color: #aaa; pointer-events: none; border-color: #eee; }
-
-        .btn { padding: 6px 12px; background: #fff; color: #333; border: 1px solid #ccc; text-decoration: none; cursor: pointer; font-size: 14px; }
-        .btn:hover { background: #eee; }
-        .btn-dark { background: #333; color: white; border-color: #333; }
-        .btn-dark:hover { background: #555; border-color: #555; }
-
-        .rating-star { color: #f5c518; }
-        .no-data { color: #666; font-style: italic; margin: 20px 0; }
-    </style>
-</head>
+<head th:replace="~{fragments/admin_layout :: head('Отзывы')}"></head>
 
 <body>
 
-<h2>Отзывы пользователей</h2>
+<div th:replace="~{fragments/admin_layout :: sidebar}"></div>
 
-<form class="search-container" th:action="@{/admin/reviews}" method="get">
-    <input type="text" name="search" th:value="${search}"
-           placeholder="Username, товар или текст..."
-           style="padding: 6px; width: 300px; border: 1px solid #ccc;"/>
+<div class="main-content">
+    <div class="card">
+        <h2>Отзывы пользователей</h2>
+        <form class="search-container" th:action="@{/admin/reviews}" method="get">
+            <input type="text" name="search" th:value="${search}"
+                   placeholder="Username, товар или текст..."
+                   style="padding: 6px; width: 300px; border: 1px solid #ccc;"/>
 
-    <input type="hidden" name="sort" th:value="${sort}" />
-    <input type="hidden" name="dir" th:value="${dir}" />
-    <input type="hidden" name="size" th:value="${size}" />
+            <input type="hidden" name="sort" th:value="${sort}" />
+            <input type="hidden" name="dir" th:value="${dir}" />
+            <input type="hidden" name="size" th:value="${size}" />
 
-    <button type="submit" class="btn btn-dark">Поиск</button>
-    <a th:href="@{/admin/reviews}" class="btn">Сброс</a>
-</form>
+            <button type="submit" class="btn btn-dark">Поиск</button>
+            <a th:href="@{/admin/reviews}" class="btn">Сброс</a>
+        </form>
 
-<div th:if="${page.isEmpty()}" class="no-data">
-    Отзывы не найдены.
+        <div th:if="${page.isEmpty()}" class="no-data">
+            Отзывы не найдены.
+        </div>
+
+        <table th:unless="${page.isEmpty()}">
+            <thead>
+            <tr>
+                <th style="width: 50px;"
+                    th:onclick="|window.location='@{/admin/reviews(sort='id', dir=${sort=='id' and dir=='asc' ? 'desc' : 'asc'}, size=${size}, search=${search})}'|">
+                    ID <span th:if="${sort == 'id'}" th:text="${dir == 'asc' ? '▲' : '▼'}"></span>
+                </th>
+
+                <th style="width: 150px;"
+                    th:onclick="|window.location='@{/admin/reviews(sort='createdAt', dir=${sort=='createdAt' and dir=='asc' ? 'desc' : 'asc'}, size=${size}, search=${search})}'|">
+                    Дата <span th:if="${sort == 'createdAt'}" th:text="${dir == 'asc' ? '▲' : '▼'}"></span>
+                </th>
+
+                <th th:onclick="|window.location='@{/admin/reviews(sort='user.username', dir=${sort=='user.username' and dir=='asc' ? 'desc' : 'asc'}, size=${size}, search=${search})}'|">
+                    Пользователь <span th:if="${sort == 'user.username'}" th:text="${dir == 'asc' ? '▲' : '▼'}"></span>
+                </th>
+
+                <th th:onclick="|window.location='@{/admin/reviews(sort='product.name', dir=${sort=='product.name' and dir=='asc' ? 'desc' : 'asc'}, size=${size}, search=${search})}'|">
+                    Товар <span th:if="${sort == 'product.name'}" th:text="${dir == 'asc' ? '▲' : '▼'}"></span>
+                </th>
+
+                <th style="width: 100px;"
+                    th:onclick="|window.location='@{/admin/reviews(sort='rating', dir=${sort=='rating' and dir=='asc' ? 'desc' : 'asc'}, size=${size}, search=${search})}'|">
+                    Рейтинг <span th:if="${sort == 'rating'}" th:text="${dir == 'asc' ? '▲' : '▼'}"></span>
+                </th>
+
+                <th>Комментарий</th>
+            </tr>
+            </thead>
+
+            <tbody>
+            <tr th:each="review : ${page.content}"
+                th:onclick="|window.location='@{/admin/reviews/{id}(id=${review.id})}'|">
+
+                <td th:text="${review.id}"></td>
+
+                <td th:text="${#dates.format(review.createdAt, 'yyyy-MM-dd HH:mm')}"></td>
+
+                <!-- Здесь теперь Username -->
+                <td th:text="${review.user?.username ?: 'Удален'}"></td>
+
+                <td th:text="${review.product?.name ?: 'Удален'}"></td>
+
+                <td>
+                    <span class="rating-star">★</span> <span th:text="${review.rating}"></span>
+                </td>
+
+                <td th:text="${#strings.abbreviate(review.comment, 80)}"></td>
+            </tr>
+            </tbody>
+        </table>
+
+        <ul class="pagination" th:if="${page.totalPages > 1}">
+            <li th:classappend="${page.first} ? 'disabled'">
+                <a th:href="@{/admin/reviews(page=${page.number - 1}, size=${size}, sort=${sort}, dir=${dir}, search=${search})}">←</a>
+            </li>
+            <li th:each="i : ${#numbers.sequence(0, page.totalPages - 1)}"
+                th:classappend="${i == page.number} ? 'active'">
+                <a th:href="@{/admin/reviews(page=${i}, size=${size}, sort=${sort}, dir=${dir}, search=${search})}"
+                   th:text="${i + 1}"></a>
+            </li>
+            <li th:classappend="${page.last} ? 'disabled'">
+                <a th:href="@{/admin/reviews(page=${page.number + 1}, size=${size}, sort=${sort}, dir=${dir}, search=${search})}">→</a>
+            </li>
+        </ul>
+    </div>
 </div>
-
-<table th:unless="${page.isEmpty()}">
-    <thead>
-    <tr>
-        <th style="width: 50px;"
-            th:onclick="|window.location='@{/admin/reviews(sort='id', dir=${sort=='id' and dir=='asc' ? 'desc' : 'asc'}, size=${size}, search=${search})}'|">
-            ID <span th:if="${sort == 'id'}" th:text="${dir == 'asc' ? '▲' : '▼'}"></span>
-        </th>
-
-        <th style="width: 150px;"
-            th:onclick="|window.location='@{/admin/reviews(sort='createdAt', dir=${sort=='createdAt' and dir=='asc' ? 'desc' : 'asc'}, size=${size}, search=${search})}'|">
-            Дата <span th:if="${sort == 'createdAt'}" th:text="${dir == 'asc' ? '▲' : '▼'}"></span>
-        </th>
-
-        <th th:onclick="|window.location='@{/admin/reviews(sort='user.username', dir=${sort=='user.username' and dir=='asc' ? 'desc' : 'asc'}, size=${size}, search=${search})}'|">
-            Пользователь <span th:if="${sort == 'user.username'}" th:text="${dir == 'asc' ? '▲' : '▼'}"></span>
-        </th>
-
-        <th th:onclick="|window.location='@{/admin/reviews(sort='product.name', dir=${sort=='product.name' and dir=='asc' ? 'desc' : 'asc'}, size=${size}, search=${search})}'|">
-            Товар <span th:if="${sort == 'product.name'}" th:text="${dir == 'asc' ? '▲' : '▼'}"></span>
-        </th>
-
-        <th style="width: 100px;"
-            th:onclick="|window.location='@{/admin/reviews(sort='rating', dir=${sort=='rating' and dir=='asc' ? 'desc' : 'asc'}, size=${size}, search=${search})}'|">
-            Рейтинг <span th:if="${sort == 'rating'}" th:text="${dir == 'asc' ? '▲' : '▼'}"></span>
-        </th>
-
-        <th>Комментарий</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    <tr th:each="review : ${page.content}"
-        th:onclick="|window.location='@{/admin/reviews/{id}(id=${review.id})}'|">
-
-        <td th:text="${review.id}"></td>
-
-        <td th:text="${#dates.format(review.createdAt, 'yyyy-MM-dd HH:mm')}"></td>
-
-        <!-- Здесь теперь Username -->
-        <td th:text="${review.user?.username ?: 'Удален'}"></td>
-
-        <td th:text="${review.product?.name ?: 'Удален'}"></td>
-
-        <td>
-            <span class="rating-star">★</span> <span th:text="${review.rating}"></span>
-        </td>
-
-        <td th:text="${#strings.abbreviate(review.comment, 80)}"></td>
-    </tr>
-    </tbody>
-</table>
-
-<ul class="pagination" th:if="${page.totalPages > 1}">
-    <li th:classappend="${page.first} ? 'disabled'">
-        <a th:href="@{/admin/reviews(page=${page.number - 1}, size=${size}, sort=${sort}, dir=${dir}, search=${search})}">←</a>
-    </li>
-    <li th:each="i : ${#numbers.sequence(0, page.totalPages - 1)}"
-        th:classappend="${i == page.number} ? 'active'">
-        <a th:href="@{/admin/reviews(page=${i}, size=${size}, sort=${sort}, dir=${dir}, search=${search})}"
-           th:text="${i + 1}"></a>
-    </li>
-    <li th:classappend="${page.last} ? 'disabled'">
-        <a th:href="@{/admin/reviews(page=${page.number + 1}, size=${size}, sort=${sort}, dir=${dir}, search=${search})}">→</a>
-    </li>
-</ul>
 
 </body>
 </html>

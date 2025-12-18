@@ -1,103 +1,58 @@
 <!DOCTYPE html>
 <html lang="ru" xmlns:th="http://www.thymeleaf.org">
-<head>
-    <meta charset="UTF-8">
-    <title>Заказы товара</title>
-    <style>
-        body { font-family: Arial, sans-serif; margin: 20px; }
-        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-
-        table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
-        th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
-        th { background: #f5f5f5; }
-        tr:hover { background: #f9f9f9; cursor: pointer; }
-
-        .pagination { list-style: none; display: flex; gap: 5px; padding: 0; }
-        .pagination li a { padding: 6px 10px; border: 1px solid #ccc; text-decoration: none; color: black; }
-        .pagination .active a { background: #333; color: white; border-color: #333; }
-        .pagination .disabled a { color: #aaa; pointer-events: none; border-color: #eee; }
-
-        .btn { padding: 6px 12px; background: #fff; color: #333; border: 1px solid #ccc; text-decoration: none; font-size: 14px; }
-        .btn:hover { background: #eee; }
-
-        .no-data { color: #666; font-style: italic; margin: 20px 0; }
-        .status-badge { font-weight: bold; }
-
-        /* Ссылка внутри строки */
-        .inner-link { color: #0066cc; text-decoration: none; }
-        .inner-link:hover { text-decoration: underline; }
-    </style>
-</head>
+<head th:replace="~{fragments/admin_layout :: head('Заказы товара')}"></head>
 <body>
 
-<div class="header">
-    <h2>
-        Заказы с товаром: <span th:text="${product.name}" style="color: #555;"></span>
-    </h2>
-    <a th:href="@{/admin/products/{sku}(sku=${product.sku})}" class="btn">← Назад к товару</a>
+<div th:replace="~{fragments/admin_layout :: sidebar}"></div>
+
+<div class="main-content">
+    <div class="card">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <h2>Заказы с товаром: <span th:text="${product.name}" style="color: #777;"></span></h2>
+            <a th:href="@{/admin/products/{sku}(sku=${product.sku})}" class="btn">← Назад к товару</a>
+        </div>
+
+        <div th:if="${ordersPage.isEmpty()}" class="no-data">Заказов нет.</div>
+
+        <table th:unless="${ordersPage.isEmpty()}">
+            <thead>
+            <tr>
+                <th>№ Заказа</th>
+                <th>Покупатель</th>
+                <th>Статус</th>
+                <th>Дата</th>
+                <th>Сумма</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="order : ${ordersPage.content}" th:onclick="|window.location='@{/admin/orders/{id}(id=${order.id})}'|" style="cursor: pointer;">
+                <td th:text="'#' + ${order.id}"></td>
+                <td onclick="event.stopPropagation()">
+                    <a th:href="@{/admin/users/{id}(id=${order.user.id})}" th:text="${order.user.username}"></a>
+                </td>
+                <td>
+                     <span th:class="'badge ' + (${order.status.name() == 'COMPLETED'} ? 'badge-success' : (${order.status.name() == 'CANCELLED'} ? 'badge-danger' : 'badge-warning'))"
+                           th:text="${order.status}"></span>
+                </td>
+                <td th:text="${#dates.format(order.createdAt, 'yyyy-MM-dd HH:mm')}"></td>
+                <td th:text="${order.totalAmount} + ' ₽'"></td>
+            </tr>
+            </tbody>
+        </table>
+
+        <!-- Пагинация -->
+        <ul class="pagination" th:if="${ordersPage.totalPages > 1}">
+            <li th:classappend="${ordersPage.first} ? 'disabled'">
+                <a th:href="@{/admin/products/{sku}/orders(sku=${product.sku}, page=${ordersPage.number - 1})}">←</a>
+            </li>
+            <li th:each="i : ${#numbers.sequence(0, ordersPage.totalPages - 1)}" th:classappend="${i == ordersPage.number} ? 'active'">
+                <a th:href="@{/admin/products/{sku}/orders(sku=${product.sku}, page=${i})}" th:text="${i + 1}"></a>
+            </li>
+            <li th:classappend="${ordersPage.last} ? 'disabled'">
+                <a th:href="@{/admin/products/{sku}/orders(sku=${product.sku}, page=${ordersPage.number + 1})}">→</a>
+            </li>
+        </ul>
+    </div>
 </div>
-
-<div style="margin-bottom: 15px;">
-    Артикул: <strong th:text="${product.sku}"></strong>
-</div>
-
-<div th:if="${ordersPage.isEmpty()}" class="no-data">
-    Заказов с этим товаром пока не найдено.
-</div>
-
-<table th:unless="${ordersPage.isEmpty()}">
-    <thead>
-    <tr>
-        <th>ID Заказа</th>
-        <th>Покупатель</th>
-        <th>Статус</th>
-        <th>Дата создания</th>
-        <th>Сумма заказа</th>
-    </tr>
-    </thead>
-    <tbody>
-
-    <!-- Клик по строке ведет на детали заказа -->
-    <tr th:each="order : ${ordersPage.content}"
-        th:onclick="|window.location='@{/admin/orders/{id}(id=${order.id})}'|">
-
-        <td th:text="'#' + ${order.id}"></td>
-
-        <!-- stopPropagation, чтобы клик по ссылке юзера не открывал заказ -->
-        <td onclick="event.stopPropagation()">
-            <a th:href="@{/admin/users/{id}(id=${order.user.id})}" class="inner-link" th:text="${order.user.username}">Username</a>
-            <div style="font-size: 0.85em; color: #777;" th:text="${order.user.email}"></div>
-        </td>
-
-        <td>
-             <span th:text="${order.status}" class="status-badge"
-                   th:style="${order.status.name() == 'COMPLETED'} ? 'color:green;' :
-                            (${order.status.name() == 'CANCELLED'} ? 'color:red;' : 'color:#b58900;')">
-            </span>
-        </td>
-
-        <td th:text="${#dates.format(order.createdAt, 'yyyy-MM-dd HH:mm')}"></td>
-
-        <td th:text="${order.totalAmount} + ' ₽'"></td>
-    </tr>
-    </tbody>
-</table>
-
-<!-- Пагинация -->
-<ul class="pagination" th:if="${ordersPage.totalPages > 1}">
-    <li th:classappend="${ordersPage.first} ? 'disabled'">
-        <a th:href="@{/admin/products/{sku}/orders(sku=${product.sku}, page=${ordersPage.number - 1})}">←</a>
-    </li>
-
-    <li th:each="i : ${#numbers.sequence(0, ordersPage.totalPages - 1)}"
-        th:classappend="${i == ordersPage.number} ? 'active'">
-        <a th:href="@{/admin/products/{sku}/orders(sku=${product.sku}, page=${i})}" th:text="${i + 1}"></a>
-    </li>
-
-    <li th:classappend="${ordersPage.last} ? 'disabled'">
-        <a th:href="@{/admin/products/{sku}/orders(sku=${product.sku}, page=${ordersPage.number + 1})}">→</a>
-    </li>
-</ul>
-
 </body>
 </html>

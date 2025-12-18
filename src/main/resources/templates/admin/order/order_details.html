@@ -1,222 +1,114 @@
 <!DOCTYPE html>
 <html lang="ru" xmlns:th="http://www.thymeleaf.org">
-<head>
-    <meta charset="UTF-8">
-    <title>Детали заказа</title>
-    <style>
-        body { font-family: Arial, sans-serif; margin: 20px; }
-
-        /* Общие стили таблиц */
-        table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
-        th, td { border: 1px solid #ccc; padding: 10px; text-align: left; }
-
-        /* Вертикальная таблица (Инфо) */
-        .info-table th { background: #f5f5f5; width: 250px; vertical-align: top; }
-
-        /* Горизонтальная таблица (Товары) */
-        .items-table th { background: #f5f5f5; }
-        .items-table tr:hover { background: #f9f9f9; }
-
-        /* Кнопки */
-        .btn { padding: 8px 16px; background: #fff; color: #333; border: 1px solid #ccc; text-decoration: none; cursor: pointer; display: inline-block; font-size: 14px; }
-        .btn:hover { background: #eee; }
-        .btn-dark { background: #333; color: white; border-color: #333; }
-        .btn-dark:hover { background: #555; border-color: #555; }
-
-        .link { color: #0066cc; text-decoration: none; font-weight: bold; }
-        .link:hover { text-decoration: underline; }
-
-        h3 { margin-top: 30px; margin-bottom: 10px; border-bottom: 2px solid #eee; padding-bottom: 5px; }
-
-        /* Панель редактирования */
-        .edit-panel {
-            background: #fdfdfd;
-            border: 1px solid #ddd;
-            padding: 20px;
-            margin-bottom: 20px;
-            border-left: 4px solid #333;
-            display: none;
-        }
-        .form-row { margin-bottom: 15px; }
-        .form-row label { display: block; font-weight: bold; margin-bottom: 5px; }
-        select, input[type="text"] { padding: 6px; width: 100%; max-width: 400px; border: 1px solid #ccc; }
-
-        .search-group { display: flex; gap: 10px; align-items: center; max-width: 500px; }
-        .header-flex { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;}
-    </style>
-</head>
+<head th:replace="~{fragments/admin_layout :: head('Заказ #' + ${order.id})}"></head>
+<style>
+    /* Локальные стили для панели редактирования */
+    .edit-panel { background: #fdfdfd; border: 1px solid #ddd; padding: 20px; margin-bottom: 20px; border-left: 4px solid #333; display: none; }
+    .form-row { margin-bottom: 15px; }
+    .form-row label { display: block; font-weight: bold; margin-bottom: 5px; }
+    .search-group { display: flex; gap: 10px; align-items: center; max-width: 500px; }
+</style>
 <body>
 
-<div class="header-flex">
-    <h2 style="margin: 0;">Заказ #<span th:text="${order.id}"></span></h2>
-    <div>
-        <button onclick="toggleEdit()" class="btn btn-dark">✎ Редактировать</button>
-        <a th:href="@{/admin/orders}" class="btn">К списку</a>
+<div th:replace="~{fragments/admin_layout :: sidebar}"></div>
+
+<div class="main-content">
+    <div class="card">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <h2 style="border: none; margin: 0;">Заказ #<span th:text="${order.id}"></span></h2>
+            <div>
+
+                <button onclick="toggleEdit()" class="btn btn-dark">✎ Редактировать</button>
+                <a th:href="@{/admin/orders}" class="btn">К списку</a>
+            </div>
+        </div>
+
+        <div th:if="${param.success}" class="badge badge-success" style="padding: 10px; display: block; margin-bottom: 15px;">✔ Данные обновлены!</div>
+
+        <!-- Панель редактирования -->
+        <div id="editPanel" class="edit-panel">
+            <h3 style="margin-top: 0;">Редактирование</h3>
+            <form th:action="@{/admin/orders/{id}/update(id=${order.id})}" method="post">
+                <div class="form-row">
+                    <label>Статус:</label>
+                    <select name="status" style="width: 100%; max-width: 400px;">
+                        <option th:each="st : ${statuses}" th:value="${st}" th:text="${st}" th:selected="${st == order.status}"></option>
+                    </select>
+                </div>
+                <div class="form-row">
+                    <label>Пункт выдачи:</label>
+                    <div style="margin-bottom: 5px; color: #555;">Текущий: <strong th:text="${order.pickupPoint != null ? order.pickupPoint.address : 'Не выбран'}"></strong></div>
+                    <div class="search-group">
+                        <input type="text" id="cityInput" placeholder="Город..." style="flex: 1;">
+                        <button type="button" class="btn" onclick="searchPoints()">Найти</button>
+                    </div>
+                    <select name="pickupPointId" id="pickupSelect" style="margin-top: 10px; display: none; width: 100%; max-width: 500px;"></select>
+                    <small id="searchMsg" style="color: #666;"></small>
+                </div>
+                <div style="margin-top: 15px;">
+                    <button type="submit" class="btn btn-primary">Сохранить</button>
+                    <button type="button" class="btn" onclick="toggleEdit()">Отмена</button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Информация -->
+        <table>
+            <tr><th style="width: 200px;">Покупатель</th><td><a th:href="@{/admin/users/{id}(id=${order.user.id})}" th:text="${order.user.username}"></a></td></tr>
+            <tr><th>Статус</th><td><span th:class="'badge ' + (${order.status.name() == 'COMPLETED'} ? 'badge-success' : (${order.status.name() == 'CANCELLED'} ? 'badge-danger' : 'badge-warning'))" th:text="${order.status}"></span></td></tr>
+            <tr><th>Сумма</th><td style="font-weight: bold; font-size: 1.2em;" th:text="${order.totalAmount} + ' ₽'"></td></tr>
+            <tr><th>Дата</th><td th:text="${#dates.format(order.createdAt, 'yyyy-MM-dd HH:mm')}"></td></tr>
+            <tr><th>Пункт выдачи</th><td th:text="${order.pickupPoint != null ? order.pickupPoint.address : 'Не назначен'}" th:style="${order.pickupPoint == null} ? 'color: red;' : ''"></td></tr>
+        </table>
+
+        <h3 style="margin-top: 30px;">Состав заказа</h3>
+        <table>
+            <thead>
+            <tr><th>Товар</th><th>Цена</th><th>Кол-во</th><th>Сумма</th></tr>
+            </thead>
+            <tbody>
+            <tr th:each="item : ${order.orderItems}">
+                <td><a th:href="@{/admin/products/{sku}(sku=${item.product.sku})}" th:text="${item.product.name}"></a><br><small style="color:gray;" th:text="${item.product.sku}"></small></td>
+                <td th:text="${item.product.price} + ' ₽'"></td>
+                <td th:text="${item.quantity}"></td>
+                <td th:text="${item.product.price * item.quantity} + ' ₽'"></td>
+            </tr>
+            <tr style="background: #fafafa; font-weight: bold;">
+                <td colspan="3" style="text-align: right;">Итого:</td>
+                <td th:text="${order.totalAmount} + ' ₽'"></td>
+            </tr>
+            </tbody>
+        </table>
     </div>
 </div>
 
-<div th:if="${param.success}" style="color: green; margin-bottom: 15px; font-weight: bold;">
-    ✔ Данные заказа успешно обновлены!
-</div>
-
-<!-- === ПАНЕЛЬ РЕДАКТИРОВАНИЯ === -->
-<div id="editPanel" class="edit-panel">
-    <h3 style="margin-top: 0;">Редактирование</h3>
-    <form th:action="@{/admin/orders/{id}/update(id=${order.id})}" method="post">
-
-        <div class="form-row">
-            <label>Статус:</label>
-            <select name="status">
-                <option th:each="st : ${statuses}"
-                        th:value="${st}"
-                        th:text="${st}"
-                        th:selected="${st == order.status}"></option>
-            </select>
-        </div>
-
-        <div class="form-row">
-            <label>Пункт выдачи:</label>
-            <div style="margin-bottom: 5px; color: #555;">
-                Текущий: <strong th:text="${order.pickupPoint != null ? order.pickupPoint.address : 'Не выбран'}"></strong>
-            </div>
-
-            <div class="search-group">
-                <input type="text" id="cityInput" placeholder="Город для поиска ПВЗ (например, Москва)...">
-                <button type="button" class="btn" onclick="searchPoints()">Найти</button>
-            </div>
-
-            <select name="pickupPointId" id="pickupSelect" style="margin-top: 10px; display: none;">
-                <option value="">-- Выберите пункт --</option>
-            </select>
-            <small id="searchMsg" style="color: #666; display: block; margin-top: 5px;"></small>
-        </div>
-
-        <div style="margin-top: 15px;">
-            <button type="submit" class="btn btn-dark">Сохранить</button>
-            <button type="button" class="btn" onclick="toggleEdit()">Отмена</button>
-        </div>
-    </form>
-</div>
-
-<!-- ИНФОРМАЦИЯ О ЗАКАЗЕ -->
-<table class="info-table">
-    <tbody>
-    <tr>
-        <th>ID Заказа</th>
-        <td th:text="${order.id}"></td>
-    </tr>
-    <tr>
-        <th>Покупатель</th>
-        <td>
-            <a th:href="@{/admin/users/{id}(id=${order.user.id})}" class="link" th:text="${order.user.username}">User</a>
-            <span style="color: gray; margin-left: 10px;" th:text="'(' + ${order.user.email} + ')'"></span>
-        </td>
-    </tr>
-    <tr>
-        <th>Статус</th>
-        <td>
-             <span th:text="${order.status}"
-                   th:style="${order.status.name() == 'COMPLETED'} ? 'color:green; font-weight:bold;' :
-                            (${order.status.name() == 'CANCELLED'} ? 'color:red; font-weight:bold;' : 'color:#b58900; font-weight:bold;')">
-            </span>
-        </td>
-    </tr>
-    <tr>
-        <th>Сумма заказа</th>
-        <td th:text="${order.totalAmount} + ' ₽'" style="font-weight: bold; font-size: 1.1em;"></td>
-    </tr>
-    <tr>
-        <th>Дата создания</th>
-        <td th:text="${#dates.format(order.createdAt, 'yyyy-MM-dd HH:mm')}"></td>
-    </tr>
-    <tr>
-        <th>Пункт выдачи</th>
-        <td>
-            <span th:if="${order.pickupPoint != null}" th:text="${order.pickupPoint.address}"></span>
-            <span th:if="${order.pickupPoint == null}" style="color: red;">Не назначен</span>
-        </td>
-    </tr>
-    </tbody>
-</table>
-
-<h3>Состав заказа</h3>
-<table class="items-table">
-    <thead>
-    <tr>
-        <th>Артикул</th>
-        <th>Товар</th>
-        <th>Цена</th>
-        <th>Кол-во</th>
-        <th>Сумма</th>
-    </tr>
-    </thead>
-    <tbody>
-    <tr th:each="item : ${order.orderItems}">
-        <td th:text="${item.product.sku}"></td>
-        <td>
-            <a th:href="@{/admin/products/{sku}(sku=${item.product.sku})}" class="link" th:text="${item.product.name}">Название</a>
-        </td>
-        <td th:text="${item.product.price} + ' ₽'"></td>
-        <td th:text="${item.quantity}"></td>
-        <td th:text="${item.product.price * item.quantity} + ' ₽'"></td>
-    </tr>
-    <tr style="background: #fafafa; font-weight: bold;">
-        <td colspan="4" style="text-align: right;">Итого к оплате:</td>
-        <td th:text="${order.totalAmount} + ' ₽'"></td>
-    </tr>
-    </tbody>
-</table>
-
-<div style="margin-top: 20px;">
-    <button onclick="history.back()" class="btn">← Назад</button>
-</div>
-
-<!-- SCRIPTS -->
 <script>
     function toggleEdit() {
         var panel = document.getElementById("editPanel");
-        if (panel.style.display === "none" || panel.style.display === "") {
-            panel.style.display = "block";
-        } else {
-            panel.style.display = "none";
-        }
+        panel.style.display = (panel.style.display === "block") ? "none" : "block";
     }
 
     function searchPoints() {
         var city = document.getElementById("cityInput").value;
         var select = document.getElementById("pickupSelect");
         var msg = document.getElementById("searchMsg");
-
-        if (!city) {
-            alert("Введите город");
-            return;
-        }
+        if (!city) { alert("Введите город"); return; }
         msg.textContent = "Поиск...";
 
         fetch('/admin/orders/api/pickup-points?city=' + encodeURIComponent(city))
-            .then(response => response.json())
+            .then(res => res.json())
             .then(data => {
-                select.innerHTML = '<option value="">-- Выберите пункт (' + data.length + ') --</option>';
-                if (data.length === 0) {
-                    msg.textContent = "Пункты не найдены.";
-                    select.style.display = "none";
-                } else {
-                    data.forEach(pp => {
-                        var opt = document.createElement('option');
-                        opt.value = pp.id;
-                        opt.innerHTML = pp.address;
-                        select.appendChild(opt);
-                    });
-                    select.style.display = "block";
-                    msg.textContent = "";
-                }
-            })
-            .catch(e => {
-                console.error(e);
-                msg.textContent = "Ошибка поиска";
+                select.innerHTML = '<option value="">-- Выберите (' + data.length + ') --</option>';
+                data.forEach(pp => {
+                    var opt = document.createElement('option');
+                    opt.value = pp.id;
+                    opt.innerHTML = pp.address;
+                    select.appendChild(opt);
+                });
+                select.style.display = "block";
+                msg.textContent = "";
             });
     }
 </script>
-
 </body>
 </html>

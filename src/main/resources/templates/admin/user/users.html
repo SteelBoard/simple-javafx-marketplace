@@ -1,128 +1,46 @@
 <!DOCTYPE html>
 <html lang="ru" xmlns:th="http://www.thymeleaf.org">
-<head>
-    <meta charset="UTF-8">
-    <title>Админка — Пользователи</title>
-    <style>
-        body { font-family: Arial, sans-serif; margin: 20px; }
-        .search-container { margin-bottom: 20px; display: flex; gap: 10px; align-items: center;}
-        table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
-        th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
-        th { background: #f5f5f5; cursor: pointer; user-select: none; }
-        th:hover { background: #e0e0e0; }
-        tr:hover { background: #f9f9f9; cursor: pointer; }
-        .pagination { list-style: none; display: flex; gap: 5px; padding: 0; }
-        .pagination li a { padding: 6px 10px; border: 1px solid #ccc; text-decoration: none; color: black; }
-        .pagination .active a { background: #333; color: white; border-color: #333; }
-        .pagination .disabled a { color: #aaa; pointer-events: none; border-color: #eee; }
-        .no-data { color: #666; font-style: italic; margin: 20px 0; }
-    </style>
-</head>
-
+<head th:replace="~{fragments/admin_layout :: head('Пользователи')}"></head>
 <body>
+<div th:replace="~{fragments/admin_layout :: sidebar}"></div>
+<div class="main-content">
+    <div class="card">
+        <h2>Пользователи</h2>
+        <form class="search-container" th:action="@{/admin/users}" method="get">
+            <input type="text" name="q" th:value="${q}" placeholder="Username / Email..." style="width: 300px;"/>
+            <input type="hidden" name="sort" th:value="${sort}" />
+            <input type="hidden" name="dir" th:value="${dir}" />
+            <button type="submit" class="btn btn-dark">Найти</button>
+            <a th:href="@{/admin/users}" class="btn">Сброс</a>
+        </form>
 
-<h2>Пользователи</h2>
+        <table th:unless="${usersPage.isEmpty()}">
+            <thead>
+            <tr>
+                <th th:data-href="@{/admin/users(sort='id', dir=${sort=='id' and dir=='asc' ? 'desc' : 'asc'}, q=${q})}" onclick="window.location=this.getAttribute('data-href')">ID</th>
+                <th th:data-href="@{/admin/users(sort='username', dir=${sort=='username' and dir=='asc' ? 'desc' : 'asc'}, q=${q})}" onclick="window.location=this.getAttribute('data-href')">Username</th>
+                <th th:data-href="@{/admin/users(sort='email', dir=${sort=='email' and dir=='asc' ? 'desc' : 'asc'}, q=${q})}" onclick="window.location=this.getAttribute('data-href')">Email</th>
+                <th>Активен</th>
+                <th>Создан</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="user : ${usersPage.content}" th:onclick="|window.location='@{/admin/users/{id}(id=${user.id})}'|" style="cursor: pointer;">
+                <td th:text="${user.id}"></td>
+                <td th:text="${user.username}"></td>
+                <td th:text="${user.email}"></td>
+                <td><span th:class="'badge ' + (${user.active} ? 'badge-success' : 'badge-danger')" th:text="${user.active ? 'Да' : 'Нет'}"></span></td>
+                <td th:text="${#dates.format(user.createdAt, 'yyyy-MM-dd HH:mm')}"></td>
+            </tr>
+            </tbody>
+        </table>
 
-<!-- Форма поиска -->
-<form class="search-container" th:action="@{/admin/users}" method="get">
-    <input type="text" name="q" th:value="${q}" placeholder="Username / Email / Телефон" style="padding: 6px; width: 300px;"/>
-
-    <!-- Сохраняем текущие параметры сортировки при поиске -->
-    <input type="hidden" name="sort" th:value="${sort}" />
-    <input type="hidden" name="dir" th:value="${dir}" />
-
-    <button type="submit" style="padding: 6px 12px; cursor: pointer;">Найти</button>
-    <a th:href="@{/admin/users}" style="padding: 6px 12px; text-decoration: none; color: black; border: 1px solid #ccc; background: #f0f0f0;">Сброс</a>
-</form>
-
-<!-- Сообщение, если ничего не найдено -->
-<div th:if="${usersPage.isEmpty()}" class="no-data">
-    Пользователи не найдены.
+        <ul class="pagination" th:if="${usersPage.totalPages > 1}">
+            <li th:classappend="${usersPage.first} ? 'disabled'"><a th:href="@{/admin/users(page=${usersPage.number - 1}, sort=${sort}, dir=${dir}, q=${q})}">←</a></li>
+            <li th:each="i : ${#numbers.sequence(0, usersPage.totalPages - 1)}" th:classappend="${i == usersPage.number} ? 'active'"><a th:href="@{/admin/users(page=${i}, sort=${sort}, dir=${dir}, q=${q})}" th:text="${i + 1}"></a></li>
+            <li th:classappend="${usersPage.last} ? 'disabled'"><a th:href="@{/admin/users(page=${usersPage.number + 1}, sort=${sort}, dir=${dir}, q=${q})}">→</a></li>
+        </ul>
+    </div>
 </div>
-
-<!-- Таблица (показывается только если есть данные) -->
-<table th:unless="${usersPage.isEmpty()}">
-    <thead>
-    <tr>
-        <!-- Заголовки с логикой сортировки: если поле активно, меняем dir на противоположный -->
-        <th th:data-href="@{/admin/users(sort='id', dir=${sort=='id' and dir=='asc' ? 'desc' : 'asc'}, q=${q})}"
-            onclick="window.location=this.getAttribute('data-href')">
-            ID <span th:if="${sort == 'id'}" th:text="${dir == 'asc' ? '▲' : '▼'}"></span>
-        </th>
-
-        <th th:data-href="@{/admin/users(sort='username', dir=${sort=='username' and dir=='asc' ? 'desc' : 'asc'}, q=${q})}"
-            onclick="window.location=this.getAttribute('data-href')">
-            Username <span th:if="${sort == 'username'}" th:text="${dir == 'asc' ? '▲' : '▼'}"></span>
-        </th>
-
-        <th th:data-href="@{/admin/users(sort='email', dir=${sort=='email' and dir=='asc' ? 'desc' : 'asc'}, q=${q})}"
-            onclick="window.location=this.getAttribute('data-href')">
-            Email <span th:if="${sort == 'email'}" th:text="${dir == 'asc' ? '▲' : '▼'}"></span>
-        </th>
-
-        <th th:data-href="@{/admin/users(sort='phoneNumber', dir=${sort=='phoneNumber' and dir=='asc' ? 'desc' : 'asc'}, q=${q})}"
-            onclick="window.location=this.getAttribute('data-href')">
-            Телефон <span th:if="${sort == 'phoneNumber'}" th:text="${dir == 'asc' ? '▲' : '▼'}"></span>
-        </th>
-
-        <th th:data-href="@{/admin/users(sort='active', dir=${sort=='active' and dir=='asc' ? 'desc' : 'asc'}, q=${q})}"
-            onclick="window.location=this.getAttribute('data-href')">
-            Активен <span th:if="${sort == 'active'}" th:text="${dir == 'asc' ? '▲' : '▼'}"></span>
-        </th>
-
-        <th th:data-href="@{/admin/users(sort='createdAt', dir=${sort=='createdAt' and dir=='asc' ? 'desc' : 'asc'}, q=${q})}"
-            onclick="window.location=this.getAttribute('data-href')">
-            Создан <span th:if="${sort == 'createdAt'}" th:text="${dir == 'asc' ? '▲' : '▼'}"></span>
-        </th>
-
-        <th th:data-href="@{/admin/users(sort='updatedAt', dir=${sort=='updatedAt' and dir=='asc' ? 'desc' : 'asc'}, q=${q})}"
-            onclick="window.location=this.getAttribute('data-href')">
-            Обновлён <span th:if="${sort == 'updatedAt'}" th:text="${dir == 'asc' ? '▲' : '▼'}"></span>
-        </th>
-    </tr>
-    </thead>
-
-    <tbody>
-    <tr th:each="user : ${usersPage.content}"
-        th:onclick="|window.location='@{/admin/users/{id}(id=${user.id})}'|">
-
-        <td th:text="${user.id}"></td>
-        <td th:text="${user.username}"></td>
-        <td th:text="${user.email}"></td>
-        <td th:text="${user.phoneNumber}"></td>
-
-        <td th:text="${user.active ? 'Да' : 'Нет'}"
-            th:style="${user.active ? 'color:green; font-weight:bold;' : 'color:red; font-weight:bold;'}"></td>
-
-        <td th:text="${#dates.format(user.createdAt, 'yyyy-MM-dd HH:mm')}"></td>
-        <td th:text="${#dates.format(user.updatedAt, 'yyyy-MM-dd HH:mm')}"></td>
-    </tr>
-    </tbody>
-</table>
-
-<!-- Пагинация -->
-<nav th:if="${usersPage.totalPages > 1}">
-    <ul class="pagination">
-
-        <!-- Кнопка Назад -->
-        <li th:classappend="${usersPage.first} ? 'disabled'">
-            <a th:href="@{/admin/users(page=${usersPage.number - 1}, sort=${sort}, dir=${dir}, q=${q})}">←</a>
-        </li>
-
-        <!-- Номера страниц -->
-        <li th:each="i : ${#numbers.sequence(0, usersPage.totalPages - 1)}"
-            th:classappend="${i == usersPage.number} ? 'active'">
-            <a th:href="@{/admin/users(page=${i}, sort=${sort}, dir=${dir}, q=${q})}"
-               th:text="${i + 1}">
-            </a>
-        </li>
-
-        <!-- Кнопка Вперед -->
-        <li th:classappend="${usersPage.last} ? 'disabled'">
-            <a th:href="@{/admin/users(page=${usersPage.number + 1}, sort=${sort}, dir=${dir}, q=${q})}">→</a>
-        </li>
-    </ul>
-</nav>
-
 </body>
 </html>

@@ -48,8 +48,44 @@ public class AdminOrderController {
         model.addAttribute("dir", dir);
         model.addAttribute("size", size);
         model.addAttribute("search", search);
-
+        model.addAttribute("activeTab", "orders");
         return "admin/order/orders"; // Шаблон списка заказов
+    }
+
+    // ... внутри класса AdminOrderController
+
+    @GetMapping("/pickup-point/{id}")
+    public String pickupPointOrders(
+            @PathVariable Long id,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size,
+            @RequestParam(defaultValue = "id") String sort,
+            @RequestParam(defaultValue = "desc") String dir,
+            Model model
+    ) {
+        // 1. Находим сам ПВЗ, чтобы вывести адрес в заголовке
+        var pvz = pickupPointRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("ПВЗ не найден"));
+
+        // 2. Настраиваем пагинацию
+        Sort.Direction direction = dir.equalsIgnoreCase("asc") ? Sort.Direction.ASC : Sort.Direction.DESC;
+        Pageable pageable = PageRequest.of(page, size, Sort.by(direction, sort));
+
+        // 3. Получаем список заказов
+        Page<Order> ordersPage = orderRepository.findByPickupPoint_Id(id, pageable);
+
+        model.addAttribute("ordersPage", ordersPage);
+        model.addAttribute("pvz", pvz);
+
+        // Параметры для пагинации
+        model.addAttribute("sort", sort);
+        model.addAttribute("dir", dir);
+        model.addAttribute("size", size);
+
+        // Для подсветки меню (вкладка "Пункты выдачи")
+        model.addAttribute("activeTab", "pvz");
+
+        return "admin/order/pickup_point_orders";
     }
 
     // ... (Остальные методы: orderDetails, updateOrder, searchPickupPoints оставляем как были)

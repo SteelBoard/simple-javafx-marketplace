@@ -48,6 +48,7 @@ public class AdminUserController {
         model.addAttribute("sort", sort);
         model.addAttribute("dir", dir);
         model.addAttribute("q", q);
+        model.addAttribute("activeTab", "users");
 
         return "admin/user/users";
     }
