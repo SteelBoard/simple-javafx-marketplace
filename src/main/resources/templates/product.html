@@ -36,16 +36,26 @@
 
 <div class="container">
     <div class="product-grid">
-        
+
+        <!-- БЛОК С ФОТОГРАФИЯМИ -->
         <div>
-            <img id="mainImage" th:src="${product.mainImageUrl}" class="gallery-main" alt="Product">
+            <!-- Большая картинка -->
+            <img id="mainImage" th:src="@{${product.mainImageUrl}}" class="gallery-main" alt="Product">
+
             <div class="gallery-thumbs">
-                <img th:src="${product.mainImageUrl}" class="thumb active" onclick="setMainImage(this)">
-                <img th:each="img : ${product.images}" th:src="${img.filepath}" class="thumb" onclick="setMainImage(this)">
+                <!-- 1. Выводим главную картинку первой и активной -->
+                <img th:src="@{${product.mainImageUrl}}" class="thumb active" onclick="setMainImage(this)">
+
+                <!-- 2. Выводим остальные картинки, ИСКЛЮЧАЯ главную (чтобы не было дубля) -->
+                <img th:each="img : ${product.images}"
+                     th:if="${img.type.name() != 'MAIN'}"
+                     th:src="@{${img.filepath}}"
+                     class="thumb"
+                     onclick="setMainImage(this)">
             </div>
         </div>
 
-        
+
         <div>
             <h1 th:text="${product.name}">Название товара</h1>
 
@@ -54,10 +64,10 @@
                 <span style="color: #999; font-size: 14px; margin-left: 10px;">(Оценок: <span th:text="${#lists.size(reviews)}">10</span>)</span>
             </div>
 
-            
+
             <div class="price-tag" th:text="${product.price} + ' ₽'">9 990 ₽</div>
 
-            <a th:href="@{/cart/add/{id}(id=${product.id})}" class="btn-add">Добавить в корзину</a>
+            <a th:href="@{/cart/add/{sku}(sku=${product.sku})}" class="btn-add">Добавить в корзину</a>
 
             <div class="desc-block">
                 <div class="desc-title">Описание</div>
@@ -66,16 +76,16 @@
         </div>
     </div>
 
-    
+
     <div class="reviews-section">
         <div style="display:flex; justify-content:space-between; align-items:center;">
             <h2>Отзывы</h2>
-            <a th:href="@{/product/{id}/reviews/all(id=${product.id})}" style="color:#3498db; text-decoration:none;">Все отзывы →</a>
+            <a th:href="@{/product/{sku}/reviews/all(sku=${product.sku})}" style="color:#3498db; text-decoration:none;">Все отзывы →</a>
         </div>
 
         <div class="form-review" sec:authorize="isAuthenticated()">
             <h4 style="margin-top:0;">Оставить отзыв</h4>
-            <form th:action="@{/product/{id}/review(id=${product.id})}" method="post">
+            <form th:action="@{/product/{sku}/review(sku=${product.sku})}" method="post">
                 <div style="margin-bottom:10px;">
                     <label>Оценка:</label>
                     <select name="rating" style="padding:5px;">

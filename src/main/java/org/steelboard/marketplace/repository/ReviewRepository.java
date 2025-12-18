@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import org.steelboard.marketplace.entity.Review;
+import org.steelboard.marketplace.entity.User;
 
 import java.util.List;
 
@@ -26,4 +27,10 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
             "LOWER(p.name) LIKE LOWER(CONCAT('%', :search, '%')) OR " + 
             "LOWER(r.comment) LIKE LOWER(CONCAT('%', :search, '%')))")
     Page<Review> search(@Param("search") String search, Pageable pageable);
+
+    Page<Review> findByUser_Id(Long userId, Pageable pageable);
+
+    Page<Review> searchByUser_IdAndCommentContainingIgnoreCase(Long userId, String comment, Pageable pageable);
+
+    Long user(User user);
 }

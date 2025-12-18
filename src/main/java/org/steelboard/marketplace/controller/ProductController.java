@@ -33,18 +33,21 @@ public class ProductController {
     private final OrderService orderService;
     private final UserService userService;
 
-    @GetMapping("/{id}")
+    // ИЗМЕНЕНО: URL принимает {sku}
+    @GetMapping("/{sku}")
     public String productPage(
-            @PathVariable Long id,
+            @PathVariable String sku,
             @RequestParam(defaultValue = "best") String sort,
             @RequestParam(required = false) String error,
             Model model
     ) {
-        Product product = productService.getProduct(id);
+        // 1. Ищем по SKU
+        Product product = productService.getProductBySku(sku);
 
         Pageable pageable = PageRequest.of(0, 5, sort.equals("worst") ? Sort.by("rating").ascending() : Sort.by("rating").descending());
 
-        Page<Review> reviews = reviewService.findByProductId(id, pageable);
+        // 2. Для отзывов используем ID, который вытащили из продукта
+        Page<Review> reviews = reviewService.findByProductId(product.getId(), pageable);
 
         model.addAttribute("product", product);
         model.addAttribute("reviews", reviews.getContent());
@@ -52,14 +55,17 @@ public class ProductController {
         return "product";
     }
 
-    @GetMapping("/{id}/reviews")
-    @ResponseBody  
+    // ИЗМЕНЕНО: URL принимает {sku}
+    @GetMapping("/{sku}/reviews")
+    @ResponseBody
     public String getProductReviews(
-            @PathVariable Long id,
+            @PathVariable String sku,
             @RequestParam(defaultValue = "best") String sort) {
 
+        Product product = productService.getProductBySku(sku);
+
         List<Review> reviews = reviewService.findByProductId(
-                id,
+                product.getId(),
                 PageRequest.of(0, 5, Sort.by(sort.equals("worst") ? Sort.Direction.ASC : Sort.Direction.DESC, "rating")
                 )).toList();
 
@@ -77,43 +83,51 @@ public class ProductController {
         return sb.toString();
     }
 
-    @GetMapping("/{id}/reviews/all")
+    // ИЗМЕНЕНО: URL принимает {sku}
+    @GetMapping("/{sku}/reviews/all")
     public String allReviewsPage(
-            @PathVariable Long id,
+            @PathVariable String sku,
             @RequestParam(defaultValue = "0 ") int page,
             @RequestParam(defaultValue = "best") String sort,
             Model model) {
 
-        Page<Review> reviews = reviewService.getReviews(id, page, sort);
+        Product product = productService.getProductBySku(sku);
+
+        Page<Review> reviews = reviewService.getReviews(product.getId(), page, sort);
         model.addAttribute("reviews", reviews);
-        model.addAttribute("productId", id);
+        model.addAttribute("product", product); // Передаем весь объект product, чтобы в шаблоне взять sku
+        model.addAttribute("productId", product.getId()); // Оставляем на всякий случай
         model.addAttribute("currentSort", sort);
         return "reviews";
     }
 
-    @PostMapping("/{id}/review")
+    // ИЗМЕНЕНО: URL принимает {sku}
+    @PostMapping("/{sku}/review")
     public String addReview(
-            @PathVariable Long id,
+            @PathVariable String sku,
             @RequestParam(required = false) Integer rating,
             @RequestParam(required = false) String comment,
             @AuthenticationPrincipal User user,
             RedirectAttributes redirectAttributes
     ) {
+        Product product = productService.getProductBySku(sku);
+
         if (rating == null || comment == null || comment.isEmpty()) {
             redirectAttributes.addFlashAttribute("error", "Заполните все поля");
+            // Редирект на SKU
+            return "redirect:/product/" + sku;
         }
 
-        boolean bought = orderService.hasUserBoughtProduct(user.getId(), id);
+        boolean bought = orderService.hasUserBoughtProduct(user.getId(), product.getId());
         if (!bought) {
             redirectAttributes.addFlashAttribute("error", "Вы можете оставить отзыв только после покупки товара.");
-            return "redirect:/product/" + id;
+            return "redirect:/product/" + sku;
         }
 
-        reviewService.addReview(user, id, rating, comment);
+        reviewService.addReview(user, product.getId(), rating, comment);
 
-        return "redirect:/product/" + id + "?sort=best";
+        return "redirect:/product/" + sku + "?sort=best";
     }
-
 
     @GetMapping("/new")
     public String addProduct(Model model) {
@@ -127,10 +141,9 @@ public class ProductController {
                              @AuthenticationPrincipal User user) {
 
         if (bindingResult.hasErrors()) {
-            return "add_product"; 
+            return "add_product";
         }
 
-        
         String mainImagePath =
                 fileStorageService.saveFile(productDto.getMainImage(), "products");
 
@@ -152,6 +165,7 @@ public class ProductController {
                 additionalImagePaths,
                 userService.findById(user.getId()));
 
-        return "redirect:/product/" + product.getId();
+        // ИЗМЕНЕНО: редирект на созданный товар по SKU, а не ID
+        return "redirect:/product/" + product.getSku();
     }
 }

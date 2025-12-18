@@ -51,10 +51,10 @@
         <tr>
             <th>Товар</th>
             <td>
-                <a th:href="@{/admin/products/{pid}(pid=${review.product.id})}" class="link-item"
+                <a th:href="@{/admin/products/{sku}(sku=${review.product.sku})}" class="link-item"
                    th:text="${review.product.name}">Название товара</a>
                 <div style="font-size: 0.8em; color: #777; margin-top: 5px;"
-                     th:text="|ID: ${review.product.id}|"></div>
+                     th:text="|Артикул: ${review.product.sku}|"></div>
             </td>
         </tr>
 

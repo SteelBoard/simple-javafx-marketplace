@@ -27,9 +27,9 @@
 
 <div th:if="${param.success}" style="color: green; margin-bottom: 15px;">Успешно сохранено!</div>
 
-<form th:action="@{/admin/products/{id}/update(id=${product.id})}" th:object="${productDto}" method="post">
+<form th:action="@{/admin/products/{sku}/update(sku=${product.sku})}" th:object="${productDto}" method="post">
     <table>
-        <tr><th>ID</th><td th:text="${product.id}"></td></tr>
+        <tr><th>Артикул</th><td th:text="${product.sku}"></td></tr>
 
         <tr><th>Продавец</th><td>
             <a th:href="@{/admin/users/{id}(id=${product.seller.id})}" th:text="${product.seller.username}">User</a>
@@ -68,30 +68,36 @@
 
                     <div style="display: flex; gap: 5px; justify-content: center;">
 
+                        <!-- ИСПРАВЛЕНИЕ 1: Добавлен {sku} в URL и параметр (sku=${product.sku}) -->
                         <button th:if="${img.type.name() != 'MAIN'}" type="submit" class="btn"
                                 style="padding: 2px 5px; font-size: 12px; background: #28a745; border-color: #28a745;"
-                                th:formaction="@{/admin/products/images/set-main}"
+                                th:formaction="@{/admin/products/{sku}/images/set-main(sku=${product.sku})}"
                                 name="imageId" th:value="${img.id}"
                                 title="Сделать главной">
                             ★
                         </button>
 
+                        <!-- ИСПРАВЛЕНИЕ 2: Добавлен {sku} в URL и параметр (sku=${product.sku}) -->
                         <button type="submit" class="btn btn-danger" style="padding: 2px 8px; font-size: 12px;"
-                                th:formaction="@{/admin/products/images/delete}"
+                                th:formaction="@{/admin/products/{sku}/images/delete(sku=${product.sku})}"
                                 name="imageId" th:value="${img.id}"
                                 onclick="return confirm('Удалить фото?');">
                             X
                         </button>
                     </div>
 
+                    <!-- Поле productId больше не обязательно, так как мы берем товар по SKU из URL,
+                         но можно оставить, оно не мешает. Главное — исправленные кнопки выше. -->
                     <input type="hidden" name="productId" th:value="${product.id}">
                 </div>
             </div>
+
+            <!-- Блок добавления фото у вас БЫЛ ПРАВИЛЬНЫЙ, оставляем как есть -->
             <div style="border: 1px dashed #ccc; padding: 10px; margin-top: 10px;">
                 <b>Добавить фото:</b><br>
                 <input type="file" name="file" accept="image/*" style="margin: 5px 0;">
                 <button type="submit" class="btn" style="padding: 4px 10px;"
-                        th:formaction="@{/admin/products/{id}/images/add(id=${product.id})}"
+                        th:formaction="@{/admin/products/{sku}/images/add(sku=${product.sku})}"
                         th:formenctype="'multipart/form-data'">Загрузить</button>
             </div>
         </td></tr>
@@ -103,14 +109,13 @@
             <a th:href="@{/admin/products}" class="btn btn-back">Назад</a>
         </div>
         <button type="submit" class="btn btn-danger"
-                th:formaction="@{/admin/products/{id}/delete(id=${product.id})}"
+                th:formaction="@{/admin/products/{sku}/delete(sku=${product.sku})}"
                 onclick="return confirm('Удалить ВЕСЬ ТОВАР? Нельзя отменить!');">УДАЛИТЬ ТОВАР</button>
     </div>
 </form>
 
 <div style="margin-top: 30px; padding-top: 10px; border-top: 1px solid #ccc;">
-    <a th:href="@{/admin/products/{id}/reviews(id=${product.id})}" style="margin-right: 20px; font-weight: bold; text-decoration: none;">📄 Отзывы (<span th:text="${#lists.size(product.reviews)}"></span>)</a>
-    <a th:href="@{/admin/ordgers(search=${'product:' + product.id})}" style="font-weight: bold; text-decoration: none;">📦 Заказы товара</a>
+    <a th:href="@{/admin/products/{sku}/reviews(sku=${product.sku})}" style="margin-right: 20px; font-weight: bold; text-decoration: none;">📄 Отзывы (<span th:text="${#lists.size(product.reviews)}"></span>)</a>
 </div>
 
 </body>

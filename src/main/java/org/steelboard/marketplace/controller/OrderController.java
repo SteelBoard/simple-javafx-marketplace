@@ -20,13 +20,9 @@ public class OrderController {
 
     @GetMapping("/{orderId}")
     public String getOrderPage(@PathVariable Long orderId, Model model, Principal principal) {
-        
-        
         if (principal == null) {
             return "redirect:/login";
         }
-
-        
         Order order = orderService.getOrderById(orderId, principal.getName());
 
         model.addAttribute("order", order);

@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.*;
 import org.steelboard.marketplace.entity.Cart;
 import org.steelboard.marketplace.entity.User;
 import org.steelboard.marketplace.service.CartService;
+import org.steelboard.marketplace.service.ProductService;
 import org.steelboard.marketplace.service.UserService;
 
 @AllArgsConstructor
@@ -18,6 +19,7 @@ public class CartController {
 
     private final CartService cartService;
     private final UserService userService;
+    private final ProductService productService;
 
     @GetMapping
     public String cartPage(Model model,
@@ -28,11 +30,11 @@ public class CartController {
         return "cart";
     }
 
-    @GetMapping("/add/{id}")
-    public String addToCart(@PathVariable Long id,
+    @GetMapping("/add/{sku}")
+    public String addToCart(@PathVariable String sku,
                             @AuthenticationPrincipal User userDetails) {
         User user = userService.findById(userDetails.getId());
-        cartService.addProductToCart(id, user);
+        cartService.addProductToCart(productService.getProductBySku(sku).getId(), user);
         return "redirect:/cart"; 
     }
 }

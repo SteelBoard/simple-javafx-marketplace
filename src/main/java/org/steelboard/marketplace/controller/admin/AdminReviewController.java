@@ -17,9 +17,8 @@ import org.steelboard.marketplace.service.ReviewService;
 public class AdminReviewController {
 
     private final ReviewService reviewService;
-    private final ReviewRepository reviewRepository;
 
-    
+
     @GetMapping
     public String list(
             @RequestParam(defaultValue = "0") int page,
@@ -51,8 +50,7 @@ public class AdminReviewController {
     
     @GetMapping("/{id}")
     public String details(@PathVariable Long id, Model model) {
-        Review review = reviewRepository.findById(id)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Отзыв не найден"));
+        Review review = reviewService.findById(id);
         model.addAttribute("review", review);
         return "admin/review/review_details";
     }
@@ -65,9 +63,7 @@ public class AdminReviewController {
             @RequestParam("comment") String comment,
             Model model
     ) {
-        Review review = reviewRepository.findById(id)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Отзыв не найден"));
-
+        Review review = reviewService.findById(id);
         
         if (rating == null || rating < 1 || rating > 5) {
             model.addAttribute("error", "Рейтинг должен быть от 1 до 5");
@@ -80,7 +76,7 @@ public class AdminReviewController {
 
         review.setRating(rating);
         review.setComment(comment);
-        reviewRepository.save(review);
+        reviewService.update(review);
 
         return "redirect:/admin/reviews/" + id + "?success";
     }
@@ -88,7 +84,7 @@ public class AdminReviewController {
     
     @PostMapping("/{id}/delete")
     public String delete(@PathVariable Long id) {
-        reviewRepository.deleteById(id);
+        reviewService.delete(id);
         return "redirect:/admin/reviews";
     }
 

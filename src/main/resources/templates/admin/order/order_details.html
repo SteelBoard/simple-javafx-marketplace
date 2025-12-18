@@ -109,7 +109,7 @@
         <td class="text-center" th:text="${i.count}"></td>
         <td>
             <a th:if="${item.product != null}"
-               th:href="@{/admin/products/{id}(id=${item.product.id})}"
+               th:href="@{/admin/products/{sku}(id=${item.product.sku})}"
                th:text="${item.product.name}"
                target="_blank" style="color: #0066cc; text-decoration: none;">
             </a>

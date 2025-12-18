@@ -68,7 +68,7 @@
         <div th:each="product : ${productPage.content}" class="product-card">
 
             
-            <a th:href="@{/product/{id}(id=${product.id})}" class="card-img-wrapper">
+            <a th:href="@{/product/{sku}(sku=${product.sku})}" class="card-img-wrapper">
                 <img th:if="${product.mainImageUrl != null}" th:src="${product.mainImageUrl}" alt="Фото товара">
                 <div th:if="${product.mainImageUrl == null}" class="no-image">📷</div>
             </a>
@@ -78,12 +78,12 @@
                 <div class="card-price" th:text="|${product.price} ₽|">0 ₽</div>
 
                 
-                <a th:href="@{/product/{id}(id=${product.id})}" class="card-title" th:text="${product.name}">Название</a>
+                <a th:href="@{/product/{sku}(sku=${product.sku})}" class="card-title" th:text="${product.name}">Название</a>
 
                 
                 
                 
-                <a th:href="@{/cart/add/{id}(id=${product.id})}" class="btn-cart">
+                <a th:href="@{/cart/add/{sku}(sku=${product.sku})}" class="btn-cart">
                     В корзину
                 </a>
             </div>

@@ -30,7 +30,7 @@
                         <div class="card-body">
                             <div class="d-flex justify-content-between">
                                 <h5 class="card-title">
-                                    <a th:href="@{/product/{id}(id=${review.product.id})}" style="text-decoration: none; color: #333;" th:text="${review.product.name}">Product Name</a>
+                                    <a th:href="@{/product/{sku}(sku=${review.product.sku})}" style="text-decoration: none; color: #333;" th:text="${review.product.name}">Product Name</a>
                                 </h5>
                                 <small class="text-muted" th:text="${#dates.format(review.createdAt, 'dd.MM.yyyy')}">Date</small>
                             </div>

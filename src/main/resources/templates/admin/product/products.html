@@ -28,7 +28,7 @@
 <table>
     <thead>
     <tr>
-        <th th:data-href="@{/admin/products(sort='id',dir=${sort=='id' and dir=='asc' ? 'desc' : 'asc'},size=${size},search=${search})}" onclick="window.location=this.getAttribute('data-href')">ID</th>
+        <th th:data-href="@{/admin/products(sort='sku',dir=${sort=='sku' and dir=='asc' ? 'desc' : 'asc'},size=${size},search=${search})}" onclick="window.location=this.getAttribute('data-href')">Артикул</th>
         <th th:data-href="@{/admin/products(sort='name',dir=${sort=='name' and dir=='asc' ? 'desc' : 'asc'},size=${size},search=${search})}" onclick="window.location=this.getAttribute('data-href')">Название</th>
         <th th:data-href="@{/admin/products(sort='price',dir=${sort=='price' and dir=='asc' ? 'desc' : 'asc'},size=${size},search=${search})}" onclick="window.location=this.getAttribute('data-href')">Цена</th>
         <th th:data-href="@{/admin/products(sort='sales',dir=${sort=='sales' and dir=='asc' ? 'desc' : 'asc'},size=${size},search=${search})}" onclick="window.location=this.getAttribute('data-href')">Продажи</th>
@@ -37,8 +37,8 @@
     </tr>
     </thead>
     <tbody>
-    <tr th:each="p : ${productsPage.content}" th:onclick="|window.location='@{/admin/products/{id}(id=${p.id})}'|">
-        <td th:text="${p.id}"></td>
+    <tr th:each="p : ${productsPage.content}" th:onclick="|window.location='@{/admin/products/{sku}(sku=${p.sku})}'|">
+        <td th:text="${p.sku}"></td>
         <td th:text="${p.name}"></td>
         <td th:text="${p.price}"></td>
         <td th:text="${p.sales}"></td>

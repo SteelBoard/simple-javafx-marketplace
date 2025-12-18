@@ -31,6 +31,8 @@ public class Product {
     private Double rating = 0.0;
     private Long sales = 0L;
     private Boolean active = true;
+    @Column(unique = true,  nullable = false)
+    private String sku;
     @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
     @OrderBy("type, sortOrder")
     private List<ProductImage> images;

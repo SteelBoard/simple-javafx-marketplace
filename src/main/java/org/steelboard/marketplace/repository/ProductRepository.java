@@ -18,9 +18,15 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
 
     List<Product> findBySeller_Id(Long sellerId);
 
+    Optional<Product> findBySku(String sku);
+
     Page<Product> findByNameContainingIgnoreCase(String name, Pageable pageable);
 
     @Modifying
     @Query("UPDATE Product p SET p.sales = COALESCE(p.sales, 0) + :quantity WHERE p.id = :productId")
     void incrementSales(@Param("productId") Long productId, @Param("quantity") int quantity);
+
+    Page<Product> findBySeller_Id(Long sellerId, Pageable pageable);
+
+    Page<Product> findBySeller_IdAndNameContainingIgnoreCase(Long sellerId, String name, Pageable pageable);
 }

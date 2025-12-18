@@ -10,7 +10,6 @@ import org.springframework.transaction.annotation.Transactional;
 import org.steelboard.marketplace.entity.Product;
 import org.steelboard.marketplace.entity.Review;
 import org.steelboard.marketplace.entity.User;
-import org.steelboard.marketplace.exception.OrderNotFoundException;
 import org.steelboard.marketplace.repository.ReviewRepository;
 
 import java.util.List;
@@ -64,6 +63,14 @@ public class ReviewService {
     }
 
     @Transactional(readOnly = true)
+    public Page<Review> findByUserId(Long userId, String search, Pageable pageable) {
+        if (search != null && !search.isBlank()) {
+            return reviewRepository.searchByUser_IdAndCommentContainingIgnoreCase(userId, search.trim(), pageable);
+        }
+        return reviewRepository.findByUser_Id(userId, pageable);
+    }
+
+    @Transactional(readOnly = true)
     public Review findById(Long id) {
         return reviewRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Review not found"));
@@ -71,7 +78,15 @@ public class ReviewService {
 
     @Transactional
     public void delete(Long id) {
+        Long productId = reviewRepository.findById(id).get().getProduct().getId();
         reviewRepository.deleteById(id);
+        productService.updateRating(productId, findByProductId(productId));
+    }
+
+    @Transactional
+    public void update(Review review) {
+        reviewRepository.save(review);
+        productService.updateRating(review.getProduct().getId(), findByProductId(review.getProduct().getId()));
     }
 
     public Page<Review> findByProductId(Long id, Pageable pageable) {

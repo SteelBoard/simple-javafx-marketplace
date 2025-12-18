@@ -46,7 +46,7 @@
                                 <div class="d-flex align-items-center">
                                     <img th:src="${product.mainImageUrl}" alt="" style="width: 45px; height: 45px; object-fit: cover;" class="rounded me-3">
                                     <div>
-                                        <a th:href="@{/product/{id}(id=${product.id})}" class="fw-bold text-dark text-decoration-none" th:text="${product.name}">Name</a>
+                                        <a th:href="@{/product/{sku}(sku=${product.sku})}" class="fw-bold text-dark text-decoration-none" th:text="${product.name}">Name</a>
                                         <div class="small text-muted" th:text="${product.active} ? 'Активен' : 'Скрыт'">Status</div>
                                     </div>
                                 </div>
@@ -57,9 +57,9 @@
                                 <span class="text-warning">★</span> <span th:text="${product.rating}">4.5</span>
                             </td>
                             <td class="text-end pe-4">
-                                <a th:href="@{/product/edit/{id}(id=${product.id})}" class="btn btn-sm btn-outline-secondary me-1">✏️</a>
+                                <a th:href="@{/product/edit/{sku}(sku=${product.sku})}" class="btn btn-sm btn-outline-secondary me-1">✏️</a>
                                 
-                                <form th:action="@{/product/delete/{id}(id=${product.id})}" method="post" style="display:inline;" onsubmit="return confirm('Удалить товар?');">
+                                <form th:action="@{/product/delete/{sku}(sku=${product.sku})}" method="post" style="display:inline;" onsubmit="return confirm('Удалить товар?');">
                                     <button type="submit" class="btn btn-sm btn-outline-danger">🗑</button>
                                 </form>
                             </td>

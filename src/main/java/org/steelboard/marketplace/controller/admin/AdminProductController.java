@@ -14,7 +14,6 @@ import org.steelboard.marketplace.dto.product.ProductEditDto;
 import org.steelboard.marketplace.entity.Product;
 import org.steelboard.marketplace.entity.Review;
 import org.steelboard.marketplace.service.ProductService;
-import org.steelboard.marketplace.repository.ReviewRepository;
 import org.steelboard.marketplace.service.ReviewService;
 
 import java.util.List;
@@ -27,7 +26,6 @@ public class AdminProductController {
     private final ProductService productService;
     private final ReviewService reviewService;
 
-    
     @GetMapping
     public String products(
             @RequestParam(defaultValue = "0") int page,
@@ -56,10 +54,11 @@ public class AdminProductController {
         return "admin/product/products";
     }
 
-    @GetMapping("/{id}")
-    public String productDetails(@PathVariable Long id, Model model) {
+    // ИЗМЕНЕНО: принимаем sku вместо id
+    @GetMapping("/{sku}")
+    public String productDetails(@PathVariable String sku, Model model) {
         try {
-            Product product = productService.getProduct(id);
+            Product product = productService.getProductBySku(sku);
             if (!model.containsAttribute("productDto")) {
                 model.addAttribute("productDto", productService.toEditDto(product));
             }
@@ -70,75 +69,95 @@ public class AdminProductController {
         }
     }
 
-    @PostMapping("/{id}/update")
+    // ИЗМЕНЕНО: URL теперь использует sku, но обновление происходит по ID (полученному из sku)
+    @PostMapping("/{sku}/update")
     public String updateProduct(
-            @PathVariable Long id,
+            @PathVariable String sku,
             @Valid @ModelAttribute("productDto") ProductEditDto dto,
             BindingResult result,
             Model model
     ) {
+        Product product = productService.getProductBySku(sku);
+
         if (result.hasErrors()) {
-            
-            Product product = productService.getProduct(id);
-            model.addAttribute("product", product); 
+            model.addAttribute("product", product);
             return "admin/product/product_details";
         }
-        productService.updateProductFromDto(id, dto);
-        return "redirect:/admin/products/" + id + "?success";
+
+        // Используем ID найденного продукта для обновления
+        productService.updateProductFromDto(product.getId(), dto);
+        return "redirect:/admin/products/" + sku + "?success";
     }
 
-    
-
-    @GetMapping("/{id}/reviews")
-    public String productReviews(@PathVariable Long id, Model model) {
-        Product product = productService.getProduct(id);
-        List<Review> reviews = reviewService.findByProductId(id);
+    // ИЗМЕНЕНО: sku в URL
+    @GetMapping("/{sku}/reviews")
+    public String productReviews(@PathVariable String sku, Model model) {
+        Product product = productService.getProductBySku(sku);
+        // Сервис отзывов работает по ID, берем его у продукта
+        List<Review> reviews = reviewService.findByProductId(product.getId());
 
         model.addAttribute("product", product);
         model.addAttribute("reviews", reviews);
-        return "admin/product/product_reviews"; 
+        return "admin/product/product_reviews";
     }
 
-    @PostMapping("/{productId}/reviews/{reviewId}/delete")
-    public String deleteReview(@PathVariable Long productId, @PathVariable Long reviewId) {
+    // ИЗМЕНЕНО: Удаление отзыва. URL: /admin/products/{sku}/reviews/{reviewId}/delete
+    @PostMapping("/{sku}/reviews/{reviewId}/delete")
+    public String deleteReview(@PathVariable String sku, @PathVariable Long reviewId) {
         reviewService.deleteById(reviewId);
-        return "redirect:/admin/products/" + productId + "/reviews";
+        return "redirect:/admin/products/" + sku + "/reviews";
     }
 
-    
-
-    @PostMapping("/{id}/delete")
-    public String deleteProduct(@PathVariable Long id) {
-        productService.deleteProduct(id);
+    // ИЗМЕНЕНО: Удаление продукта по SKU
+    @PostMapping("/{sku}/delete")
+    public String deleteProduct(@PathVariable String sku) {
+        Product product = productService.getProductBySku(sku);
+        productService.deleteProduct(product.getId());
         return "redirect:/admin/products";
     }
 
-    @PostMapping("/images/delete")
-    public String deleteImage(@RequestParam Long productId, @RequestParam Long imageId) {
-        productService.deleteImage(productId, imageId);
-        return "redirect:/admin/products/" + productId;
+    // ИЗМЕНЕНО: Удаление картинки.
+    // В форме на фронте лучше передавать sku как скрытое поле или использовать PathVariable
+    // Но чтобы меньше ломать форму, оставим RequestParam, но найдем ID
+    @PostMapping("/{sku}/images/delete")
+    public String deleteImage(
+            @PathVariable String sku,       // Получаем SKU из URL
+            @RequestParam Long imageId      // Получаем ID картинки из формы
+    ) {
+        Product product = productService.getProductBySku(sku);
+        productService.deleteImage(product.getId(), imageId);
+
+        return "redirect:/admin/products/" + sku;
     }
 
-    @PostMapping("/{id}/images/add")
+    // ИЗМЕНЕНО: sku в URL
+    @PostMapping("/{sku}/images/add")
     public String addImage(
-            @PathVariable Long id,
+            @PathVariable String sku,
             @RequestParam("file") MultipartFile file
     ) {
+        Product product = productService.getProductBySku(sku);
         try {
-            productService.addImage(id, file);
+            productService.addImage(product.getId(), file);
         } catch (Exception e) {
-            e.printStackTrace(); 
-            
+            e.printStackTrace();
         }
-        return "redirect:/admin/products/" + id;
+        return "redirect:/admin/products/" + sku;
     }
 
-    @PostMapping("/images/set-main")
+    // Редирект на SKU после установки главной картинки
+    @PostMapping("/{sku}/images/set-main")
     public String setMainImage(
-            @RequestParam Long productId,
-            @RequestParam Long imageId
+            @PathVariable String sku,       // Получаем SKU из URL
+            @RequestParam Long imageId      // Получаем ID картинки из формы
     ) {
-        productService.setMainImage(productId, imageId);
-        return "redirect:/admin/products/" + productId;
+        // Сначала ищем по SKU, чтобы получить ID товара
+        Product product = productService.getProductBySku(sku);
+
+        // Выполняем действие
+        productService.setMainImage(product.getId(), imageId);
+
+        // Возвращаемся на страницу товара по SKU
+        return "redirect:/admin/products/" + sku;
     }
 }

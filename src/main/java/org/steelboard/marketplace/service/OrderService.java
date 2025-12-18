@@ -45,9 +45,6 @@ public class OrderService {
         Order order = orderRepository.findById(id)
                 .orElseThrow(() -> new OrderNotFoundException(id));
 
-        
-        
-        
         if (!order.getUser().getUsername().equals(currentUsername)) {
             throw new AccessDeniedException("Вы не можете просматривать чужие заказы");
         }
@@ -111,8 +108,6 @@ public class OrderService {
 
             orderItemRepository.save(oi);
 
-            
-            
             productService.incrementProductSales(
                     ci.getProduct().getId(),
                     ci.getQuantity()

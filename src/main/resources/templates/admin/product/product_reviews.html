@@ -13,7 +13,7 @@
 </head>
 <body>
 <h2 th:text="'Отзывы: ' + ${product.name}"></h2>
-<a th:href="@{/admin/products/{id}(id=${product.id})}">← Вернуться к товару</a><br><br>
+<a th:href="@{/admin/products/{sku}(id=${product.sku})}">← Вернуться к товару</a><br><br>
 
 <table th:if="${not #lists.isEmpty(reviews)}">
     <tr><th>User</th><th>Оценка</th><th>Комментарий</th><th>Дата</th><th>Действие</th></tr>
@@ -23,7 +23,7 @@
         <td th:text="${r.comment}"></td>
         <td th:text="${#dates.format(r.createdAt, 'dd.MM.yyyy')}"></td>
         <td>
-            <form th:action="@{/admin/products/{pid}/reviews/{rid}/delete(pid=${product.id}, rid=${r.id})}" method="post">
+            <form th:action="@{/admin/products/{sku}/reviews/{rid}/delete(sku=${product.sku}, rid=${r.id})}" method="post">
                 <button type="submit" class="btn" onclick="return confirm('Удалить?');">Удалить</button>
             </form>
         </td>

@@ -26,7 +26,7 @@
         private User user;
         @Enumerated(EnumType.STRING)
         @Column(nullable = false)
-        private OrderStatus status = OrderStatus.PENDING;
+        private OrderStatus status = OrderStatus.CONFIRMED;
         @Column(name = "total_amount")
         private BigDecimal totalAmount;
         @OneToMany(
