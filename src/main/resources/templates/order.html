@@ -54,9 +54,13 @@
                 </thead>
                 <tbody>
                 <tr th:each="item : ${order.orderItems}">
-                    <td th:text="${item.product.name}">Product</td>
+                    <td>
+                        <div>
+                            <span th:text="${item.product.name}">Product</span>
+                            <div class="small text-muted" th:text="${item.status}">PROCESSING</div>
+                        </div>
+                    </td>
                     <td th:text="${item.quantity} + ' шт.'">1 шт.</td>
-                    
                     <td style="text-align: right;" th:text="${item.unitPrice} + ' ₽'">100 ₽</td>
                 </tr>
                 </tbody>

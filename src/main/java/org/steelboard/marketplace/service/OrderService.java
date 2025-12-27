@@ -1,20 +1,30 @@
 package org.steelboard.marketplace.service;
 
-import lombok.RequiredArgsConstructor;
-import lombok.SneakyThrows;
+import java.math.BigDecimal;
+import java.nio.file.AccessDeniedException;
+import java.util.List;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.steelboard.marketplace.entity.*;
+import org.steelboard.marketplace.dto.order.SellerStatsDto;
+import org.steelboard.marketplace.dto.product.ProductStatDto;
+import org.steelboard.marketplace.entity.Cart;
+import org.steelboard.marketplace.entity.CartItem;
+import org.steelboard.marketplace.entity.Order;
+import org.steelboard.marketplace.entity.OrderItem;
+import org.steelboard.marketplace.entity.OrderItemStatus;
+import org.steelboard.marketplace.entity.OrderStatus;
+import org.steelboard.marketplace.entity.PickupPoint;
+import org.steelboard.marketplace.entity.User;
 import org.steelboard.marketplace.exception.OrderNotFoundException;
 import org.steelboard.marketplace.repository.OrderItemRepository;
 import org.steelboard.marketplace.repository.OrderRepository;
 import org.steelboard.marketplace.repository.PickupPointRepository;
 
-import java.math.BigDecimal;
-import java.nio.file.AccessDeniedException;
-import java.util.List;
+import lombok.RequiredArgsConstructor;
+import lombok.SneakyThrows;
 
 @Service
 @RequiredArgsConstructor
@@ -26,8 +36,6 @@ public class OrderService {
     private final CartService cartService;
     private final PickupPointRepository pickupPointRepository;
     private final PaymentService paymentService;
-
-    
     private final ProductService productService;
 
     public List<Order> findByUserId(Long userId) {
@@ -114,6 +122,7 @@ public class OrderService {
             oi.setProduct(ci.getProduct());
             oi.setQuantity(ci.getQuantity());
             oi.setUnitPrice(ci.getUnitPrice());
+            oi.setStatus(OrderItemStatus.PROCESSING); // <-- new: per-item status
 
             orderItemRepository.save(oi);
 
@@ -182,14 +191,11 @@ public class OrderService {
             throw new IllegalArgumentException("Неверный статус");
         }
 
-        // Логика: КТО пытается сменить статус?
         boolean isBuyer = order.getUser().getId().equals(currentUser.getId());
-
-        // Проверяем, является ли текущий юзер продавцом хотя бы одного товара в заказе
         boolean isSeller = order.getOrderItems().stream()
                 .anyMatch(item -> item.getProduct().getSeller().getId().equals(currentUser.getId()));
 
-        // СЦЕНАРИЙ 1: Продавец отправляет заказ (CONFIRMED -> SHIPPED)
+        // Seller отправляет заказ (CONFIRMED/PROCESSING -> SHIPPED) — прежняя логика оставлена
         if (isSeller && newStatus == OrderStatus.SHIPPED) {
             if (order.getStatus() == OrderStatus.CONFIRMED || order.getStatus() == OrderStatus.PROCESSING) {
                 order.setStatus(OrderStatus.SHIPPED);
@@ -200,17 +206,104 @@ public class OrderService {
             }
         }
 
-        // СЦЕНАРИЙ 2: Покупатель подтверждает получение (SHIPPED -> DELIVERED)
+        // Buyer подтверждает получение для всего заказа (SHIPPED -> DELIVERED)
         if (isBuyer && newStatus == OrderStatus.DELIVERED) {
-            if (order.getStatus() == OrderStatus.SHIPPED) {
-                order.setStatus(OrderStatus.DELIVERED);
-                orderRepository.save(order);
-                return;
-            } else {
+            if (order.getStatus() != OrderStatus.SHIPPED) {
                 throw new IllegalStateException("Можно подтвердить только отправленный заказ");
             }
+
+            // Проверяем — есть ли отменённые позиции внутри заказа, и есть ли неотправленные (не отменённые) позиции
+            boolean nonCancelledAllShipped = order.getOrderItems().stream()
+                    .filter(i -> i.getStatus() != OrderItemStatus.CANCELLED) // только позиции, которые не отменены
+                    .allMatch(i -> i.getStatus() == OrderItemStatus.SHIPPED || i.getStatus() == OrderItemStatus.DELIVERED);
+
+            if (!nonCancelledAllShipped) {
+                throw new IllegalStateException("Нельзя подтвердить весь заказ: имеются позиции, которые не отправлены или отменены");
+            }
+
+            // Переводим все SHIPPED айтемы в DELIVERED (только непогашённые)
+            order.getOrderItems().stream()
+                    .filter(i -> i.getStatus() == OrderItemStatus.SHIPPED)
+                    .forEach(i -> i.setStatus(OrderItemStatus.DELIVERED));
+
+            // Обновляем статус заказа
+            order.setStatus(OrderStatus.DELIVERED);
+            orderRepository.save(order);
+            return;
         }
 
         throw new SecurityException("У вас нет прав для смены этого статуса");
+    }
+
+    @Transactional
+    public void changeOrderItemStatus(Integer itemId, User currentUser, String newStatusStr) {
+        OrderItem item = orderItemRepository.findById(itemId)
+                .orElseThrow(() -> new IllegalArgumentException("Order item not found"));
+
+        OrderItemStatus newStatus;
+        try {
+            newStatus = OrderItemStatus.valueOf(newStatusStr);
+        } catch (IllegalArgumentException e) {
+            throw new IllegalArgumentException("Неверный статус айтема");
+        }
+
+        Order order = item.getOrder();
+
+        boolean isBuyer = order.getUser().getId().equals(currentUser.getId());
+        boolean isSellerOfItem = item.getProduct().getSeller().getId().equals(currentUser.getId());
+
+        // Seller transitions
+        if (isSellerOfItem) {
+            if (newStatus == OrderItemStatus.CONFIRMED || newStatus == OrderItemStatus.CANCELLED) {
+                if (item.getStatus() == OrderItemStatus.PROCESSING) {
+                    item.setStatus(newStatus);
+                    orderItemRepository.save(item);
+                    return;
+                } else {
+                    throw new IllegalStateException("Нельзя изменить статус: текущий статус = " + item.getStatus());
+                }
+            }
+
+            if (newStatus == OrderItemStatus.SHIPPED) {
+                if (item.getStatus() == OrderItemStatus.CONFIRMED) {
+                    item.setStatus(OrderItemStatus.SHIPPED);
+                    orderItemRepository.save(item);
+                    return;
+                } else {
+                    throw new IllegalStateException("Можно отправить только подтвержденный товар");
+                }
+            }
+
+            throw new SecurityException("Неверная операция для продавца");
+        }
+
+        // Buyer transitions: подтверждение получения конкретного айтема
+        if (isBuyer) {
+            if (newStatus == OrderItemStatus.DELIVERED) {
+                if (item.getStatus() == OrderItemStatus.SHIPPED) {
+                    item.setStatus(OrderItemStatus.DELIVERED);
+                    orderItemRepository.save(item);
+                    return;
+                } else {
+                    throw new IllegalStateException("Можно подтвердить только отправленный товар");
+                }
+            }
+        }
+
+        throw new SecurityException("У вас нет прав для смены этого статуса айтема");
+    }
+
+
+    // Статистика продавца
+    public SellerStatsDto getSellerStats(Long sellerId, Pageable topProductsPageable) {
+        BigDecimal revenue = orderItemRepository.sumRevenueBySellerId(sellerId);
+        Long ordersCount = orderItemRepository.countDistinctOrdersBySellerId(sellerId);
+        List<ProductStatDto> topProducts = orderItemRepository.findTopSellingProductsBySellerId(sellerId, topProductsPageable);
+
+        SellerStatsDto dto = new SellerStatsDto();
+        dto.setTotalRevenue(revenue == null ? BigDecimal.ZERO : revenue);
+        dto.setOrdersCount(ordersCount == null ? 0L : ordersCount);
+        dto.setTopProducts(topProducts);
+        return dto;
     }
 }

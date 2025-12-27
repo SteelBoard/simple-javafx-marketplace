@@ -12,14 +12,40 @@
 
 <div class="container py-5">
     <div class="row">
-
-        <!-- Сайдбар (активная вкладка 'incoming') -->
+        <!-- Сайдбар -->
         <div class="col-lg-3 mb-4">
             <div th:replace="~{fragments/sidebar :: profile-sidebar(activeTab='incoming')}"></div>
         </div>
 
         <div class="col-lg-9">
             <h3 class="mb-4">Входящие заказы (Продажи)</h3>
+
+            <!-- СТАТИСТИКА ПРОДАВЦА -->
+            <div th:if="${sellerStats != null}" class="row mb-4 g-3">
+                <div class="col-md-4 d-flex">
+                    <div class="card p-3 w-100 h-100">
+                        <div class="text-muted small">Выручка</div>
+                        <div class="h5" th:text="${sellerStats.totalRevenue} + ' ₽'">0 ₽</div>
+                    </div>
+                </div>
+                <div class="col-md-4 d-flex">
+                    <div class="card p-3 w-100 h-100">
+                        <div class="text-muted small">Заказы с вашими товарами</div>
+                        <div class="h5" th:text="${sellerStats.ordersCount}">0</div>
+                    </div>
+                </div>
+                <div class="col-md-4 d-flex">
+                    <div class="card p-3 w-100 h-100">
+                        <div class="text-muted small">Топ товаров</div>
+                        <div th:each="p : ${sellerStats.topProducts}" style="font-size: 0.9em;">
+                            <div class="d-flex justify-content-between">
+                                <strong th:text="${p.productName}">Product</strong>
+                                <span th:text="${p.totalRevenue} + ' ₽'">0 ₽</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
             <!-- Блок уведомлений (успех/ошибка при смене статуса) -->
             <div th:if="${successMessage}" class="alert alert-success alert-dismissible fade show border-0 shadow-sm mb-4">
@@ -38,24 +64,19 @@
 
             <!-- Список заказов -->
             <div th:each="order : ${orders}" class="card mb-3 shadow-sm" style="border: none; border-radius: 10px;">
-
-                <!-- Шапка карточки -->
                 <div class="card-header bg-white d-flex justify-content-between align-items-center py-3">
                     <div>
                         <strong>Заказ #<span th:text="${order.id}">123</span></strong>
                         <span class="text-muted ms-2" th:text="${#dates.format(order.createdAt, 'dd.MM.yyyy HH:mm')}">Date</span>
                     </div>
-
-                    <!-- Статусы: CONFIRMED(желтый), SHIPPED(синий), DELIVERED(зеленый) -->
                     <span class="badge rounded-pill"
                           th:classappend="${order.status.name() == 'DELIVERED'} ? 'bg-success' :
-                                         (${order.status.name() == 'SHIPPED'} ? 'bg-primary' : 'bg-warning text-dark')"
+                                         (${order.status.name() == 'SHIPPED'} ? 'bg-primary' :
+                                         (${order.status.name() == 'CANCELLED'} ? 'bg-danger' : 'bg-warning text-dark'))"
                           th:text="${order.status}">STATUS</span>
                 </div>
 
                 <div class="card-body">
-
-                    <!-- Инфо о покупателе (видно только продавцу) -->
                     <div class="row mb-3 pb-3 border-bottom">
                         <div class="col-md-6">
                             <small class="text-muted d-block">Покупатель:</small>
@@ -73,47 +94,52 @@
 
                     <div class="row align-items-center">
                         <div class="col-md-7">
-                            <!-- Список товаров -->
                             <ul class="list-unstyled mb-0">
-                                <li th:each="item : ${order.orderItems}" class="mb-2 d-flex justify-content-between">
-                                    <span>
+                                <li th:each="item : ${order.orderItems}" class="mb-2 d-flex justify-content-between align-items-center">
+                                    <div style="flex:1; min-width: 0;">
                                         <span th:text="${item.product.name}">Product Name</span>
-                                        <span class="text-muted" style="font-size: 0.9em;"> x <span th:text="${item.quantity}">1</span></span>
-                                    </span>
-                                    <span class="fw-bold text-muted" style="font-size: 0.9em;" th:text="${item.unitPrice} + ' ₽'">1000 ₽</span>
+                                        <small class="text-muted"> x <span th:text="${item.quantity}">1</span></small>
+                                        <div class="small mt-1">
+                                            <span class="badge bg-light text-dark" th:text="${item.status}">PROCESSING</span>
+                                        </div>
+                                    </div>
+
+                                    <div style="width: 220px; display:flex; flex-direction:column; align-items:flex-end; gap:6px;">
+                                        <div th:if="${user.id == item.product.seller.id}" style="width:100%; display:flex; gap:6px; justify-content:flex-end; flex-wrap:wrap;">
+                                            <form th:if="${item.status.name() == 'PROCESSING'}" th:action="@{/orders/status}" method="post" style="display:inline;">
+                                                <input type="hidden" name="orderId" th:value="${order.id}">
+                                                <input type="hidden" name="itemId" th:value="${item.id}">
+                                                <input type="hidden" name="newStatus" value="CONFIRMED">
+                                                <button type="submit" class="btn btn-sm btn-outline-success">✔ Принять</button>
+                                            </form>
+
+                                            <form th:if="${item.status.name() == 'PROCESSING'}" th:action="@{/orders/status}" method="post" style="display:inline;">
+                                                <input type="hidden" name="orderId" th:value="${order.id}">
+                                                <input type="hidden" name="itemId" th:value="${item.id}">
+                                                <input type="hidden" name="newStatus" value="CANCELLED">
+                                                <button type="submit" class="btn btn-sm btn-outline-danger">✖ Отклонить</button>
+                                            </form>
+
+                                            <form th:if="${item.status.name() == 'CONFIRMED'}" th:action="@{/orders/status}" method="post" style="width:100%;">
+                                                <input type="hidden" name="orderId" th:value="${order.id}">
+                                                <input type="hidden" name="itemId" th:value="${item.id}">
+                                                <input type="hidden" name="newStatus" value="SHIPPED">
+                                                <button type="submit" class="btn btn-primary btn-sm w-100">📦 Отправить товар</button>
+                                            </form>
+                                        </div>
+
+                                        <div class="small text-muted" style="width:100%; text-align:right;">
+                                            <span th:text="${item.unitPrice} + ' ₽'">100 ₽</span>
+                                        </div>
+                                    </div>
                                 </li>
                             </ul>
                         </div>
 
-                        <!-- Правая часть с Итого и Кнопкой -->
                         <div class="col-md-5 text-md-end mt-3 mt-md-0 border-start-md ps-md-4">
                             <h5 class="mb-3 text-primary" th:text="${order.totalAmount} + ' ₽'">1000 ₽</h5>
-
-                            <!-- ЛОГИКА КНОПОК -->
-
-                            <!-- 1. Если заказ подтвержден -> Кнопка "Отправить" -->
-                            <form th:if="${order.status.name() == 'CONFIRMED'}" th:action="@{/orders/status}" method="post">
-                                <input type="hidden" name="orderId" th:value="${order.id}">
-                                <input type="hidden" name="newStatus" value="SHIPPED">
-                                <button type="submit" class="btn btn-primary btn-sm w-100 mb-2">
-                                    📦 Отправить заказ
-                                </button>
-                                <small class="text-muted d-block">Нажмите после передачи в доставку</small>
-                            </form>
-
-                            <!-- 2. Если уже отправлен -->
-                            <div th:if="${order.status.name() == 'SHIPPED'}">
-                                <button class="btn btn-outline-secondary btn-sm w-100 disabled" disabled>
-                                    ⏳ Ожидает получения
-                                </button>
-                                <small class="text-muted d-block mt-1">Покупатель еще не забрал заказ</small>
-                            </div>
-
-                            <!-- 3. Если завершен -->
-                            <div th:if="${order.status.name() == 'DELIVERED'}">
-                                <span class="text-success fw-bold">✅ Сделка закрыта</span>
-                            </div>
-
+                            <small class="text-muted d-block" th:if="${order.status.name() == 'SHIPPED'}">Есть отправления</small>
+                            <div th:if="${order.status.name() == 'DELIVERED'}"><span class="text-success fw-bold">✅ Сделка закрыта</span></div>
                         </div>
                     </div>
                 </div>

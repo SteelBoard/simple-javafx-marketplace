@@ -48,9 +48,26 @@
                     <div class="row align-items-center">
                         <div class="col-md-7">
                             <ul class="list-unstyled mb-0">
-                                <li th:each="item : ${order.orderItems}" class="mb-1">
-                                    <span th:text="${item.product.name}">Product Name</span>
-                                    <span class="text-muted" style="font-size: 0.9em;">x <span th:text="${item.quantity}">1</span></span>
+                                <li th:each="item : ${order.orderItems}" class="mb-1 d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <span th:text="${item.product.name}">Product Name</span>
+                                        <small class="text-muted">x <span th:text="${item.quantity}">1</span></small>
+                                        <div class="small mt-1">
+                                            <span class="badge bg-light text-dark" th:text="${item.status}">PROCESSING</span>
+                                        </div>
+                                    </div>
+
+                                    <div style="min-width:140px; text-align:right;">
+                                        <!-- Покупатель подтверждает конкретный айтем -->
+                                        <form th:if="${item.status.name() == 'SHIPPED'}" th:action="@{/orders/status}" method="post">
+                                            <input type="hidden" name="orderId" th:value="${order.id}">
+                                            <input type="hidden" name="itemId" th:value="${item.id}">
+                                            <input type="hidden" name="newStatus" value="DELIVERED">
+                                            <button type="submit" class="btn btn-success btn-sm">✅ Получил товар</button>
+                                        </form>
+                                        <div class="small text-muted mt-2" th:if="${item.status.name() == 'CONFIRMED'}">Продавец подготавливает отправку</div>
+                                        <div class="small text-muted mt-2" th:if="${item.status.name() == 'PROCESSING'}">Ожидает решения продавца</div>
+                                    </div>
                                 </li>
                             </ul>
                         </div>
@@ -59,7 +76,7 @@
 
                             <div class="d-flex justify-content-md-end gap-2">
                                 <!-- КНОПКА ПОДТВЕРЖДЕНИЯ ДЛЯ ПОКУПАТЕЛЯ -->
-                                <form th:if="${order.status.name() == 'SHIPPED'}" th:action="@{/orders/status}" method="post">
+                                <form th:if="${order.status.name() == 'SHIPPED' and #lists.isEmpty(order.orderItems.?[status.name() != 'CANCELLED' and status.name() != 'SHIPPED'])}" th:action="@{/orders/status}" method="post">
                                     <input type="hidden" name="orderId" th:value="${order.id}">
                                     <input type="hidden" name="newStatus" value="DELIVERED">
                                     <button type="submit" class="btn btn-success btn-sm">✅ Получил товар</button>

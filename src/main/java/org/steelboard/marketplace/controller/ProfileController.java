@@ -1,12 +1,9 @@
 package org.steelboard.marketplace.controller;
 
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.validation.Valid;
-import lombok.AllArgsConstructor;
-import org.springframework.data.domain.Page;
+import java.util.List;
+
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -18,13 +15,16 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import org.steelboard.marketplace.dto.user.UserUpdateDto;
-import org.steelboard.marketplace.entity.*;
+import org.steelboard.marketplace.entity.Order;
+import org.steelboard.marketplace.entity.Review;
+import org.steelboard.marketplace.entity.User;
 import org.steelboard.marketplace.service.OrderService;
-import org.steelboard.marketplace.service.ProductService;
 import org.steelboard.marketplace.service.ReviewService;
 import org.steelboard.marketplace.service.UserService;
 
-import java.util.List;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.Valid;
+import lombok.AllArgsConstructor;
 
 @AllArgsConstructor
 @Controller
@@ -111,25 +111,37 @@ public class ProfileController {
         List<Order> orders = orderService.findOrdersBySellerId(user.getId());
         model.addAttribute("orders", orders);
 
+        // Добавляем статистику продавцу (покажем топ-5)
+        Pageable top5 = PageRequest.of(0,5);
+        model.addAttribute("sellerStats", orderService.getSellerStats(user.getId(), top5));
+
         return "seller_orders";
     }
 
 
 
     // POST запрос на смену статуса (работает и для продавца, и для покупателя)
+    // Добавлен необязательный параметр itemId
     @PostMapping("/orders/status")
     public String updateOrderStatus(
             @AuthenticationPrincipal User userDetails,
             @RequestParam Long orderId,
             @RequestParam String newStatus,
+            @RequestParam(required = false) Integer itemId,
             RedirectAttributes redirectAttributes,
             HttpServletRequest request // Чтобы вернуться на ту же страницу
     ) {
         User user = userService.findById(userDetails.getId());
 
         try {
-            orderService.changeStatus(orderId, user, newStatus);
-            redirectAttributes.addFlashAttribute("successMessage", "Статус заказа успешно обновлен!");
+            if (itemId != null) {
+                // Меняем статус конкретного айтема
+                orderService.changeOrderItemStatus(itemId, user, newStatus);
+            } else {
+                // Старая логика — для order-level
+                orderService.changeStatus(orderId, user, newStatus);
+            }
+            redirectAttributes.addFlashAttribute("successMessage", "Статус успешно обновлен!");
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
         }
