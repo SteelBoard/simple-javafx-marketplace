@@ -21,7 +21,7 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
 
     @Query("SELECT r FROM Review r WHERE " +
             "(:search IS NULL OR :search = '') OR " +
-            "(LOWER(r.user.username) LIKE LOWER(CONCAT('%', :search, '%'))) OR " + // Поиск по Username
+            "(LOWER(r.user.username) LIKE LOWER(CONCAT('%', :search, '%'))) OR " +
             "(LOWER(r.product.name) LIKE LOWER(CONCAT('%', :search, '%'))) OR " +
             "(LOWER(r.comment) LIKE LOWER(CONCAT('%', :search, '%')))")
     Page<Review> search(@Param("search") String search, Pageable pageable);

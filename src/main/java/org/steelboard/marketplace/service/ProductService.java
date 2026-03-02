@@ -56,8 +56,8 @@ public class ProductService {
         dto.setDescription(product.getDescription());
         dto.setPrice(product.getPrice());
         dto.setActive(product.getActive());
-        // Добавляем SKU в DTO, чтобы видеть его при редактировании
-        // Убедитесь, что в классе ProductEditDto есть поле private String sku;
+        
+        
         dto.setSku(product.getSku());
         return dto;
     }
@@ -114,22 +114,22 @@ public class ProductService {
         product.setPrice(price);
         product.setSeller(seller);
 
-        // ВАЖНО: Так как в БД стоит nullable=false, мы должны задать временное значение,
-        // чтобы Hibernate дал выполнить первый insert.
-        // Используем UUID, чтобы гарантировать уникальность до момента генерации красивого SKU.
+        
+        
+        
         product.setSku(UUID.randomUUID().toString());
 
-        // 1. Первое сохранение для получения ID
+        
         product = productRepository.save(product);
 
-        // 2. Генерация красивого артикула на основе ID
+        
         String sku = "PRD-" + String.format("%06d", product.getId());
         product.setSku(sku);
 
-        // 3. Второе сохранение (обновление) с новым SKU
+        
         product = productRepository.save(product);
 
-        // Сохранение изображений
+        
         if (mainImagePath != null) {
             saveImage(product, mainImagePath, ImageType.MAIN, 0);
         }
@@ -200,12 +200,12 @@ public class ProductService {
         productRepository.save(product);
     }
 
-    // ... внутри ProductService
+    
 
-    // 1. Обновляем поиск для каталога (чтобы скрытые товары не висели в поиске)
+    
     public Page<Product> searchProductsByName(String name, Pageable pageable) {
-        // Было: findByNameContainingIgnoreCase
-        // Стало: искать только среди активных
+        
+        
         return productRepository.findByNameContainingIgnoreCaseAndActiveTrue(name, pageable);
     }
 
@@ -213,27 +213,27 @@ public class ProductService {
         return productRepository.findByActiveTrue(pageable);
     }
 
-    // 2. Метод "Мягкого удаления" (Деактивация)
+    
     @Transactional
     public void softDeleteProduct(Long id, Long currentUserId) {
         Product product = getProduct(id);
 
-        // Проверка: удаляет либо владелец, либо админ (если нужно)
+        
         if (!product.getSeller().getId().equals(currentUserId)) {
             throw new SecurityException("Вы не являетесь владельцем этого товара");
         }
 
-        // Вместо deleteById делаем деактивацию
+        
         product.setActive(false);
         productRepository.save(product);
     }
 
-    // 3. Проверка владения (чтобы не дублировать код)
+    
     public boolean isProductOwner(Long productId, Long userId) {
         return getProduct(productId).getSeller().getId().equals(userId);
     }
 
-    // 4. Метод для получения товаров продавца с пагинацией
+    
     public Page<Product> getSellerProducts(Long sellerId, String search, Pageable pageable) {
         if (search != null && !search.isBlank()) {
             return productRepository.findBySeller_IdAndNameContainingIgnoreCase(sellerId, search, pageable);

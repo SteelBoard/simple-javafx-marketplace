@@ -5,5 +5,6 @@ public enum OrderItemStatus {
     CONFIRMED,    // продавец принял позицию (в наличии)
     CANCELLED,    // продавец отклонил позицию
     SHIPPED,      // продавец отправил
-    DELIVERED     // покупатель подтвердил получение
+    DELIVERED,
+    REFUNDED;// покупатель подтвердил получение
 }

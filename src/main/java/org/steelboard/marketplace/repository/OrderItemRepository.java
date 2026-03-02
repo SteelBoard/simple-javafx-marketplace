@@ -15,16 +15,6 @@ import org.steelboard.marketplace.entity.OrderStatus;
 @Repository
 public interface OrderItemRepository extends JpaRepository<OrderItem, Integer> {
     boolean existsByOrder_User_IdAndProduct_IdAndOrder_Status(Long orderUserId, Long productId, OrderStatus orderStatus);
-    @Query("SELECT new org.steelboard.marketplace.dto.product.ProductStatDto(" +
-            "  oi.product.id, " +
-            "  oi.product.name, " +
-            "  SUM(oi.quantity), " +
-            "  SUM(oi.unitPrice * oi.quantity) " +
-            ") " +
-            "FROM OrderItem oi " +
-            "GROUP BY oi.product.id, oi.product.name " +
-            "ORDER BY SUM(oi.unitPrice * oi.quantity) DESC")
-    List<ProductStatDto> findTopSellingProducts(Pageable pageable);
 
     @Query("SELECT new org.steelboard.marketplace.dto.product.ProductStatDto(" +
             "  oi.product.id, oi.product.name, SUM(oi.quantity), SUM(oi.unitPrice * oi.quantity) ) " +

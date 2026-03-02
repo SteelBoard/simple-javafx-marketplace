@@ -66,7 +66,6 @@ public class OrderService {
 
     public Page<Order> getUserOrders(Long userId, String search, Pageable pageable) {
         if (search != null && !search.isBlank()) {
-            // Ищем по частичному совпадению ID заказа
             return orderRepository.findByUserIdAndSearch(userId, search.trim(), pageable);
         }
         return orderRepository.findByUser_Id(userId, pageable);
@@ -111,7 +110,7 @@ public class OrderService {
         order.setUser(user);
         order.setPickupPoint(pickupPoint);
         order.setTotalAmount(total);
-        order.setStatus(OrderStatus.CONFIRMED);
+        order.setStatus(OrderStatus.PROCESSING);
 
         order = orderRepository.save(order);
 
@@ -122,7 +121,7 @@ public class OrderService {
             oi.setProduct(ci.getProduct());
             oi.setQuantity(ci.getQuantity());
             oi.setUnitPrice(ci.getUnitPrice());
-            oi.setStatus(OrderItemStatus.PROCESSING); // <-- new: per-item status
+            oi.setStatus(OrderItemStatus.PROCESSING);
 
             orderItemRepository.save(oi);
 
@@ -151,7 +150,6 @@ public class OrderService {
         return orderRepository.findAll(pageable);
     }
 
-    // Внутри OrderService
 
     @Transactional
     public void updateOrderDetails(Long orderId, OrderStatus status, Long pickupPointId) {
@@ -159,7 +157,6 @@ public class OrderService {
                 .orElseThrow(() -> new RuntimeException("Order not found"));
 
         if (status != null) {
-            order.setStatus(status);
         }
 
         if (pickupPointId != null) {
@@ -167,6 +164,8 @@ public class OrderService {
                     .orElseThrow(() -> new RuntimeException("Pickup point not found"));
             order.setPickupPoint(pp);
         }
+
+        recomputeOrderStatusFromItems(order);
 
         orderRepository.save(order);
     }
@@ -195,40 +194,37 @@ public class OrderService {
         boolean isSeller = order.getOrderItems().stream()
                 .anyMatch(item -> item.getProduct().getSeller().getId().equals(currentUser.getId()));
 
-        // Seller отправляет заказ (CONFIRMED/PROCESSING -> SHIPPED) — прежняя логика оставлена
-        if (isSeller && newStatus == OrderStatus.SHIPPED) {
-            if (order.getStatus() == OrderStatus.CONFIRMED || order.getStatus() == OrderStatus.PROCESSING) {
-                order.setStatus(OrderStatus.SHIPPED);
-                orderRepository.save(order);
-                return;
-            } else {
-                throw new IllegalStateException("Нельзя отправить заказ с текущим статусом: " + order.getStatus());
+       if (isSeller && newStatus == OrderStatus.SHIPPED) {
+            List<OrderItem> toShip = order.getOrderItems().stream()
+                    .filter(i -> i.getProduct().getSeller().getId().equals(currentUser.getId()))
+                    .filter(i -> i.getStatus() == OrderItemStatus.CONFIRMED)
+                    .toList();
+            if (toShip.isEmpty()) {
+                throw new IllegalStateException("Нет подтвержденных позиций для отправки");
             }
+            toShip.forEach(i -> i.setStatus(OrderItemStatus.SHIPPED));
+            orderItemRepository.saveAll(toShip);
+            recomputeOrderStatusFromItems(order);
+            return;
         }
 
-        // Buyer подтверждает получение для всего заказа (SHIPPED -> DELIVERED)
-        if (isBuyer && newStatus == OrderStatus.DELIVERED) {
-            if (order.getStatus() != OrderStatus.SHIPPED) {
-                throw new IllegalStateException("Можно подтвердить только отправленный заказ");
-            }
 
-            // Проверяем — есть ли отменённые позиции внутри заказа, и есть ли неотправленные (не отменённые) позиции
+        if (isBuyer && newStatus == OrderStatus.DELIVERED) {
             boolean nonCancelledAllShipped = order.getOrderItems().stream()
-                    .filter(i -> i.getStatus() != OrderItemStatus.CANCELLED) // только позиции, которые не отменены
+                    .filter(i -> i.getStatus() != OrderItemStatus.CANCELLED)
                     .allMatch(i -> i.getStatus() == OrderItemStatus.SHIPPED || i.getStatus() == OrderItemStatus.DELIVERED);
 
             if (!nonCancelledAllShipped) {
                 throw new IllegalStateException("Нельзя подтвердить весь заказ: имеются позиции, которые не отправлены или отменены");
             }
 
-            // Переводим все SHIPPED айтемы в DELIVERED (только непогашённые)
-            order.getOrderItems().stream()
+            List<OrderItem> shippedItems = order.getOrderItems().stream()
                     .filter(i -> i.getStatus() == OrderItemStatus.SHIPPED)
-                    .forEach(i -> i.setStatus(OrderItemStatus.DELIVERED));
+                    .toList();
+            shippedItems.forEach(i -> i.setStatus(OrderItemStatus.DELIVERED));
+            orderItemRepository.saveAll(shippedItems);
 
-            // Обновляем статус заказа
-            order.setStatus(OrderStatus.DELIVERED);
-            orderRepository.save(order);
+            recomputeOrderStatusFromItems(order);
             return;
         }
 
@@ -252,12 +248,12 @@ public class OrderService {
         boolean isBuyer = order.getUser().getId().equals(currentUser.getId());
         boolean isSellerOfItem = item.getProduct().getSeller().getId().equals(currentUser.getId());
 
-        // Seller transitions
         if (isSellerOfItem) {
             if (newStatus == OrderItemStatus.CONFIRMED || newStatus == OrderItemStatus.CANCELLED) {
                 if (item.getStatus() == OrderItemStatus.PROCESSING) {
                     item.setStatus(newStatus);
                     orderItemRepository.save(item);
+                    recomputeOrderStatusFromItems(order);
                     return;
                 } else {
                     throw new IllegalStateException("Нельзя изменить статус: текущий статус = " + item.getStatus());
@@ -268,6 +264,7 @@ public class OrderService {
                 if (item.getStatus() == OrderItemStatus.CONFIRMED) {
                     item.setStatus(OrderItemStatus.SHIPPED);
                     orderItemRepository.save(item);
+                    recomputeOrderStatusFromItems(order);
                     return;
                 } else {
                     throw new IllegalStateException("Можно отправить только подтвержденный товар");
@@ -277,12 +274,12 @@ public class OrderService {
             throw new SecurityException("Неверная операция для продавца");
         }
 
-        // Buyer transitions: подтверждение получения конкретного айтема
         if (isBuyer) {
             if (newStatus == OrderItemStatus.DELIVERED) {
                 if (item.getStatus() == OrderItemStatus.SHIPPED) {
                     item.setStatus(OrderItemStatus.DELIVERED);
                     orderItemRepository.save(item);
+                    recomputeOrderStatusFromItems(order);
                     return;
                 } else {
                     throw new IllegalStateException("Можно подтвердить только отправленный товар");
@@ -294,7 +291,68 @@ public class OrderService {
     }
 
 
-    // Статистика продавца
+    @Transactional
+    public void recomputeOrderStatusFromItems(Order order) {
+        var freshOrder = orderRepository.findById(order.getId())
+                .orElseThrow(() -> new RuntimeException("Order not found"));
+
+        List<OrderItem> items = freshOrder.getOrderItems().stream().toList();
+
+        if (items == null || items.isEmpty()) {
+            freshOrder.setStatus(OrderStatus.CANCELLED);
+            orderRepository.save(freshOrder);
+            return;
+        }
+
+        OrderStatus newStatus = calculateAggregateStatus(items);
+
+        if (freshOrder.getStatus() != newStatus) {
+            freshOrder.setStatus(newStatus);
+            orderRepository.save(freshOrder);
+        }
+    }
+
+    private OrderStatus calculateAggregateStatus(List<OrderItem> items) {
+        List<OrderItemStatus> statuses = items.stream()
+                .map(OrderItem::getStatus)
+                .toList();
+
+        boolean allCancelledOrRefunded = statuses.stream()
+                .allMatch(s -> s == OrderItemStatus.CANCELLED || s == OrderItemStatus.REFUNDED);
+
+        if (allCancelledOrRefunded) {
+            boolean allRefunded = statuses.stream().allMatch(s -> s == OrderItemStatus.REFUNDED);
+            return allRefunded ? OrderStatus.REFUNDED : OrderStatus.CANCELLED;
+        }
+
+        List<OrderItemStatus> activeStatuses = statuses.stream()
+                .filter(s -> s != OrderItemStatus.CANCELLED && s != OrderItemStatus.REFUNDED)
+                .toList();
+
+        boolean allActiveDelivered = activeStatuses.stream()
+                .allMatch(s -> s == OrderItemStatus.DELIVERED);
+
+        if (allActiveDelivered) {
+            return OrderStatus.DELIVERED;
+        }
+
+        boolean anyShippedOrDelivered = activeStatuses.stream()
+                .anyMatch(s -> s == OrderItemStatus.SHIPPED || s == OrderItemStatus.DELIVERED);
+
+        if (anyShippedOrDelivered) {
+            return OrderStatus.SHIPPED;
+        }
+
+        boolean anyConfirmed = activeStatuses.stream()
+                .anyMatch(s -> s == OrderItemStatus.CONFIRMED);
+
+        if (anyConfirmed) {
+            return OrderStatus.CONFIRMED;
+        }
+
+        return OrderStatus.PROCESSING;
+    }
+
     public SellerStatsDto getSellerStats(Long sellerId, Pageable topProductsPageable) {
         BigDecimal revenue = orderItemRepository.sumRevenueBySellerId(sellerId);
         Long ordersCount = orderItemRepository.countDistinctOrdersBySellerId(sellerId);

@@ -19,7 +19,6 @@ public class SecurityConfig {
         return new BCryptPasswordEncoder();
     }
 
-    // Убрать все доступы к h2
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http

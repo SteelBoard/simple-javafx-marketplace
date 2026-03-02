@@ -39,9 +39,9 @@ public class PickupPointService {
 
     @Transactional
     public void createPickupPoint(PickupPointAddDto dto) {
-        // 1. Создаем и сохраняем адрес
+        
         Address address = new Address();
-        address.setCountry("Россия"); // По умолчанию
+        address.setCountry("Россия"); 
         address.setCity(dto.getCity().trim());
         address.setStreet(dto.getStreet().trim());
         address.setHouseNumber(dto.getHouseNumber().trim());
@@ -51,32 +51,32 @@ public class PickupPointService {
 
         addressRepository.save(address);
 
-        // 2. Создаем ПВЗ и привязываем адрес
+        
         PickupPoint pickupPoint = new PickupPoint();
         pickupPoint.setAddress(address);
-        pickupPoint.setPhone(dto.getPhone()); // Телефон приходит уже отформатированным с фронта (+7 ...)
+        pickupPoint.setPhone(dto.getPhone()); 
 
         pickupPointRepository.save(pickupPoint);
     }
 
-    // Добавьте dependency: private final OrderRepository orderRepository;
+    
 
     @Transactional
     public void deletePickupPoint(Long id) {
-        // 1. Проверка: есть ли заказы на этом ПВЗ?
+        
         if (orderRepository.existsByPickupPoint_Id(id)) {
             throw new IllegalStateException("Нельзя удалить ПВЗ, так как на него оформлены заказы. Сначала удалите или перенесите заказы.");
         }
 
-        // 2. Находим ПВЗ
+        
         PickupPoint pickupPoint = pickupPointRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("ПВЗ не найден"));
 
-        // 3. Удаляем ПВЗ
+        
         pickupPointRepository.delete(pickupPoint);
 
-        // 4. Удаляем адрес, так как он больше не нужен (если он One-to-One с ПВЗ)
-        // Если Address используется где-то еще, эту строчку нужно убрать
+        
+        
         addressRepository.delete(pickupPoint.getAddress());
     }
 }
